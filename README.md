@@ -1,5 +1,6 @@
 # B.Slicer
 Repository: bmusic-bslicer
+Status: **Experimental**
 Description: LV2 audio effect plugin. This plugin slices stereo audio input signals with a length up to 1 bar into up to 16 pieces.
 The result will be a step sequencer-like effect.
 
