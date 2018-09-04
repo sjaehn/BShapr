@@ -6,6 +6,9 @@ Status: Testing
 Description: LV2 audio effect plugin. This plugin slices stereo audio input signals with a length up to 1 bar into up to 16 pieces.
 The result will be a step sequencer-like effect.
 
+
+![screenshot](https://raw.githubusercontent.com/sjaehn/bmusic-bslicer/master/Screenshot.png "Screenshot from B.Slicer")
+
 Dependencies
 ------------
 ```
