@@ -21,7 +21,6 @@ install: $(BUNDLE)
 	mkdir -p $(INSTALL_DIR)
 	rm -rf $(INSTALL_DIR)/$(BUNDLE)
 	cp -R $(BUNDLE) $(INSTALL_DIR)
-	rm -rf $(BUNDLE)
 	
 .PHONY: all
 
