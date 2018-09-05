@@ -2,7 +2,7 @@ BUNDLE = BSlicer.lv2
 INSTALL_DIR = /usr/lib/lv2
 
 
-$(BUNDLE): BSlicer.so BSlicer_GUI.so manifest.ttl BSlicer.ttl surface.jpeg licence.txt
+$(BUNDLE): BSlicer.so BSlicer_GUI.so manifest.ttl BSlicer.ttl surface.jpeg LICENCE
 	rm -rf $(BUNDLE)
 	mkdir $(BUNDLE)
 	cp $^ $(BUNDLE)
