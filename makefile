@@ -2,20 +2,20 @@ BUNDLE = BSlicer.lv2
 INSTALL_DIR = /usr/lib/lv2
 
 
-$(BUNDLE): BSlicer.so BSlicer_GUI.so manifest.ttl BSlicer.ttl surface.jpeg LICENSE
-	rm -rf $(BUNDLE)
-	mkdir $(BUNDLE)
-	cp $^ $(BUNDLE)
+$(BUNDLE): clean BSlicer.so BSlicer_GUI.so
+	cp manifest.ttl BSlicer.ttl surface.jpeg LICENSE $(BUNDLE)
 	
 all: $(BUNDLE)
 
 BSlicer.so: ./src/BSlicer.cpp
-	rm -f $@
-	g++ $< -o $@ -shared -fPIC -DPIC `pkg-config --cflags --libs lv2`
+	mkdir -p $(BUNDLE)
+	rm -f $(BUNDLE)/$@
+	g++ $< -o $(BUNDLE)/$@ -shared -fPIC -DPIC `pkg-config --cflags --libs lv2`
 	
-BSlicer_GUI.so: ./src/BSlicer_GUI.cpp	
-	rm -f $@
-	g++ $< -o $@ -shared -fPIC -DPIC `pkg-config --cflags --libs lv2 gtkmm-2.4`
+BSlicer_GUI.so: ./src/BSlicer_GUI.cpp
+	mkdir -p $(BUNDLE)	
+	rm -f $(BUNDLE)/$@
+	g++ $< -o $(BUNDLE)/$@ -shared -fPIC -DPIC `pkg-config --cflags --libs lv2 gtk+-2.0`
 
 install: $(BUNDLE)
 	mkdir -p $(INSTALL_DIR)
@@ -25,4 +25,4 @@ install: $(BUNDLE)
 .PHONY: all
 
 clean:
-	rm -rf $(BUNDLE) BSlicer.so
+	rm -rf $(BUNDLE)
