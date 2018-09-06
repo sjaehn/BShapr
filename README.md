@@ -11,11 +11,13 @@ The result will be a step sequencer-like effect.
 
 Dependencies
 ------------
+The development packages of
 ```
 gtk+-2.0
 cairo
 lv2
 ```
+are required for building BSlicer.
 
 Installation
 ------------
@@ -62,6 +64,10 @@ Step shape
 * Attack
 * Decay
 * Monitor : Visualization of a single step
+
+Links
+-----
+* Preview video: https://www.youtube.com/watch?v=1VD3KsXvyLU
 
 
 
