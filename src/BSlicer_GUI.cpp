@@ -59,14 +59,14 @@ public:
 	~BSlicer_GUI ();
 	void portEvent (uint32_t port_index, uint32_t buffer_size, uint32_t format, const void *buffer);
 	GtkWidget* make_gui();
+	void send_record_on ();
+	void send_record_off ();
 
 	LV2UI_Controller controller;
 	LV2UI_Write_Function write_function;
 
 
 private:
-	void send_record_on ();
-	void send_record_off ();
 	void rearrange_step_controllers (float nrSteps_newf);
 	static void value_changed_cb(GtkWidget* widget, void* data);
 	static gboolean stepshape_monitor_expose_event (GtkWidget* widget, GdkEventExpose* ev, gpointer data);
@@ -799,6 +799,7 @@ LV2UI_Handle instantiate (const LV2UI_Descriptor *descriptor, const char *plugin
 	ui->write_function = write_function;
 
 	*widget = (LV2UI_Widget) ui->make_gui();
+	ui->send_record_on();
 	return (LV2UI_Handle) ui;
 }
 
