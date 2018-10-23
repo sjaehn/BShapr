@@ -10,8 +10,9 @@
 @prefix rsz: <http://lv2plug.in/ns/ext/resize-port#> .
 
 <https://www.jahnichen.de/plugins/lv2/BSlicer#gui>
-		a ui:GtkUI;
+		a ui:X11UI;
 		ui:binary <BSlicer_GUI.so> ;
+		lv2:extensionData ui:idleInterface ;
 		ui:requiredFeature ui:makeResident ;
 		ui:optionalFeature ui:noUserResize .
 
