@@ -27,7 +27,8 @@
 #include <lv2/lv2plug.in/ns/ext/atom/atom.h>
 #include <lv2/lv2plug.in/ns/ext/atom/forge.h>
 #include <lv2/lv2plug.in/ns/ext/time/time.h>
-#include "BWidgets/BWidgets.hpp"
+#include <gtk/gtk.h>
+#include <cairo.h>
 
 #include "main.h"
 
@@ -44,19 +45,20 @@
 #define CAIRO_INK1 0.0, 1.0, 0.4
 #define CAIRO_INK2 0.8, 0.6, 0.2
 
-#define BG_FILE "surface.png"
+#define BG_FILE "surface.jpeg"
 
 #define DB_CO(g) ((g) > -90.0f ? powf(10.0f, (g) * 0.05f) : 0.0f)
 #define CO_DB(g) ((g) > 0.0001f ? logf((g)) / 0.05f : -90.0f)
-#define LIM(g , max) ((g) > (max) ? (max) : (g))
+#define LIMIT(g , max) ((g) > (max) ? (max) : (g))
 #define INT(g) (int) (g + 0.5)
 
-class BSlicer_GUI : public BWidgets::Window
+class BSlicer_GUI
 {
 public:
-	BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *features, PuglNativeWindow parentWindow);
+	BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *features);
 	~BSlicer_GUI ();
 	void portEvent (uint32_t port_index, uint32_t buffer_size, uint32_t format, const void *buffer);
+	GtkWidget* make_gui();
 	void send_record_on ();
 	void send_record_off ();
 
@@ -66,34 +68,35 @@ public:
 
 private:
 	void rearrange_step_controllers (float nrSteps_newf);
-	static void valueChangedCallback (BEvents::Event* event);
-	void redrawStepshape ();
+	static void value_changed_cb(GtkWidget* widget, void* data);
+	static gboolean stepshape_monitor_expose_event (GtkWidget* widget, GdkEventExpose* ev, gpointer data);
 	void clear_monitor_data ();
 	void add_monitor_data (BSlicerNotifications* notifications, uint32_t notificationsCount, uint32_t* end);
-	void redrawMainMonitor ();
+	static gboolean main_monitor_expose_event (GtkWidget* widget, GdkEventExpose* ev, gpointer data);
 
 
-	//GtkWidget* bgImage;
-	BWidgets::Widget mContainer;
-	BWidgets::Widget sContainer;
-	BWidgets::Label attackLabel;
-	BWidgets::Label releaseLabel;
-	BWidgets::Label stepsizeLabel;
-	//GtkWidget* stepshapeDisplayFrame;
-	BWidgets::DrawingSurface stepshapeDisplay;
-	BWidgets::Label nrStepsLabel;
-	BWidgets::Label onLabel;
-	BWidgets::Label offLabel;
-	BWidgets::Label monitorLabel;
-	BWidgets::HSlider monitorOnOffControl;
-	BWidgets::VSlider scaleControl;
-	//GtkWidget* monitorDisplayFrame;
-	BWidgets::DrawingSurface monitorDisplay;
-	BWidgets::HSliderWithValueDisplay nrStepsControl;
-	BWidgets::DialWithValueDisplay attackControl;
-	BWidgets::DialWithValueDisplay releaseControl;
-	BWidgets::HSliderWithValueDisplay stepsizeControl;
-	std::array<BWidgets::VSliderWithValueDisplay, MAXSTEPS> stepControl;
+	GtkWidget* bgImage;
+	GtkWidget* mContainer;
+	GtkWidget* container5;
+	GtkWidget* attackLabel;
+	GtkWidget* releaseLabel;
+	GtkWidget* stepsizeLabel;
+	GtkWidget* stepshapeDisplayFrame;
+	GtkWidget* stepshapeDisplayBox;
+	GtkWidget* stepControlLabel;
+	GtkWidget* nrStepsLabel;
+	GtkWidget* onLabel;
+	GtkWidget* offLabel;
+	GtkWidget* monitorLabel;
+	GtkWidget* monitorOnOffControl;
+	GtkWidget* scaleControl;
+	GtkWidget* monitorDisplayFrame;
+	GtkWidget* monitorDisplayBox;
+	GtkWidget* nrStepsControl;
+	GtkWidget* attackControl;
+	GtkWidget* releaseControl;
+	GtkWidget* stepsizeControl;
+	GtkWidget* stepControl[MAXSTEPS];
 
 	struct 	{
 		bool record_on;
@@ -110,58 +113,27 @@ private:
 	float release;
 	float nrSteps;
 	float stepsize;
-	std::array<float, MAXSTEPS> step;
+	float step[MAXSTEPS];
 
 	LV2_Atom_Forge forge;
 	BSlicerURIs uris;
 	LV2_URID_Map* map;
 
-
-
-	// Definition of styles
-	BColors::ColorSet fgColors = {{{0.0, 0.75, 0.2, 1.0}, {0.0, 1.0, 0.4, 1.0}, {0.0, 0.2, 0.0, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
-	BColors::ColorSet txColors = {{{0.0, 1.0, 0.4, 1.0}, {1.0, 1.0, 1.0, 1.0}, {0.0, 0.5, 0.0, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
-	BColors::ColorSet bgColors = {{{0.15, 0.15, 0.15, 1.0}, {0.3, 0.3, 0.3, 1.0}, {0.05, 0.05, 0.05, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
-	BColors::Color ink = {0.0, 0.75, 0.2, 1.0};
-	BStyles::Border border = {{ink, 1.0}, 0.0, 2.0, 0.0};
-	BStyles::Fill widgetBg = BStyles::noFill;
-	BStyles::Font defaultFont = BStyles::Font ("Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL, 12.0);
-	BStyles::StyleSet defaultStyles = {"default", {{"background", STYLEPTR (&BStyles::noFill)},
-												   {"border", STYLEPTR (&BStyles::noBorder)}}};
-	BStyles::StyleSet labelStyles = {"labels", 	  {{"background", STYLEPTR (&BStyles::noFill)},
-												   {"border", STYLEPTR (&BStyles::noBorder)},
-												   {"textcolors", STYLEPTR (&txColors)},
-												   {"font", STYLEPTR (&defaultFont)}}};
-
-
-	BStyles::Theme theme = BStyles::Theme ({
-		defaultStyles,
-		{"B.Slicer", 		{{"background", STYLEPTR (&BStyles::blackFill)},
-							 {"border", STYLEPTR (&BStyles::noBorder)}}},
-		{"main", 			{{"background", STYLEPTR (&widgetBg)},
-							 {"border", STYLEPTR (&BStyles::noBorder)}}},
-		{"widget", 			{{"uses", STYLEPTR (&defaultStyles)}}},
-		{"monitor", 		{{"background", STYLEPTR (&BStyles::blackFill)},
-							 {"border", STYLEPTR (&border)}}},
-		{"dial", 			{{"uses", STYLEPTR (&defaultStyles)},
-							 {"fgcolors", STYLEPTR (&fgColors)},
-							 {"bgcolors", STYLEPTR (&bgColors)},
-							 {"textcolors", STYLEPTR (&fgColors)},
-							 {"font", STYLEPTR (&defaultFont)}}},
-		{"slider",			{{"uses", STYLEPTR (&defaultStyles)},
-							 {"fgcolors", STYLEPTR (&fgColors)},
-							 {"bgcolors", STYLEPTR (&bgColors)},
-							 {"textcolors", STYLEPTR (&fgColors)},
-							 {"font", STYLEPTR (&defaultFont)}}},
-		{"On", 				{{"uses", STYLEPTR (&labelStyles)}}},
-		{"Off", 			{{"uses", STYLEPTR (&labelStyles)}}},
-		{"Monitor", 		{{"uses", STYLEPTR (&labelStyles)}}},
-		{"Attack", 			{{"uses", STYLEPTR (&labelStyles)}}},
-		{"Release", 		{{"uses", STYLEPTR (&labelStyles)}}},
-		{"Step size", 		{{"uses", STYLEPTR (&labelStyles)}}},
-		{"Number of steps", {{"uses", STYLEPTR (&labelStyles)}}}
-	});
 };
+
+GdkColor monitor_bg_color = GDK_BG_COLOR;
+GdkColor monitor_frame_color = GDK_FG_COLOR;
+gchar stepshape_label[] = "Step shape";
+gchar monitor_label[] = "Monitor";
+gchar on_text[] = "on";
+gchar off_text[] = "off";
+gchar attackLabel_text[] = "Attack";
+gchar releaseLabel_text[] = "Release";
+gchar stepControlLabel_text[] = "Step control";
+gchar stepsizeLabel_text[] = "\u2669 = 1/x";
+gchar nrStepsLabel_text[] = "Number of steps";
+
+
 
 void BSlicer_GUI::send_record_on ()
 {
@@ -172,7 +144,6 @@ void BSlicer_GUI::send_record_on ()
 	LV2_Atom* msg = (LV2_Atom*)lv2_atom_forge_object(&forge, &frame, 0, uris.ui_on);
 	lv2_atom_forge_pop(&forge, &frame);
 	write_function(controller, Control_2, lv2_atom_total_size(msg), uris.atom_eventTransfer, msg);
-	monitorOnOffControl.setValue (1.0);
 }
 
 void BSlicer_GUI::send_record_off ()
@@ -184,7 +155,6 @@ void BSlicer_GUI::send_record_off ()
 	LV2_Atom* msg = (LV2_Atom*)lv2_atom_forge_object(&forge, &frame, 0, uris.ui_off);
 	lv2_atom_forge_pop(&forge, &frame);
 	write_function(controller, Control_2, lv2_atom_total_size(msg), uris.atom_eventTransfer, msg);
-	monitorOnOffControl.setValue (0.0);
 }
 
 void BSlicer_GUI::rearrange_step_controllers (float nrSteps_newf)
@@ -194,111 +164,114 @@ void BSlicer_GUI::rearrange_step_controllers (float nrSteps_newf)
 
 	if ((nrSteps_old < 1) || (nrSteps_old > MAXSTEPS) || (nrSteps_new < 1) || (nrSteps_old > MAXSTEPS)) return;
 
-	for (int i = 0; i < MAXSTEPS; ++i)
+	if (nrSteps_new > nrSteps_old)
 	{
-		if (i < nrSteps_new)
+		for (int i = nrSteps_old; i < nrSteps_new; i++)
 		{
-			stepControl[i].moveTo ((i + 0.5) * 480 / nrSteps_new - 10, 0);
-			stepControl[i].show ();
+			gtk_box_pack_start (GTK_BOX(container5), stepControl[i], TRUE, FALSE, 0);
 		}
-		else stepControl[i].hide ();
 	}
-}
-
-void BSlicer_GUI::valueChangedCallback (BEvents::Event* event)
-{
-	if ((event) && (event->getWidget ()))
+	else if (nrSteps_new < nrSteps_old)
 	{
-		BWidgets::ValueWidget* widget = (BWidgets::ValueWidget*) event->getWidget ();
-
-		if (widget->getMainWindow ())
+		for (int i = nrSteps_new; i < nrSteps_old; i++)
 		{
-			BSlicer_GUI* ui = (BSlicer_GUI*) widget->getMainWindow ();
-
-			// monitor on/off changed
-			if (widget == &ui->monitorOnOffControl)
-			{
-				int value = INT (widget->getValue ());
-				if (value == 1)
-				{
-					ui->mainMonitor.record_on = true;
-					ui->send_record_on ();
-				}
-				else
-				{
-					ui->mainMonitor.record_on = false;
-					ui->send_record_off ();
-				}
-				return;
-			}
-
-			// Scale changed
-			if (widget == &ui->scaleControl)
-			{
-				float value = (float) widget->getValue ();
-				ui->scale = DB_CO (value);
-				if (ui->scale < 0.0001f) ui->scale = 0.0001f;
-				ui->redrawMainMonitor ();
-			}
-
-			// Attack changed
-			if (widget == &ui->attackControl)
-			{
-				ui->attack = (float) widget->getValue ();
-				ui->write_function(ui->controller, Attack, sizeof(ui->attack), 0, &ui->attack);
-				ui->redrawStepshape ();
-				return;
-			}
-
-			// Release changed
-			if (widget == &ui->releaseControl)
-			{
-				ui->release = (float) widget->getValue ();
-				ui->write_function(ui->controller, Release, sizeof(ui->release), 0, &ui->release);
-				ui->redrawStepshape ();
-				return;
-			}
-
-			// Step size changed
-			if (widget == &ui->stepsizeControl)
-			{
-				ui->stepsize = (float) widget->getValue ();
-				ui->write_function(ui->controller, Stepsize, sizeof(ui->stepsize), 0, &ui->stepsize);
-				return;
-			}
-
-			// nrSteps changed
-			if (widget == &ui->nrStepsControl)
-			{
-				float nrSteps_new = (float) widget->getValue ();
-				if (nrSteps_new != ui->nrSteps) ui->rearrange_step_controllers (nrSteps_new);
-				ui->nrSteps = nrSteps_new;
-				ui->write_function(ui->controller, NrSteps, sizeof(ui->nrSteps), 0, &ui->nrSteps);
-				ui->redrawMainMonitor ();
-				return;
-			}
-
-			// Step controllers changed
-			for (int i = 0; i < ui->nrSteps; i++)
-			{
-				if (widget == &ui->stepControl[i])
-				{
-					ui->step[i] = (float) widget->getValue ();
-					ui->write_function(ui->controller, Step_+i , sizeof(ui->step[i]), 0, &ui->step[i]);
-					return;
-				}
-			}
+			g_object_ref (stepControl[i]);
+			gtk_container_remove (GTK_CONTAINER(container5), stepControl[i]);
 		}
 	}
 }
 
-void BSlicer_GUI::redrawStepshape ()
+void BSlicer_GUI::value_changed_cb(GtkWidget* widget, void* data) {
+	BSlicer_GUI *ui = (BSlicer_GUI*)data;
+
+	// monitor on/off changed
+	if (widget == ui->monitorOnOffControl)
+	{
+		int value = INT (gtk_range_get_value ((GtkRange*) widget));
+		gtk_range_set_value ((GtkRange*) widget, value);
+		if (value == 1)
+		{
+			ui->mainMonitor.record_on = true;
+			ui->send_record_on ();
+		}
+		else
+		{
+			ui->mainMonitor.record_on = false;
+			ui->send_record_off ();
+		}
+		return;
+	}
+
+	// Scale changed
+	if (widget == ui->scaleControl)
+	{
+		float value = (float) gtk_range_get_value ((GtkRange*) widget);
+		ui->scale = DB_CO (value);
+		if (ui->scale < 0.0001f) ui->scale = 0.0001f;
+		gtk_widget_queue_draw(ui->monitorDisplayBox);
+	}
+
+	// Attack changed
+	if (widget == ui->attackControl)
+	{
+		ui->attack = (float)gtk_range_get_value((GtkRange*)widget);
+		ui->write_function(ui->controller, Attack, sizeof(ui->attack), 0, &ui->attack);
+		gtk_widget_queue_draw(ui->stepshapeDisplayBox);
+		return;
+	}
+
+	// Release changed
+	if (widget == ui->releaseControl)
+	{
+		ui->release = (float)gtk_range_get_value((GtkRange*)widget);
+		ui->write_function(ui->controller, Release, sizeof(ui->release), 0, &ui->release);
+		gtk_widget_queue_draw(ui->stepshapeDisplayBox);
+		return;
+	}
+
+	// Step size changed
+	if (widget == ui->stepsizeControl)
+		{
+			ui->stepsize = (float)gtk_range_get_value((GtkRange*)widget);
+			ui->write_function(ui->controller, Stepsize, sizeof(ui->stepsize), 0, &ui->stepsize);
+			return;
+		}
+
+	// nrSteps changed
+	if (widget == ui->nrStepsControl)
+	{
+		float nrSteps_new = (float)gtk_range_get_value((GtkRange*)widget);
+		if (nrSteps_new != ui->nrSteps) ui->rearrange_step_controllers (nrSteps_new);
+		ui->nrSteps = nrSteps_new;
+		ui->write_function(ui->controller, NrSteps, sizeof(ui->nrSteps), 0, &ui->nrSteps);
+		gtk_widget_queue_draw(ui->monitorDisplayBox);
+		return;
+	}
+
+	// Step controllers changed
+	for (int i = 0; i < MAXSTEPS; i++)
+	{
+		if (widget == ui->stepControl[i])
+		{
+			if (i < INT (ui->nrSteps))
+			{
+				ui->step[i] = (float)gtk_range_get_value((GtkRange*)widget);
+				ui->write_function(ui->controller, Step_+i , sizeof(ui->step[i]), 0, &ui->step[i]);
+			}
+			return;
+		}
+	}
+}
+
+gboolean BSlicer_GUI::stepshape_monitor_expose_event (GtkWidget* widget, GdkEventExpose* ev, gpointer data)
 {
+	BSlicer_GUI* ui = (BSlicer_GUI*) data;
+	const uint32_t width = ev->area.width;
+	const uint32_t height = ev->area.height;
+
 	cairo_t* cr;
 	cairo_pattern_t* pat;
-	cr = cairo_create (stepshapeDisplay.getDrawingSurface ());
-	double width = stepshapeDisplay.getWidth () - 6.0;
-	double height = stepshapeDisplay.getHeight () - 6.0;
+	cr = gdk_cairo_create ((GdkDrawable*) ui->stepshapeDisplayBox->window); // @suppress("Field cannot be resolved")
 
 	// Draw background
 	cairo_set_source_rgba (cr, CAIRO_BG_COLOR);
@@ -326,16 +299,16 @@ void BSlicer_GUI::redrawStepshape ()
 
 	cairo_move_to (cr, 0, 0.9 * height);
 	cairo_line_to (cr, width * 0.25, 0.9 * height);
-	if ((attack + release) > 1)
+	if ((ui->attack + ui->release) > 1)
 	{
-		float crosspointX = attack / (attack + release);
-		float crosspointY = crosspointX / attack - (crosspointX - (1 - release)) / release;
+		float crosspointX = ui->attack / (ui->attack + ui->release);
+		float crosspointY = crosspointX / ui->attack - (crosspointX - (1 - ui->release)) / ui->release;
 		cairo_line_to (cr, width* 0.25 + crosspointX * width * 0.5, 0.9 * height - 0.8 * height * crosspointY);
 	}
 	else
 	{
-		cairo_line_to (cr, width * 0.25 + attack * width * 0.5 , 0.1 * height);
-		cairo_line_to (cr, width * 0.75  - release * width * 0.5, 0.1 * height);
+		cairo_line_to (cr, width * 0.25 + ui->attack * width * 0.5 , 0.1 * height);
+		cairo_line_to (cr, width * 0.75  - ui->release * width * 0.5, 0.1 * height);
 
 	}
 	cairo_line_to (cr, width * 0.75, 0.9 * height);
@@ -353,7 +326,7 @@ void BSlicer_GUI::redrawStepshape ()
 
 	cairo_destroy (cr);
 
-	stepshapeDisplay.update ();
+	return TRUE;
 }
 
 void BSlicer_GUI::clear_monitor_data ()
@@ -374,20 +347,22 @@ void BSlicer_GUI::add_monitor_data (BSlicerNotifications* notifications, uint32_
 	}
 }
 
-void BSlicer_GUI::redrawMainMonitor ()
+gboolean BSlicer_GUI::main_monitor_expose_event (GtkWidget* widget, GdkEventExpose* ev, gpointer data)
 {
+	BSlicer_GUI* ui = (BSlicer_GUI*) data;
+
+	const uint32_t width = ev->area.width;
+	const uint32_t height = ev->area.height;
 	uint32_t i;
 	bool lineBreak;
-	double pos, nextpos, linebreakpos;
-	double width = monitorDisplay.getWidth () - 6.0;
-	double height = monitorDisplay.getHeight () - 6.0;
+	float pos, nextpos, linebreakpos;
 
 	cairo_t* cr;
 	cairo_t* cr2;
 	cairo_pattern_t* pat;
 	cairo_pattern_t* pat2;
-	cr = cairo_create (monitorDisplay.getDrawingSurface ());
-	cr2 = cairo_create (monitorDisplay.getDrawingSurface ());
+	cr = gdk_cairo_create ((GdkDrawable*) ui->monitorDisplayBox->window); // @suppress("Field cannot be resolved")
+	cr2 = gdk_cairo_create ((GdkDrawable*) ui->monitorDisplayBox->window); // @suppress("Field cannot be resolved")
 	pat = cairo_pattern_create_linear (0, 0, 0, height);
 	cairo_pattern_add_color_stop_rgba (pat, 0.1, CAIRO_INK1, 1);
 	cairo_pattern_add_color_stop_rgba (pat, 0.9, CAIRO_INK1, 0);
@@ -408,7 +383,7 @@ void BSlicer_GUI::redrawMainMonitor ()
 	cairo_line_to (cr, width, 0.9 * height);
 
 	i = 1;
-	uint32_t steps = (uint32_t) nrSteps;
+	uint32_t steps = (uint32_t) ui->nrSteps;
 	while (i < steps)
 	{
 		uint32_t x = (uint32_t) (i * width / steps);
@@ -418,10 +393,10 @@ void BSlicer_GUI::redrawMainMonitor ()
 	}
 	cairo_stroke (cr);
 
-	if (mainMonitor.record_on)
+	if (ui->mainMonitor.record_on)
 	{
-		uint32_t horizoni = mainMonitor.horizonPos;
-		float horizonpos = mainMonitor.data[horizoni].position;
+		uint32_t horizoni = ui->mainMonitor.horizonPos;
+		float horizonpos = ui->mainMonitor.data[horizoni].position;
 		if (horizonpos >= 0.0f)
 		{
 			// Draw horizon line
@@ -432,8 +407,8 @@ void BSlicer_GUI::redrawMainMonitor ()
 			cairo_stroke (cr);
 
 			// Draw data: input@cr, output@cr2
-			cairo_move_to (cr, (uint32_t) (horizonpos * width), (uint32_t) (height * (0.9  - (0.8 * LIM ((mainMonitor.data[horizoni].input / scale), 1.0f)))));
-			cairo_move_to (cr2, (uint32_t) (horizonpos * width), (uint32_t) (height * (0.9  - (0.8 * LIM ((mainMonitor.data[horizoni].output / scale), 1.0f)))));
+			cairo_move_to (cr, (uint32_t) (horizonpos * width), (uint32_t) (height * (0.9  - (0.8 * LIMIT ((ui->mainMonitor.data[horizoni].input / ui->scale), 1.0f)))));
+			cairo_move_to (cr2, (uint32_t) (horizonpos * width), (uint32_t) (height * (0.9  - (0.8 * LIMIT ((ui->mainMonitor.data[horizoni].output / ui->scale), 1.0f)))));
 			lineBreak = false;
 			i = horizoni;
 			nextpos = horizonpos;
@@ -443,11 +418,11 @@ void BSlicer_GUI::redrawMainMonitor ()
 			{
 				pos = nextpos;
 	//			fprintf (stdout, "%i %f %f %f\n", i, pos, ui->mainMonitor.data[i].input, ui->mainMonitor.data[i].output);
-				cairo_line_to (cr, (uint32_t) (pos * width), (uint32_t) (height * (0.9  - (0.8 * LIM ((mainMonitor.data[i].input / scale), 1.0f)))));
-				cairo_line_to (cr2, (uint32_t) (pos * width), (uint32_t) (height * (0.9  - (0.8 * LIM ((mainMonitor.data[i].output / scale), 1.0f)))));
+				cairo_line_to (cr, (uint32_t) (pos * width), (uint32_t) (height * (0.9  - (0.8 * LIMIT ((ui->mainMonitor.data[i].input / ui->scale), 1.0f)))));
+				cairo_line_to (cr2, (uint32_t) (pos * width), (uint32_t) (height * (0.9  - (0.8 * LIMIT ((ui->mainMonitor.data[i].output / ui->scale), 1.0f)))));
 				if (i == 0) i = MONITORBUFFERSIZE - 1;
 				else i--;
-				nextpos = mainMonitor.data[i].position;
+				nextpos = ui->mainMonitor.data[i].position;
 
 				// Line break in raw data?
 				if (nextpos > pos)
@@ -477,8 +452,8 @@ void BSlicer_GUI::redrawMainMonitor ()
 
 					lineBreak = true;
 					linebreakpos = nextpos;
-					cairo_move_to (cr, (uint32_t) (nextpos * width), (uint32_t) (height * (0.9  - (0.8 * LIM ((mainMonitor.data[i].input / scale), 1.0f)))));
-					cairo_move_to (cr2, (uint32_t) (nextpos * width), (uint32_t) (height * (0.9  - (0.8 * LIM ((mainMonitor.data[i].output / scale), 1.0f)))));
+					cairo_move_to (cr, (uint32_t) (nextpos * width), (uint32_t) (height * (0.9  - (0.8 * LIMIT ((ui->mainMonitor.data[i].input / ui->scale), 1.0f)))));
+					cairo_move_to (cr2, (uint32_t) (nextpos * width), (uint32_t) (height * (0.9  - (0.8 * LIMIT ((ui->mainMonitor.data[i].output / ui->scale), 1.0f)))));
 				}
 			} while ((nextpos >= 0.0f) && (((nextpos < horizonpos) && !lineBreak) || ((nextpos > horizonpos) && lineBreak)));
 
@@ -519,90 +494,181 @@ void BSlicer_GUI::redrawMainMonitor ()
 	cairo_destroy (cr);
 	cairo_destroy (cr2);
 
-	monitorDisplay.update ();
+	return TRUE;
 }
 
-BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *features, PuglNativeWindow parentWindow) :
-	Window (800, 560, "B.Slicer", parentWindow),
-	scale (DB_CO(0.0)), attack (0.2), release (0.2), nrSteps (16.0), stepsize (4.0), step (),
-	pluginPath (bundle_path ? std::string (bundle_path) : std::string ("")), controller (NULL), write_function (NULL), map (NULL),
-
-	mContainer (0, 0, 800, 560, "main"),
-	offLabel (640, 30, 40, 20, "Off"),
-	onLabel (740, 30, 40, 20, "On"),
-	monitorOnOffControl (680, 30, 60, 20, "slider", 0.0, 0.0, 1.0, 1.0),
-	monitorDisplay (260, 70, 480, 240, "monitor"),
-	monitorLabel (680, 50, 60, 20, "Monitor"),
-	scaleControl (760, 80, 20, 230, "slider", 0.0, SCALEMIN, SCALEMAX, 0.1),
-	stepshapeDisplay (30, 320, 180, 140, "monitor"),
-	attackControl (45, 480, 40, 40, "dial", 0.2, 0.0, 1.0, 0.01, "%1.2f"),
-	attackLabel (20, 520, 90, 20, "Attack"),
-	releaseControl (155, 480, 40, 40, "dial", 0.2, 0.0, 1.0, -0.01, "%1.2f"),
-	releaseLabel (130, 520, 90, 20, "Release"),
-	stepsizeControl (260, 492, 120, 28, "slider", 1.0, 1.0, 8.0, 1.0, "%1.0f", BWidgets::ON_TOP),
-	stepsizeLabel (260, 520, 120, 20, "Step size"),
-	nrStepsControl (400, 492, 380, 28, "slider", 1.0, 1.0, MAXSTEPS, 1.0, "%2.0f", BWidgets::ON_TOP),
-	nrStepsLabel (400, 520, 380, 20, "Number of steps"),
-	sContainer (260, 330, 480, 130, "widget")
-
+void b_widget_set_colors  (GtkWidget* widget, GdkColor* fg, GdkColor* bg1, GdkColor* bg2, GdkColor* bg3)
 {
-	//Initialialize and configure stepControllers
-	for (int i = 0; i < MAXSTEPS; ++i)
+	if (fg) gtk_widget_modify_fg (widget, GTK_STATE_NORMAL, fg);
+	if (bg1) gtk_widget_modify_bg (widget, GTK_STATE_NORMAL, bg1);
+	if (bg2) gtk_widget_modify_bg (widget, GTK_STATE_ACTIVE, bg2);
+	if (bg3) gtk_widget_modify_bg (widget, GTK_STATE_SELECTED, bg3);
+}
+
+GtkWidget* BSlicer_GUI::make_gui()
+{
+	GtkStyle* style;
+	GdkColor white = GDK_WHITE;
+	GdkColor fgColor2 = GDK_FG_COLOR;
+	int fontsize;
+
+	// Main container
+	mContainer = gtk_fixed_new();
+	gtk_widget_set_size_request (mContainer, 800, 560);
+
+	// Background image
+	bgImage = gtk_image_new_from_file ((pluginPath + BG_FILE).c_str());
+	gtk_widget_set_size_request(bgImage, 800,560);
+	gtk_fixed_put (GTK_FIXED (mContainer), bgImage, 0, 0);
+
+	// Monitor on/off switch
+	offLabel = gtk_label_new(&off_text[0]);
+	gtk_widget_set_size_request(offLabel, 40,20);
+	b_widget_set_colors (offLabel, &white, NULL, NULL, NULL);
+	gtk_fixed_put (GTK_FIXED (mContainer), offLabel, 640, 30);
+
+	monitorOnOffControl = gtk_hscale_new_with_range(0, 1, 1);
+	gtk_range_set_value (GTK_RANGE(monitorOnOffControl), 1);
+	gtk_scale_set_draw_value(GTK_SCALE(monitorOnOffControl), false);
+	g_signal_connect(G_OBJECT(monitorOnOffControl), "value-changed", G_CALLBACK(value_changed_cb), this);
+	gtk_widget_set_size_request(monitorOnOffControl, 60,20);
+	b_widget_set_colors (monitorOnOffControl, &white, NULL, NULL, &fgColor2);
+	gtk_fixed_put (GTK_FIXED (mContainer), monitorOnOffControl, 680, 30);
+
+	onLabel = gtk_label_new(&on_text[0]);
+	gtk_widget_set_size_request(onLabel, 40,20);
+	b_widget_set_colors (onLabel, &white, NULL, NULL, NULL);
+	gtk_fixed_put (GTK_FIXED (mContainer), onLabel, 740, 30);
+
+	monitorLabel = gtk_label_new(&monitor_label[0]);
+	gtk_widget_set_size_request(monitorLabel, 60,20);
+	b_widget_set_colors (monitorLabel, &white, NULL, NULL, NULL);
+	gtk_fixed_put (GTK_FIXED (mContainer), monitorLabel, 680, 50);
+
+	// Scale control
+	scaleControl = gtk_vscale_new_with_range(SCALEMIN, SCALEMAX, 0.1);
+	gtk_range_set_inverted ((GtkRange*) scaleControl, TRUE);
+	gtk_range_set_value (GTK_RANGE(scaleControl), CO_DB (scale));
+	gtk_scale_set_draw_value(GTK_SCALE(scaleControl), false);
+	g_signal_connect(G_OBJECT(scaleControl), "value-changed", G_CALLBACK(value_changed_cb), this);
+	gtk_widget_set_size_request(scaleControl, 20, 230);
+	b_widget_set_colors (scaleControl, &white, NULL, NULL, &fgColor2);
+	gtk_fixed_put (GTK_FIXED (mContainer), scaleControl, 760, 80);
+
+	// Step shape monitor
+	stepshapeDisplayFrame = gtk_frame_new(&stepshape_label[0]);						// Frame
+	gtk_container_set_border_width (GTK_CONTAINER (stepshapeDisplayFrame), 2);
+	b_widget_set_colors (stepshapeDisplayFrame, NULL, &monitor_frame_color, NULL, NULL);
+	gtk_widget_set_size_request(stepshapeDisplayFrame, 180,140);
+	gtk_fixed_put (GTK_FIXED (mContainer), stepshapeDisplayFrame, 30, 320);
+	stepshapeDisplayBox = gtk_drawing_area_new();									// Box
+	gtk_widget_set_size_request(stepshapeDisplayBox, 180,120);
+	g_signal_connect (G_OBJECT (stepshapeDisplayBox), "expose-event", G_CALLBACK (stepshape_monitor_expose_event), this);
+	gtk_container_add (GTK_CONTAINER (stepshapeDisplayFrame), stepshapeDisplayBox);
+
+	// Attack
+	attackControl = gtk_hscale_new_with_range(0.0, 1.0, 0.01);
+	g_signal_connect(G_OBJECT(attackControl), "value-changed", G_CALLBACK(value_changed_cb), this);
+	gtk_widget_set_size_request(attackControl, 90,40);
+	b_widget_set_colors (attackControl, &white, NULL, NULL, &fgColor2);
+	gtk_fixed_put (GTK_FIXED (mContainer), attackControl, 20, 480);
+
+	// Attack label
+	attackLabel = gtk_label_new(&attackLabel_text[0]);
+	gtk_widget_set_size_request(attackLabel, 90,20);
+	b_widget_set_colors (attackLabel, &white, NULL, NULL, NULL);
+	gtk_fixed_put (GTK_FIXED (mContainer), attackLabel, 20, 520);
+
+	// Release
+	releaseControl = gtk_hscale_new_with_range(0.0, 1.0, 0.01);
+	g_signal_connect(G_OBJECT(releaseControl), "value-changed", G_CALLBACK(value_changed_cb), this);
+	gtk_widget_set_size_request(releaseControl, 90,40);
+	b_widget_set_colors (releaseControl, &white, NULL, NULL, &fgColor2);
+	gtk_fixed_put (GTK_FIXED (mContainer), releaseControl, 130, 480);
+
+	// Release label
+	releaseLabel = gtk_label_new(&releaseLabel_text[0]);
+	gtk_widget_set_size_request(releaseLabel, 90,20);
+	b_widget_set_colors (releaseLabel, &white, NULL, NULL, NULL);
+	gtk_fixed_put (GTK_FIXED (mContainer), releaseLabel, 130, 520);
+
+	// Monitor
+	monitorDisplayFrame = gtk_frame_new(&monitor_label[0]);						// Frame
+	gtk_container_set_border_width (GTK_CONTAINER (monitorDisplayFrame), 2);
+	b_widget_set_colors (monitorDisplayFrame, NULL, &monitor_frame_color, NULL, NULL);
+	gtk_widget_set_size_request(monitorDisplayFrame, 480,240);
+	gtk_fixed_put (GTK_FIXED (mContainer), monitorDisplayFrame, 260, 70);
+	monitorDisplayBox = gtk_drawing_area_new();									// Box
+	gtk_widget_set_size_request(monitorDisplayBox, 480,220);
+	g_signal_connect (G_OBJECT (monitorDisplayBox), "expose-event", G_CALLBACK (main_monitor_expose_event), this);
+	gtk_container_add (GTK_CONTAINER (monitorDisplayFrame), monitorDisplayBox);
+
+	// Steps
+	container5 = gtk_hbox_new(FALSE, 2);										// Container for step controllers
+	gtk_widget_set_size_request(container5, 480,130);
+	gtk_fixed_put (GTK_FIXED (mContainer), container5, 260, 330);
+	for (int i = 0; i < MAXSTEPS; i++)
 	{
-		stepControl[i] = BWidgets::VSliderWithValueDisplay ((i + 0.5) * 480 / MAXSTEPS - 10, 0, 20, 130, "slider", 1.0, 0.0, 1.0, 0.01, "%1.2f", BWidgets::ON_TOP);
-		stepControl[i].rename ("slider");
-		stepControl[i].setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlicer_GUI::valueChangedCallback);
-		stepControl[i].applyTheme (theme, "slider");
-		sContainer.add (stepControl[i]);
+		stepControl[i] = gtk_vscale_new_with_range(0.0, 1.0, 0.01);
+		g_signal_connect(G_OBJECT(stepControl[i]), "value-changed", G_CALLBACK(value_changed_cb), this);
+		gtk_range_set_inverted((GtkRange*)stepControl[i], TRUE);
+		style = gtk_widget_get_style(stepControl[i]);
+		pango_font_description_set_size(style->font_desc, FONTSIZE*0.75);
+	    gtk_widget_modify_font(stepControl[i], style->font_desc);
+	    b_widget_set_colors (stepControl[i], &white, NULL, NULL, &fgColor2);
+		gtk_widget_set_size_request(stepControl[i], 28,130);
+		gtk_box_pack_start (GTK_BOX(container5), stepControl[i], TRUE, FALSE, 0);
 	}
 
-	// Set callbacks
-	monitorOnOffControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlicer_GUI::valueChangedCallback);
-	scaleControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlicer_GUI::valueChangedCallback);
-	attackControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlicer_GUI::valueChangedCallback);
-	releaseControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlicer_GUI::valueChangedCallback);
-	stepsizeControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlicer_GUI::valueChangedCallback);
-	nrStepsControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlicer_GUI::valueChangedCallback);
+	// Step controller label
+	stepControlLabel = gtk_label_new(&stepControlLabel_text[0]);
+	gtk_label_set_angle (GTK_LABEL (stepControlLabel), 90);
+	gtk_widget_set_size_request(stepControlLabel, 20,130);
+	b_widget_set_colors (stepControlLabel, &white, NULL, NULL, NULL);
+	gtk_fixed_put (GTK_FIXED (mContainer), stepControlLabel, 760, 330);
 
-	// Configure widgets
-	widgetBg = BStyles::Fill (pluginPath + BG_FILE);
-	mContainer.applyTheme (theme);
-	offLabel.applyTheme (theme);
-	onLabel.applyTheme (theme);
-	monitorOnOffControl.applyTheme (theme);
-	monitorDisplay.applyTheme (theme);
-	monitorLabel.applyTheme (theme);
-	scaleControl.applyTheme (theme);
-	stepshapeDisplay.applyTheme (theme);
-	attackControl.applyTheme (theme);
-	attackLabel.applyTheme (theme);
-	releaseControl.applyTheme (theme);
-	releaseLabel.applyTheme (theme);
-	stepsizeControl.applyTheme (theme);
-	stepsizeLabel.applyTheme (theme);
-	nrStepsControl.applyTheme (theme);
-	nrStepsLabel.applyTheme (theme);
-	sContainer.applyTheme (theme);
-	applyTheme (theme);
+	// Step size
+	stepsizeControl = gtk_hscale_new_with_range(1, 8, 1);
+	gtk_range_set_inverted((GtkRange*)stepsizeControl, TRUE);
+	g_signal_connect(G_OBJECT(stepsizeControl), "value-changed", G_CALLBACK(value_changed_cb), this);
+	gtk_widget_set_size_request(stepsizeControl, 120,40);
+	b_widget_set_colors (stepsizeControl, &white, NULL, NULL, &fgColor2);
+	gtk_fixed_put (GTK_FIXED (mContainer), stepsizeControl, 260, 480);
 
-	// Pack widgets
-	mContainer.add (offLabel);
-	mContainer.add (onLabel);
-	mContainer.add (monitorOnOffControl);
-	mContainer.add (monitorDisplay);
-	mContainer.add (monitorLabel);
-	mContainer.add (scaleControl);
-	mContainer.add (stepshapeDisplay);
-	mContainer.add (attackControl);
-	mContainer.add (attackLabel);
-	mContainer.add (releaseControl);
-	mContainer.add (releaseLabel);
-	mContainer.add (stepsizeControl);
-	mContainer.add (stepsizeLabel);
-	mContainer.add (nrStepsControl);
-	mContainer.add (nrStepsLabel);
-	mContainer.add (sContainer);
-	add (mContainer);
+	// Step size label
+	stepsizeLabel = gtk_label_new(&stepsizeLabel_text[0]);
+	gtk_widget_set_size_request(stepsizeLabel, 120,20);
+	b_widget_set_colors (stepsizeLabel, &white, NULL, NULL, NULL);
+	gtk_fixed_put (GTK_FIXED (mContainer), stepsizeLabel, 260, 520);
+
+	// nrSteps
+	nrStepsControl = gtk_hscale_new_with_range(1, MAXSTEPS, 1);
+	g_signal_connect(G_OBJECT(nrStepsControl), "value-changed", G_CALLBACK(value_changed_cb), this);
+	gtk_widget_set_size_request(nrStepsControl, 380,40);
+	b_widget_set_colors (nrStepsControl, &white, NULL, NULL, &fgColor2);
+	gtk_fixed_put (GTK_FIXED (mContainer), nrStepsControl, 400, 480);
+
+	// Number of steps label
+	nrStepsLabel = gtk_label_new(&nrStepsLabel_text[0]);
+	gtk_widget_set_size_request(nrStepsLabel, 380,20);
+	b_widget_set_colors (nrStepsLabel, &white, NULL, NULL, NULL);
+	gtk_fixed_put (GTK_FIXED (mContainer), nrStepsLabel, 400, 520);
+
+	return mContainer;
+}
+
+BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *features) :
+	pluginPath (bundle_path ? std::string (bundle_path) : std::string ("")), controller (NULL), write_function (NULL),
+	onLabel (NULL), offLabel (NULL), monitorLabel (NULL),  attackLabel (NULL), releaseLabel (NULL), stepControlLabel (NULL),
+	stepsizeLabel (NULL), nrStepsLabel (NULL), stepshapeDisplayFrame (NULL), stepshapeDisplayBox (NULL), monitorDisplayFrame (NULL),
+	monitorDisplayBox (NULL), monitorOnOffControl (NULL), scaleControl (NULL), nrStepsControl (NULL), attackControl (NULL), releaseControl (NULL),
+	stepsizeControl (NULL),
+	scale (1.0f), attack (0.2f), release (0.2f), nrSteps (MAXSTEPS), stepsize (1),
+	map (NULL)
+
+{
+	//Initialialize stepControllers
+	for (int i = 0; i < MAXSTEPS; i++) stepControl[i] = NULL;
 
 	//Initialize mainMonitor
 	mainMonitor.record_on = true;
@@ -666,7 +732,7 @@ void BSlicer_GUI::portEvent(uint32_t port_index, uint32_t buffer_size, uint32_t 
 						if (notificationsCount > 0)
 						{
 							add_monitor_data (notifications, notificationsCount, &mainMonitor.horizonPos);
-							redrawMainMonitor ();
+							gtk_widget_queue_draw(monitorDisplayBox);
 						}
 					}
 				}
@@ -681,31 +747,29 @@ void BSlicer_GUI::portEvent(uint32_t port_index, uint32_t buffer_size, uint32_t 
 	float* pval = (float*) buffer;
 	switch (port_index) {
 		case Attack:
-			attack = *pval;
-			attackControl.setValue (*pval);
+			gtk_range_set_value((GtkRange*)attackControl, *pval);
+			gtk_widget_queue_draw(stepshapeDisplayBox);
 			break;
 		case Release:
-			release = *pval;
-			releaseControl.setValue (*pval);
+			gtk_range_set_value((GtkRange*)releaseControl, *pval);
+			gtk_widget_queue_draw(stepshapeDisplayBox);
 			break;
 		case Stepsize:
-			stepsize = *pval;
-			stepsizeControl.setValue (*pval);
-			break;
+			gtk_range_set_value((GtkRange*)stepsizeControl, *pval);
+		break;
 		case NrSteps:
 			if (nrSteps != *pval)
 			{
 				rearrange_step_controllers (*pval);
 				nrSteps = *pval;
 			}
-			redrawMainMonitor ();
-			nrStepsControl.setValue (*pval);
+			gtk_widget_queue_draw(monitorDisplayBox);
+			gtk_range_set_value((GtkRange*)nrStepsControl, *pval);
 			break;
 		default:
 			if ((port_index >= Step_) and (port_index < Step_ + MAXSTEPS))
 			{
-				step[port_index-Step_] = *pval;
-				stepControl[port_index-Step_].setValue (*pval);
+				gtk_range_set_value((GtkRange*)stepControl[port_index-Step_], *pval);
 			}
 		}
 	}
@@ -716,24 +780,14 @@ LV2UI_Handle instantiate (const LV2UI_Descriptor *descriptor, const char *plugin
 						  LV2UI_Write_Function write_function, LV2UI_Controller controller, LV2UI_Widget *widget,
 						  const LV2_Feature *const *features)
 {
-	PuglNativeWindow parentWindow = 0;
-	LV2UI_Resize* resize = NULL;
-
 	if (strcmp(plugin_uri, BSLICER_URI) != 0)
 	{
 		fprintf(stderr, "BSlicer.lv2#GUI: GUI does not support plugin with URI %s\n", plugin_uri);
 		return NULL;
 	}
 
-	for (int i = 0; features[i]; ++i)
-	{
-		if (!strcmp(features[i]->URI, LV2_UI__parent)) parentWindow = (PuglNativeWindow) features[i]->data;
-		else if (!strcmp(features[i]->URI, LV2_UI__resize)) resize = (LV2UI_Resize*)features[i]->data;
-	}
-	if (parentWindow == 0) std::cerr << "BSlicer.lv2#GUI: No parent window.\n";
-
 	// New instance
-	BSlicer_GUI* ui = new BSlicer_GUI (bundle_path, features, parentWindow);
+	BSlicer_GUI* ui = new BSlicer_GUI (bundle_path, features);
 
 	if (!ui)
 	{
@@ -743,9 +797,8 @@ LV2UI_Handle instantiate (const LV2UI_Descriptor *descriptor, const char *plugin
 
 	ui->controller = controller;
 	ui->write_function = write_function;
-	if (resize) resize->ui_resize(resize->handle, 800, 560 );
 
-	*widget = (LV2UI_Widget) puglGetNativeWindow (ui->getPuglView ());
+	*widget = (LV2UI_Widget) ui->make_gui();
 	ui->send_record_on();
 	return (LV2UI_Handle) ui;
 }
@@ -763,27 +816,13 @@ void portEvent(LV2UI_Handle ui, uint32_t port_index, uint32_t buffer_size,
 	pluginGui->portEvent(port_index, buffer_size, format, buffer);
 }
 
-static int callIdle (LV2UI_Handle ui)
-{
-	BSlicer_GUI* pluginGui = (BSlicer_GUI*) ui;
-	pluginGui->handleEvents ();
-	return 0;
-}
-
-static const LV2UI_Idle_Interface idle = { callIdle };
-
-static const void* extensionData(const char* uri)
-{
-	if (!strcmp(uri, LV2_UI__idleInterface)) return &idle;
-	else return NULL;
-}
 
 const LV2UI_Descriptor guiDescriptor = {
 		BSLICER_GUI_URI,
 		instantiate,
 		cleanup,
 		portEvent,
-		extensionData
+		NULL	// Extension data
 };
 
 // LV2 Symbol Export
