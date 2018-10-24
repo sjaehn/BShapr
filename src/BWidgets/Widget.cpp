@@ -381,11 +381,11 @@ void Widget::applyTheme (BStyles::Theme& theme, const std::string& name)
 {
 	// Border
 	void* borderPtr = theme.getStyle(name, "border");
-	if (borderPtr) border_ = *((BStyles::Border*) borderPtr);
+	if (borderPtr) setBorder (*((BStyles::Border*) borderPtr));
 
 	// Background
 	void* backgroundPtr = theme.getStyle(name, "background");
-	if (backgroundPtr) background_ = *((BStyles::Fill*) backgroundPtr);
+	if (backgroundPtr) setBackground (*((BStyles::Fill*) backgroundPtr));
 
 	if (borderPtr || backgroundPtr)
 	{
@@ -409,6 +409,22 @@ void Widget::onPointerMotionWhileButtonPressed (BEvents::PointerEvent* event)
 void Widget::onValueChanged (BEvents::ValueChangedEvent* event) {cbfunction[BEvents::EventType::VALUE_CHANGED_EVENT] (event);}
 
 void Widget::defaultCallback (BEvents::Event* event) {}
+
+double Widget::getXOffset () {return border_.getMargin () + border_.getLine()->getWidth() + border_.getPadding ();}
+
+double Widget::getYOffset () {return border_.getMargin () + border_.getLine()->getWidth() + border_.getPadding ();}
+
+double Widget::getEffectiveWidth ()
+{
+	double totalBorderWidth = getXOffset ();
+	return (width_ > 2 * totalBorderWidth ? width_ - 2 * totalBorderWidth : 0);
+}
+
+double Widget::getEffectiveHeight ()
+{
+	double totalBorderHeight = getYOffset ();
+	return (height_ > 2 * totalBorderHeight ? height_ - 2 * totalBorderHeight : 0);
+}
 
 std::vector <Widget*> Widget::getChildrenAsQueue (std::vector <Widget*> queue) const
 {
@@ -468,47 +484,30 @@ void Widget::draw (const double x, const double y, const double width, const dou
 		double radius = border_.getRadius ();
 
 		// Draw background
-		double innerBorders = border_.getMargin () + border_.getLine()->getWidth() + border_.getPadding ();
+		double innerBorders = getXOffset ();
 		double innerRadius = (radius > border_.getPadding () ? radius - border_.getPadding () : 0);
 		cairo_surface_t* fillSurface = background_.getCairoSurface ();
 		BColors::Color bc = *background_.getColor();
 
-		if ((width_ >= 2 * innerBorders) && (height_ >= 2 * innerBorders))
+		if ((getEffectiveWidth () > 0) && (getEffectiveHeight () > 0))
 		{
-			// Background_image ?
-			if (fillSurface && cairo_surface_status (fillSurface) == CAIRO_STATUS_SUCCESS)
+			if ((fillSurface && cairo_surface_status (fillSurface) == CAIRO_STATUS_SUCCESS) || (bc.getAlpha() != 0.0))
 			{
-				cairo_set_source_surface (cr, fillSurface, 0, 0);
+				// Background_image ?
+				if (fillSurface && cairo_surface_status (fillSurface) == CAIRO_STATUS_SUCCESS) cairo_set_source_surface (cr, fillSurface, 0, 0);
+
+				// Plain Background color ?
+				else cairo_set_source_rgba (cr, bc.getRed(), bc.getGreen(), bc.getBlue(), bc.getAlpha());
 
 				// If drawing area < background are, draw only a rectangle for the drawing area (faster)
-				if ((x >= innerBorders) && (x + width <= width_ - 2 * innerBorders) &&
-					(y >= innerBorders) && (y + height <= height_ - 2 * innerBorders))
+				if ((x >= innerBorders) && (x + width <= width_ - innerBorders) &&
+					(y >= innerBorders) && (y + height <= height_ - innerBorders))
 				{
 					cairo_rectangle (cr, x, y, width, height);
 				}
 				else
 				{
-					cairo_rectangle_rounded (cr, innerBorders, innerBorders,
-											 width_ - 2 * innerBorders, height_ - 2 * innerBorders, innerRadius);
-				}
-				cairo_fill (cr);
-			}
-
-			// Plain Background color ?
-			else if (bc.getAlpha() != 0.0)
-			{
-				cairo_set_source_rgba (cr, bc.getRed(), bc.getGreen(), bc.getBlue(), bc.getAlpha());
-
-				// If drawing area < background are, draw only a rectangle for the drawing area (faster)
-				if ((x >= innerBorders) && (x + width <= width_ - 2 * innerBorders) &&
-					(y >= innerBorders) && (y + height <= height_ - 2 * innerBorders))
-				{
-					cairo_rectangle (cr, x, y, width, height);
-				}
-				else
-				{
-					cairo_rectangle_rounded (cr, innerBorders, innerBorders,
-											 width_ - 2 * innerBorders, height_ - 2 * innerBorders, innerRadius);
+					cairo_rectangle_rounded (cr, innerBorders, innerBorders, getEffectiveWidth (), getEffectiveHeight (), innerRadius);
 				}
 				cairo_fill (cr);
 			}

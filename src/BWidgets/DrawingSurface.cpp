@@ -7,14 +7,15 @@ DrawingSurface::DrawingSurface () : DrawingSurface (0.0, 0.0, 50.0, 50.0, "dial"
 DrawingSurface::DrawingSurface (const double x, const double y, const double width, const double height, const std::string& name) :
 		Widget (x, y, width, height, name)
 {
-	drawingSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width, height);
+	drawingSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, getEffectiveWidth (), getEffectiveHeight ());
 	draw (0, 0, width_, height_);
 }
 
 DrawingSurface::DrawingSurface (const DrawingSurface& that) :
 		Widget (that)
 {
-	drawingSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width_, height_);
+	drawingSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, getEffectiveWidth (), getEffectiveHeight ());
+	//TODO copy surface data
 	draw (0, 0, width_, height_);
 }
 
@@ -25,14 +26,60 @@ DrawingSurface::~DrawingSurface ()
 
 DrawingSurface& DrawingSurface::operator= (const DrawingSurface& that)
 {
-	if (drawingSurface) cairo_surface_destroy (drawingSurface);
-	drawingSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, that.width_, that.height_);
 	Widget::operator= (that);
+	if (drawingSurface) cairo_surface_destroy (drawingSurface);
+	drawingSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, getEffectiveWidth (), getEffectiveHeight ());
+	//TODO copy surface data
 
 	return *this;
 }
 
 cairo_surface_t* DrawingSurface::getDrawingSurface () {return drawingSurface;}
+
+void DrawingSurface::setWidth (const double width)
+{
+	double oldEffectiveWidth = getEffectiveWidth ();
+	Widget::setWidth (width);
+
+	if (oldEffectiveWidth != getEffectiveWidth ())
+	{
+		if (drawingSurface) cairo_surface_destroy (drawingSurface);
+		drawingSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, getEffectiveWidth (), getEffectiveHeight ());
+		//TODO copy surface data
+	}
+
+	update ();
+}
+
+void DrawingSurface::setHeight (const double height)
+{
+	double oldEffectiveHeight = getEffectiveHeight ();
+	Widget::setHeight (height);
+
+	if (oldEffectiveHeight != getEffectiveHeight ())
+	{
+		if (drawingSurface) cairo_surface_destroy (drawingSurface);
+		drawingSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, getEffectiveWidth (), getEffectiveHeight ());
+		//TODO copy surface data
+	}
+
+	update ();
+}
+
+void DrawingSurface::setBorder (const BStyles::Border& border)
+{
+	double oldTotalBorderWidth = getXOffset ();
+	border_ = border;
+
+	if (oldTotalBorderWidth != getXOffset ())
+	{
+		if (drawingSurface) cairo_surface_destroy (drawingSurface);
+		drawingSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, getEffectiveWidth (), getEffectiveHeight ());
+		//TODO copy surface data
+	}
+
+	update ();
+}
 
 void DrawingSurface::update ()
 {
@@ -53,8 +100,9 @@ void DrawingSurface::draw (const double x, const double y, const double width, c
 			// Limit cairo-drawing area
 			cairo_rectangle (cr, x, y, width, height);
 			cairo_clip (cr);
+			//TODO also clip to inner borders
 
-			cairo_set_source_surface (cr, drawingSurface, 0, 0);
+			cairo_set_source_surface (cr, drawingSurface, getXOffset (), getYOffset ());
 			cairo_paint (cr);
 		}
 		cairo_destroy (cr);

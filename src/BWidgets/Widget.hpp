@@ -146,7 +146,7 @@ public:
 	 * widget is visible.
 	 * @param width New widgets width
 	 */
-	void setWidth (const double width);
+	virtual void setWidth (const double width);
 
 	/**
 	 * Gets the width of the widget
@@ -159,7 +159,7 @@ public:
 	 * widget is visible.
 	 * @param height New widgets height
 	 */
-	void setHeight (const double height);
+	virtual void setHeight (const double height);
 
 	/**
 	 * Gets the height of the widget
@@ -172,7 +172,7 @@ public:
 	 * BEvents::ExposeEvent if the widget is visible.
 	 * @param border New widgets border
 	 */
-	void setBorder (const BStyles::Border& border);
+	virtual void setBorder (const BStyles::Border& border);
 
 	/**
 	 * Gets (a pointer to) the border of the widget.
@@ -372,6 +372,34 @@ public:
 
 
 protected:
+
+	/**
+	 * Gets the x offset of the widget content. This is distance between the
+	 * outer border and the widget content. It is also the sum of margin,
+	 * border, and padding.
+	 * @return X offset of the widget
+	 */
+	double getXOffset ();
+
+	/**
+	 * Gets the y offset of the widget content. This is distance between the
+	 * outer border and the widget content. It is also the sum of margin,
+	 * border, and padding.
+	 * @return Y offset of the widget
+	 */
+	double getYOffset ();
+
+	/**
+	 * Gets the effective width of the widget content without its borders.
+	 * @return Effective width of the widget
+	 */
+	double getEffectiveWidth ();
+
+	/**
+	 * Gets the effective height of the widget content without its borders.
+	 * @return Effective height of the widget
+	 */
+	double getEffectiveHeight ();
 
 	/**
 	 * Linearizes the whole children tree.
