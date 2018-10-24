@@ -121,9 +121,9 @@ private:
 	// Definition of styles
 	BColors::ColorSet fgColors = {{{0.0, 0.75, 0.2, 1.0}, {0.0, 1.0, 0.4, 1.0}, {0.0, 0.2, 0.0, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
 	BColors::ColorSet txColors = {{{0.0, 1.0, 0.4, 1.0}, {1.0, 1.0, 1.0, 1.0}, {0.0, 0.5, 0.0, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
-	BColors::ColorSet bgColors = {{{0.25, 0.25, 0.25, 1.0}, {0.5, 0.5, 0.5, 1.0}, {0.1, 0.1, 0.1, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
+	BColors::ColorSet bgColors = {{{0.15, 0.15, 0.15, 1.0}, {0.3, 0.3, 0.3, 1.0}, {0.05, 0.05, 0.05, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
 	BColors::Color ink = {0.0, 0.75, 0.2, 1.0};
-	BStyles::Border border = {{ink, 1.0}, 0.0, 0.0, 0.0};
+	BStyles::Border border = {{ink, 1.0}, 0.0, 2.0, 0.0};
 	BStyles::Fill widgetBg = BStyles::noFill;
 	BStyles::Font defaultFont = BStyles::Font ("Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL, 12.0);
 	BStyles::StyleSet defaultStyles = {"default", {{"background", STYLEPTR (&BStyles::noFill)},
@@ -297,8 +297,8 @@ void BSlicer_GUI::redrawStepshape ()
 	cairo_t* cr;
 	cairo_pattern_t* pat;
 	cr = cairo_create (stepshapeDisplay.getDrawingSurface ());
-	double width = stepshapeDisplay.getWidth ();
-	double height = stepshapeDisplay.getHeight ();
+	double width = stepshapeDisplay.getWidth () - 6.0;
+	double height = stepshapeDisplay.getHeight () - 6.0;
 
 	// Draw background
 	cairo_set_source_rgba (cr, CAIRO_BG_COLOR);
@@ -379,8 +379,8 @@ void BSlicer_GUI::redrawMainMonitor ()
 	uint32_t i;
 	bool lineBreak;
 	double pos, nextpos, linebreakpos;
-	double width = monitorDisplay.getWidth ();
-	double height = monitorDisplay.getHeight ();
+	double width = monitorDisplay.getWidth () - 6.0;
+	double height = monitorDisplay.getHeight () - 6.0;
 
 	cairo_t* cr;
 	cairo_t* cr2;
