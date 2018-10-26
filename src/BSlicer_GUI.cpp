@@ -528,20 +528,20 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 	pluginPath (bundle_path ? std::string (bundle_path) : std::string ("")), controller (NULL), write_function (NULL), map (NULL),
 
 	mContainer (0, 0, 800, 560, "main"),
-	offLabel (640, 30, 40, 20, "Off"),
-	onLabel (740, 30, 40, 20, "On"),
-	monitorOnOffControl (680, 30, 60, 20, "slider", 0.0, 0.0, 1.0, 1.0),
+	offLabel (660, 25, 40, 20, "Off"),
+	onLabel (730, 25, 40, 20, "On"),
+	monitorOnOffControl (690, 30, 40, 14, "slider", 0.0, 0.0, 1.0, 1.0),
 	monitorDisplay (260, 70, 480, 240, "monitor"),
-	monitorLabel (680, 50, 60, 20, "Monitor"),
-	scaleControl (760, 80, 20, 230, "slider", 0.0, SCALEMIN, SCALEMAX, 0.1),
+	monitorLabel (680, 45, 60, 20, "Monitor"),
+	scaleControl (760, 80, 14, 230, "slider", 0.0, SCALEMIN, SCALEMAX, 0.1),
 	stepshapeDisplay (30, 320, 180, 140, "monitor"),
 	attackControl (45, 480, 40, 40, "dial", 0.2, 0.0, 1.0, 0.01, "%1.2f"),
 	attackLabel (20, 520, 90, 20, "Attack"),
 	releaseControl (155, 480, 40, 40, "dial", 0.2, 0.0, 1.0, -0.01, "%1.2f"),
 	releaseLabel (130, 520, 90, 20, "Release"),
-	stepsizeControl (260, 492, 120, 28, "slider", 1.0, 1.0, 8.0, 1.0, "%1.0f", BWidgets::ON_TOP),
+	stepsizeControl (260, 492, 120, 28, "slider", 1.0, 1.0, 8.0, 1.0, "%1.0f"),
 	stepsizeLabel (260, 520, 120, 20, "Step size"),
-	nrStepsControl (400, 492, 380, 28, "slider", 1.0, 1.0, MAXSTEPS, 1.0, "%2.0f", BWidgets::ON_TOP),
+	nrStepsControl (400, 492, 380, 28, "slider", 1.0, 1.0, MAXSTEPS, 1.0, "%2.0f"),
 	nrStepsLabel (400, 520, 380, 20, "Number of steps"),
 	sContainer (260, 330, 480, 130, "widget")
 
@@ -549,7 +549,7 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 	//Initialialize and configure stepControllers
 	for (int i = 0; i < MAXSTEPS; ++i)
 	{
-		stepControl[i] = BWidgets::VSliderWithValueDisplay ((i + 0.5) * 480 / MAXSTEPS - 10, 0, 20, 130, "slider", 1.0, 0.0, 1.0, 0.01, "%1.2f", BWidgets::ON_TOP);
+		stepControl[i] = BWidgets::VSliderWithValueDisplay ((i + 0.5) * 480 / MAXSTEPS - 10, 0, 28, 130, "slider", 1.0, 0.0, 1.0, 0.01, "%1.2f");
 		stepControl[i].rename ("slider");
 		stepControl[i].setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlicer_GUI::valueChangedCallback);
 		stepControl[i].applyTheme (theme, "slider");
