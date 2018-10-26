@@ -3,15 +3,15 @@
 namespace BWidgets
 {
 HSliderWithValueDisplay::HSliderWithValueDisplay () :
-		HSliderWithValueDisplay (0.0, 0.0, 50.0, 60.0, "valueslider", 0.0, 0.0, 100.0, 1.0, "%3d", ON_TOP) {}
+		HSliderWithValueDisplay (0.0, 0.0, 50.0, 60.0, "valueslider", 0.0, 0.0, 100.0, 1.0, "%3d") {}
 
 HSliderWithValueDisplay::HSliderWithValueDisplay (const double x, const double y, const double width, const double height, const std::string& name,
 												  const double value, const double min, const double max, const double step,
-												  const std::string& valueFormat, const ValueDisplayPosition position) :
+												  const std::string& valueFormat) :
 	RangeWidget (x, y, width, height, name, value, min, max, step),
 	slider (0, 0, width, width, name, value, min, max, step),
 	valueDisplay(0, 0.75 * height, width, 0.25 * height, name),
-	valFormat (valueFormat), valPosition (position)
+	valFormat (valueFormat)
 {
 	slider.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, HSliderWithValueDisplay::redirectPostValueChanged);
 	valueDisplay.setText (BValues::toBString (valueFormat, value));
@@ -22,7 +22,7 @@ HSliderWithValueDisplay::HSliderWithValueDisplay (const double x, const double y
 
 HSliderWithValueDisplay::HSliderWithValueDisplay (const HSliderWithValueDisplay& that) :
 		RangeWidget (that),
-		slider (that.slider), valueDisplay (that.valueDisplay), valFormat (that.valFormat), valPosition (that.valPosition)
+		slider (that.slider), valueDisplay (that.valueDisplay), valFormat (that.valFormat)
 {
 	add (slider);
 	add (valueDisplay);
@@ -31,7 +31,6 @@ HSliderWithValueDisplay::HSliderWithValueDisplay (const HSliderWithValueDisplay&
 HSliderWithValueDisplay& HSliderWithValueDisplay::operator= (const HSliderWithValueDisplay& that)
 {
 	valFormat = that.valFormat;
-	valPosition = that.valPosition;
 	RangeWidget::operator= (that);
 	slider = that.slider;
 	valueDisplay = that.valueDisplay;
@@ -73,8 +72,6 @@ HSliderWithValueDisplay::~HSliderWithValueDisplay () {}
 
 void HSliderWithValueDisplay::setValueFormat (const std::string& valueFormat) {valFormat = valueFormat;}
 std::string HSliderWithValueDisplay::getValueFormat () const {return valFormat;}
-void HSliderWithValueDisplay::setValuePosition (const ValueDisplayPosition position) {valPosition = position;}
-ValueDisplayPosition HSliderWithValueDisplay::getValuePosition () const {return valPosition;}
 HSlider* HSliderWithValueDisplay::getSlider () {return &slider;}
 Label* HSliderWithValueDisplay::getValueDisplay () {return &valueDisplay;}
 
@@ -118,39 +115,26 @@ void HSliderWithValueDisplay::redirectPostValueChanged (BEvents::Event* event)
 
 void HSliderWithValueDisplay::updateChildCoords ()
 {
-	double th = 0;
-	double tw = 0;
+	double th = getHeight () / 2;
+	double tw = th * 2.2;
 	double ty = 0;
-	double tx = 0;
+	//double tx = getWidth () / 2 - tw / 2;
 
-	double sh = height_;
-	double sw = width_;
+	double sh = th;
+	double sw = getWidth ();
 	double sx = 0;
-	double sy = 0;
+	double sy = th;
 
-	if ((valPosition == ON_TOP) || (valPosition == ON_BOTTOM))
-	{
-		if (height_ <= 8) height_ = 8;							// Force minimum height
-
-		th = (height_ <= 32 ? height_ / 2 : 16);				// Value display half height, but max. 16 px
-		tw = th * 2.2;
-		ty = (valPosition == ON_TOP ? 0 : height_ - th);
-		tx = width_ / 2 - tw / 2;
-		sh = height_ - th;
-		sy = (valPosition == ON_TOP ? th : 0);
-	}
-
-	if ((valPosition == ON_LEFT) || (valPosition == ON_RIGHT))
-	{
-		if (width_ <= 16) width_ = 16;							// Force minimum width
-
-		th = (height_ <= 16 ? height_ : 16);					// Value display max. 16 px
-		tw = th * 2.2;
-		ty = height_ / 2 - th / 2;
-		tx = (valPosition == ON_LEFT ? 0: width_ - tw);
-		sw = width_ - tw;
-		sx = (valPosition == ON_LEFT ? tw: 0);
-	}
+	// Calculate horizontal value display position
+	double h = (sh > 24.0 ? 12.0 : 0.5 * sh);							// Slider height ( = 0.5 * knob height)
+	double w = (sw / sh >= 2 ? sw - 2 * h : sw - (sw / sh) * h);		// Effective width of the slider
+	double relVal;
+	if (getMax () != getMin ()) relVal = (getValue () - getMin ()) / (getMax () - getMin ());
+	else relVal = 0.5;													// min == max doesn't make any sense, but need to be handled
+	if (getStep() < 0) relVal = 1 - relVal;								// Swap if reverse orientation
+	double tx = sw / 2 - w / 2 + relVal * (w - 2) - tw / 2 + 1;
+	if (tx > getWidth () - tw) tx = getWidth () - tw;
+	if (tx < 0) tx = 0;
 
 	slider.moveTo (sx, sy);
 	slider.setWidth (sw);
@@ -159,8 +143,7 @@ void HSliderWithValueDisplay::updateChildCoords ()
 	valueDisplay.moveTo (tx, ty);
 	valueDisplay.setWidth (tw);
 	valueDisplay.setHeight (th);
-	BStyles::Font* font = valueDisplay.getFont ();
-	font->setFontSize (th);
+	valueDisplay.getFont ()->setFontSize (th * 0.8);
 	valueDisplay.update ();
 }
 

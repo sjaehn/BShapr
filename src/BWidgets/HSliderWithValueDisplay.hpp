@@ -8,19 +8,6 @@
 namespace BWidgets
 {
 
-#ifndef BWIDGETS_VALUEDISPLAYPOSITION
-#define BWIDGETS_VALUEDISPLAYPOSITION
-/**
- * Enumeration of positions where the value should appear
- */
-typedef enum {
-	ON_TOP,
-	ON_BOTTOM,
-	ON_LEFT,
-	ON_RIGHT
-} ValueDisplayPosition;
-#endif
-
 /**
  * Class BWidgets::HSliderWithValueDisplay
  *
@@ -32,7 +19,7 @@ public:
 	HSliderWithValueDisplay ();
 	HSliderWithValueDisplay (const double x, const double y, const double width, const double height, const std::string& name,
 			  	  	  	  	 const double value, const double min, const double max, const double step,
-							 const std::string& valueFormat, const ValueDisplayPosition position);
+							 const std::string& valueFormat);
 
 	/**
 	 * Creates a new (orphan) slider and copies the slider properties from a
@@ -95,18 +82,6 @@ public:
 	std::string getValueFormat () const;
 
 	/**
-	 * Sets the position where the value should appear
-	 * @param position Enumeration of position
-	 */
-	void setValuePosition (const ValueDisplayPosition position);
-
-	/**
-	 * Gets the position where the value should appear
-	 * @return Enumeration of position
-	 */
-	ValueDisplayPosition getValuePosition () const;
-
-	/**
 	 * Gets (a pointer to) the slider widget for direct access
 	 * @return Pointer to BWidgets::HSlider
 	 */
@@ -146,7 +121,6 @@ protected:
 	Label valueDisplay;
 
 	std::string valFormat;
-	ValueDisplayPosition valPosition;
 };
 
 }
