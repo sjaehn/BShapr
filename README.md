@@ -13,11 +13,11 @@ Dependencies
 ------------
 The development packages of
 ```
-gtk+-2.0
+x11
 cairo
 lv2
 ```
-are required for building BSlicer.
+are required for building BSlicer. For Mac or Windows versions, the makefile needs to be adapted (not tested).
 
 Installation
 ------------
@@ -39,10 +39,9 @@ jalv.gtk https://www.jahnichen.de/plugins/lv2/BSlicer
 ```
 to run it stand-alone and connect it to the JACK system.
 
-Limitations
+What's new
 -----------
-As this version of B.Slicer is based on GTK2, it will NOT run (directly) in applications that use other versions of GTK.
-If you use such an application, load Carla-Patchbay instead. Load and connect B.Slicer in Carla-Patchbay.
+B.Slicer is now directly build on pugl and thus X11 (in case of Linux). Thus, it will now also works with GTK3-based hosts.
 
 Usage
 -----
@@ -51,7 +50,7 @@ The plugin slices a stereo input, amplifies or silences the individual slices an
 The interface is devided in three parts: step controls, monitor and step shape.
 
 Step controls
-* Note = 1/x : Seqence size in 1/x bars (1..8)
+* Step size : Seqence size in 1/x bars (1..8)
 * Number of steps : Number of steps in a sequence (1..16)
 * Step control : Sets gain for each individual step
 

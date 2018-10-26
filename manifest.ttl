@@ -8,6 +8,6 @@
         rdfs:seeAlso <BSlicer.ttl> .
 
 <https://www.jahnichen.de/plugins/lv2/BSlicer#gui>   
-        a ui:GtkUI;
+        a ui:X11UI;
 		ui:binary <BSlicer_GUI.so>;
 		rdfs:seeAlso <BSlicer.ttl>.
