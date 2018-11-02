@@ -37,6 +37,20 @@ public:
 	TextButton& operator= (const TextButton& that);
 
 	/**
+	 * Resizes the widget and its predefined child, redraw and emits a
+	 * BEvents::ExposeEvent if the widget is visible.
+	 * @param width New widgets width
+	 */
+	virtual void setWidth (const double width) override;
+
+	/**
+	 * Resizes the widget and its predefined child, redraw and emits a
+	 * BEvents::ExposeEvent if the widget is visible.
+	 * @param height New widgets height
+	 */
+	virtual void setHeight (const double height) override;
+
+	/**
 	 * Changes the value of the widget (0.0 == off,  0.0 != off) and relocates
 	 * the embedded label widget..
 	 * Emits a value changed event and (if visible) an expose event.

@@ -124,6 +124,8 @@ void Widget::release (Widget* child)
 {
 	if (child)
 	{
+		bool wasVisible = child->isVisible ();
+
 		// Delete child's connection to this widget
 		child->parent_ = nullptr;
 
@@ -144,12 +146,8 @@ void Widget::release (Widget* child)
 		{
 			if ((Widget*) *it == child)
 			{
-				if (((Widget*) *it)->isVisible ())
-				{
-					children_.erase (it);
-					postRedisplay ();
-				}
-				else children_.erase (it);
+				children_.erase (it);
+				if (wasVisible) postRedisplay ();
 				return;
 			}
 		}
@@ -331,11 +329,13 @@ void Widget::setCallbackFunction (const BEvents::EventType eventType, const std:
 
 bool Widget::isVisible()
 {
-	for (Widget* w = this; w; w = w->parent_)
+	Widget* w;
+	for (w = this; w; w = w->parent_)		// Go backwards in widget tree until nullptr
 	{
-		if (!w->visible) return false;
+		if (!w->visible) return false;		// widget invisible? -> break as invisible
+		if (w == main_) return true;		// main reached ? -> visible
 	}
-	return true;
+	return false;							// nullptr reached ? -> not connected to main -> invisible
 }
 
 void Widget::setClickable (const bool status) {clickable = status;}

@@ -17,6 +17,7 @@ public:
 	Label ();
 	Label (const std::string& text);
 	Label (const double x, const double y, const double width, const double height, const std::string& text);
+	Label (const double x, const double y, const double width, const double height, const std::string& name, const std::string& text);
 
 	/**
 	 * Creates a new (orphan) label and copies the label properties from a

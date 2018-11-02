@@ -26,6 +26,18 @@ TextToggleButton& TextToggleButton::operator= (const TextToggleButton& that)
 	return *this;
 }
 
+void TextToggleButton::setWidth (const double width)
+{
+	Button::setWidth (width);
+	buttonLabel.setWidth (width);
+}
+
+void TextToggleButton::setHeight (const double height)
+{
+	Button::setHeight (height);
+	buttonLabel.setHeight (height);
+}
+
 void TextToggleButton::setValue (const double val)
 {
 	if (val) buttonLabel.moveTo (2, 2);

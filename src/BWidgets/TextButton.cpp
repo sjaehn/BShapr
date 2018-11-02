@@ -26,6 +26,18 @@ TextButton& TextButton::operator= (const TextButton& that)
 	return *this;
 }
 
+void TextButton::setWidth (const double width)
+{
+	Button::setWidth (width);
+	buttonLabel.setWidth (width);
+}
+
+void TextButton::setHeight (const double height)
+{
+	Button::setHeight (height);
+	buttonLabel.setHeight (height);
+}
+
 void TextButton::setValue (const double val)
 {
 	if (val) buttonLabel.moveTo (2, 2);

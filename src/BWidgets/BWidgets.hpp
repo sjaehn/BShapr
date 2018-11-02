@@ -16,6 +16,9 @@
 #include "VSliderWithValueDisplay.hpp"
 #include "DialWithValueDisplay.hpp"
 #include "DrawingSurface.hpp"
+#include "Button.hpp"
+#include "ToggleButton.hpp"
+#include "HSwitch.hpp"
 
 #endif /*BWIDGETS_HPP_*/
 

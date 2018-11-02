@@ -123,8 +123,10 @@ cairo_surface_t* Fill::getCairoSurface () {return fillSurface;}
  *****************************************************************************/
 
 Font::Font () : Font ("Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL, 12.0) {}
-Font::Font (const std::string& family, const cairo_font_slant_t slant, const cairo_font_weight_t weight, const double size) :
-		fontFamily (family), fontSlant (slant), fontWeight (weight), fontSize (size) {}
+Font::Font (const std::string& family, const cairo_font_slant_t slant, const cairo_font_weight_t weight, const double size,
+			TextAlign align, TextVAlign valign, double lineSpacing)
+	: fontFamily (family), fontSlant (slant), fontWeight (weight), fontSize (size),
+	  textAlign (align), textVAlign (valign), textLineSpacing (lineSpacing) {}
 
 void Font::setFontFamily (const std::string& family) {fontFamily = family;}
 std::string Font::getFontFamily () const {return fontFamily;}
@@ -132,24 +134,33 @@ void Font::setFontSlant (const cairo_font_slant_t slant) {fontSlant = slant;}
 cairo_font_slant_t Font::getFontSlant () const {return fontSlant;}
 void Font::setFontWeight (const cairo_font_weight_t weight) {fontWeight = weight;}
 cairo_font_weight_t Font::getFontWeight () const {return fontWeight;}
+void Font::setTextAlign (const TextAlign align) {textAlign = align;}
+TextAlign Font::getTextAlign () const {return textAlign;}
+void Font::setTextVAlign (const TextVAlign valign) {textVAlign = valign;}
+TextVAlign Font::getTextVAlign () const {return textVAlign;}
+void Font::setLineSpacing (const double lineSpacing) {textLineSpacing = lineSpacing;}
+double Font::getLineSpacing () const {return textLineSpacing;}
 void Font::setFontSize (const double size) {fontSize = size;}
 double Font::getFontSize () const {return fontSize;}
 
 cairo_text_extents_t Font::getTextExtents (cairo_t* cr, const std::string& text) const
 {
-	if (cr)
+	if (cr && (! cairo_status (cr)))
 	{
 		cairo_save (cr);
 
 		cairo_text_extents_t ext;
-		cairo_select_font_face (cr, fontFamily.c_str(), fontSlant, fontWeight);
+		cairo_select_font_face (cr, fontFamily.c_str (), fontSlant, fontWeight);
 		cairo_set_font_size (cr, fontSize);
 		cairo_text_extents (cr, text.c_str(), &ext);
 
 		cairo_restore (cr);
 		return ext;
 	}
-	else return {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+	else
+	{
+		return {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+	}
 }
 
 /*

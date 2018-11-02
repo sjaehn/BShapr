@@ -229,6 +229,17 @@ const Fill blueFill = Fill (BColors::blue);
 const Fill greyFill = Fill (BColors::grey);
 const Fill noFill = Fill (BColors::invisible);
 
+typedef enum {
+	TEXT_ALIGN_LEFT,
+	TEXT_ALIGN_CENTER,
+	TEXT_ALIGN_RIGHT,
+} TextAlign;
+
+typedef enum {
+	TEXT_VALIGN_TOP,
+	TEXT_VALIGN_MIDDLE,
+	TEXT_VALIGN_BOTTOM
+} TextVAlign;
 
 /**
  * Class BStyles::Font
@@ -240,7 +251,8 @@ class Font
 {
 public:
 	Font ();
-	Font (const std::string& family, const cairo_font_slant_t slant, const cairo_font_weight_t weight, const double size);
+	Font (const std::string& family, const cairo_font_slant_t slant, const cairo_font_weight_t weight, const double size,
+		  TextAlign align = TEXT_ALIGN_LEFT, TextVAlign valign = TEXT_VALIGN_TOP, double lineSpacing = 1.25);
 
 	/**
 	 * Sets font family of the font style
@@ -279,6 +291,42 @@ public:
 	cairo_font_weight_t getFontWeight () const;
 
 	/**
+	 * Sets the horizonal text alignment of the font style
+	 * @param align Enum of text alignment
+	 */
+	void setTextAlign (const TextAlign align);
+
+	/**
+	 * Gets the horizonal text alignment of the font style
+	 * @return Enum of text alignment
+	 */
+	TextAlign getTextAlign () const;
+
+	/**
+	 * Sets the vertical text alignment of the font style
+	 * @param align Enum of text alignment
+	 */
+	void setTextVAlign (const TextVAlign valign);
+
+	/**
+	 * Gets the vertical text alignment of the font style
+	 * @return Enum of text alignment
+	 */
+	TextVAlign getTextVAlign () const;
+
+	/**
+	 * Sets line spacing of the font style
+	 * @param lineSpacing Line spacing factor
+	 */
+	void setLineSpacing (const double lineSpacing);
+
+	/**
+	 * Gets line spacing of the font style
+	 * @return Line spacing factor
+	 */
+	double getLineSpacing () const;
+
+	/**
 	 * Sets font size of the font style
 	 * @param size Font size as used by Cairo
 	 */
@@ -304,14 +352,16 @@ private:
 	cairo_font_slant_t fontSlant;
 	cairo_font_weight_t fontWeight;
 	double fontSize;
-
+	TextAlign textAlign;
+	TextVAlign textVAlign;
+	double textLineSpacing;
 };
 
 /*
  * End of class BWidgets::Font
  *****************************************************************************/
 
-const Font sans12pt = Font ("Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL, 12.0);;
+const Font sans12pt = Font ("Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL, 12.0);
 
 
 /**

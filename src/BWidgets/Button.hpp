@@ -82,6 +82,7 @@ protected:
 	virtual void draw (const double x, const double y, const double width, const double height) override;
 
 	BColors::ColorSet buttonColors;
+	BColors::ColorSet bgColors;
 };
 
 }

@@ -47,3 +47,76 @@ void cairo_surface_clear (cairo_surface_t* surface)
 	cairo_paint (cr);
 	cairo_destroy (cr);
 }
+
+char cairo_nil_text[1] = "";
+
+char* cairo_create_text_fitted (cairo_t* cr, double width, cairo_text_decorations decorations, char* text)
+{
+	size_t text_len = strlen (text);
+	if (text_len)
+	{
+		char* output = (char*) malloc (text_len + 1);
+		if (output)
+		{
+			if (cr && (! cairo_status (cr)))
+			{
+				cairo_save (cr);
+
+				cairo_text_extents_t ext;
+				cairo_select_font_face (cr, decorations.family, decorations.slant, decorations.weight);
+				cairo_set_font_size (cr, decorations.size);
+
+				// First look for \n (or end of string)
+				size_t pos = strcspn (text, "\n");
+
+				// Text stupidly starts with \n?
+				if (pos == 0) output[0] = '\0';
+
+				else
+				{
+					strncpy (output, text, pos);
+					output[pos] = '\0';
+					cairo_text_extents (cr, output, &ext);
+
+					// Text too long? Scan for spaces.
+					if (ext.width > width)
+					{
+						while ((ext.width > width) && strrchr(output, ' '))
+						{
+							pos = (size_t) (strrchr(output, ' ') - output);
+							output[pos] = '\0';
+							cairo_text_extents (cr, output, &ext);
+						}
+
+						// Still too long? Hard break within a word. At least one char.
+						if (ext.width > width)
+						{
+							while ((ext.width > width) && (strlen (output) > 1))
+							{
+								pos = strlen (output) - 1;
+								output[pos] = '\0';
+								cairo_text_extents (cr, output, &ext);
+							}
+
+							// Fix: Don't loose the first char after line break.
+							pos = pos - 1;
+						}
+					}
+				}
+
+				cairo_restore (cr);
+
+				if (pos < text_len) memmove (text, text + pos + 1, text_len - pos);
+				else text[0] = '\0';
+				return output;
+			}
+		}
+	}
+
+	return cairo_nil_text;
+}
+
+void cairo_text_destroy (char* text)
+{
+	if (text != cairo_nil_text) free (text);
+}

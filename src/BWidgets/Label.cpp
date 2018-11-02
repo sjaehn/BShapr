@@ -2,12 +2,20 @@
 
 namespace BWidgets
 {
-Label::Label () : Label (0.0, 0.0, 0.0, 0.0, "Label") {}
+Label::Label () : Label (0.0, 0.0, 0.0, 0.0, "Label", "Label") {}
 
-Label::Label (const std::string& text) : Label (0.0, 0.0, 200.0, 20.0, text) {}
+Label::Label (const std::string& text) : Label (0.0, 0.0, 200.0, 20.0, text, text) {}
 
 Label::Label (const double x, const double y, const double width, const double height, const std::string& text) :
-		Widget (x, y, width, height, text), labelColors (BColors::whites), labelFont (BStyles::sans12pt), labelText (text) {}
+		Label (x, y, width, height, text, text) {}
+
+Label::Label (const double x, const double y, const double width, const double height, const std::string& name, const std::string& text) :
+		Widget (x, y, width, height, name), labelColors (BColors::whites), labelFont (BStyles::sans12pt), labelText (text)
+{
+	labelFont.setTextAlign (BStyles::TEXT_ALIGN_CENTER);
+	labelFont.setTextVAlign(BStyles::TEXT_VALIGN_MIDDLE);
+	setBackground (BStyles::noFill);
+}
 
 Label::Label (const Label& that) : Widget (that)
 {
@@ -91,12 +99,42 @@ void Label::draw (const double x, const double y, const double width, const doub
 		cairo_rectangle (cr, x, y, width, height);
 		cairo_clip (cr);
 
+		double xoff = getXOffset ();
+		double yoff = getYOffset ();
+		double w = getEffectiveWidth ();
+		double h = getEffectiveHeight ();
+
 		cairo_text_extents_t ext = labelFont.getTextExtents(cr, labelText);
 		BColors::Color lc = *labelColors.getColor (BColors::NORMAL);
 		cairo_set_source_rgba (cr, lc.getRed (), lc.getGreen (), lc.getBlue (), lc.getAlpha ());
 		cairo_select_font_face (cr, labelFont.getFontFamily ().c_str (), labelFont.getFontSlant (), labelFont.getFontWeight ());
 		cairo_set_font_size (cr, labelFont.getFontSize ());
-		cairo_move_to (cr, width_ / 2 - ext.width / 2 - ext.x_bearing, height_ / 2 - ext.height / 2 - ext.y_bearing);
+
+		double x0, y0;
+
+		switch (labelFont.getTextAlign ())
+		{
+		case BStyles::TEXT_ALIGN_LEFT:		x0 = - ext.x_bearing;
+											break;
+		case BStyles::TEXT_ALIGN_CENTER:	x0 = w / 2 - ext.width / 2 - ext.x_bearing;
+											break;
+		case BStyles::TEXT_ALIGN_RIGHT:		x0 = w - ext.width - ext.x_bearing;
+											break;
+		default:							x0 = 0;
+		}
+
+		switch (labelFont.getTextVAlign ())
+		{
+		case BStyles::TEXT_VALIGN_TOP:		y0 = - ext.y_bearing;
+											break;
+		case BStyles::TEXT_VALIGN_MIDDLE:	y0 = h / 2 - ext.height / 2 - ext.y_bearing;
+											break;
+		case BStyles::TEXT_VALIGN_BOTTOM:	y0 = h - ext.height - ext.y_bearing;
+											break;
+		default:							y0 = 0;
+		}
+
+		cairo_move_to (cr, xoff + x0, yoff + y0);
 		cairo_show_text (cr, labelText.c_str ());
 	}
 
