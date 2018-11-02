@@ -73,26 +73,23 @@ private:
 	void redrawMainMonitor ();
 
 
-	//GtkWidget* bgImage;
 	BWidgets::Widget mContainer;
 	BWidgets::Widget sContainer;
 	BWidgets::Label attackLabel;
 	BWidgets::Label releaseLabel;
 	BWidgets::Label stepsizeLabel;
-	//GtkWidget* stepshapeDisplayFrame;
 	BWidgets::DrawingSurface stepshapeDisplay;
 	BWidgets::Label nrStepsLabel;
-	BWidgets::Label onLabel;
-	BWidgets::Label offLabel;
 	BWidgets::Label monitorLabel;
-	BWidgets::HSlider monitorOnOffControl;
+	BWidgets::HSwitch monitorSwitch;
 	BWidgets::VSlider scaleControl;
-	//GtkWidget* monitorDisplayFrame;
 	BWidgets::DrawingSurface monitorDisplay;
 	BWidgets::HSliderWithValueDisplay nrStepsControl;
 	BWidgets::DialWithValueDisplay attackControl;
 	BWidgets::DialWithValueDisplay releaseControl;
 	BWidgets::HSliderWithValueDisplay stepsizeControl;
+	BWidgets::Label stepshapeLabel;
+	BWidgets::Label sequencemonitorLabel;
 	std::array<BWidgets::VSliderWithValueDisplay, MAXSTEPS> stepControl;
 
 	struct 	{
@@ -125,14 +122,14 @@ private:
 	BColors::Color ink = {0.0, 0.75, 0.2, 1.0};
 	BStyles::Border border = {{ink, 1.0}, 0.0, 2.0, 0.0};
 	BStyles::Fill widgetBg = BStyles::noFill;
-	BStyles::Font defaultFont = BStyles::Font ("Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL, 12.0);
+	BStyles::Font defaultFont = BStyles::Font ("Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL, 12.0,
+										       BStyles::TEXT_ALIGN_CENTER, BStyles::TEXT_VALIGN_MIDDLE);
 	BStyles::StyleSet defaultStyles = {"default", {{"background", STYLEPTR (&BStyles::noFill)},
 												   {"border", STYLEPTR (&BStyles::noBorder)}}};
 	BStyles::StyleSet labelStyles = {"labels", 	  {{"background", STYLEPTR (&BStyles::noFill)},
 												   {"border", STYLEPTR (&BStyles::noBorder)},
 												   {"textcolors", STYLEPTR (&txColors)},
 												   {"font", STYLEPTR (&defaultFont)}}};
-
 
 	BStyles::Theme theme = BStyles::Theme ({
 		defaultStyles,
@@ -153,12 +150,19 @@ private:
 							 {"bgcolors", STYLEPTR (&bgColors)},
 							 {"textcolors", STYLEPTR (&fgColors)},
 							 {"font", STYLEPTR (&defaultFont)}}},
+		 {"switch",			{{"uses", STYLEPTR (&defaultStyles)},
+							 {"buttoncolors", STYLEPTR (&bgColors)},
+							 {"bgcolors", STYLEPTR (&bgColors)},
+							 {"labelcolors", STYLEPTR (&fgColors)},
+							 {"font", STYLEPTR (&defaultFont)}}},
 		{"On", 				{{"uses", STYLEPTR (&labelStyles)}}},
 		{"Off", 			{{"uses", STYLEPTR (&labelStyles)}}},
 		{"Monitor", 		{{"uses", STYLEPTR (&labelStyles)}}},
 		{"Attack", 			{{"uses", STYLEPTR (&labelStyles)}}},
 		{"Release", 		{{"uses", STYLEPTR (&labelStyles)}}},
-		{"Step size", 		{{"uses", STYLEPTR (&labelStyles)}}},
+		{"Sequence size (1/x)", {{"uses", STYLEPTR (&labelStyles)}}},
+		{"Step shape", 		{{"uses", STYLEPTR (&labelStyles)}}},
+		{"Sequence monitor",{{"uses", STYLEPTR (&labelStyles)}}},
 		{"Number of steps", {{"uses", STYLEPTR (&labelStyles)}}}
 	});
 };
@@ -172,7 +176,7 @@ void BSlicer_GUI::send_record_on ()
 	LV2_Atom* msg = (LV2_Atom*)lv2_atom_forge_object(&forge, &frame, 0, uris.ui_on);
 	lv2_atom_forge_pop(&forge, &frame);
 	write_function(controller, Control_2, lv2_atom_total_size(msg), uris.atom_eventTransfer, msg);
-	monitorOnOffControl.setValue (1.0);
+	monitorSwitch.setValue (1.0);
 }
 
 void BSlicer_GUI::send_record_off ()
@@ -184,7 +188,7 @@ void BSlicer_GUI::send_record_off ()
 	LV2_Atom* msg = (LV2_Atom*)lv2_atom_forge_object(&forge, &frame, 0, uris.ui_off);
 	lv2_atom_forge_pop(&forge, &frame);
 	write_function(controller, Control_2, lv2_atom_total_size(msg), uris.atom_eventTransfer, msg);
-	monitorOnOffControl.setValue (0.0);
+	monitorSwitch.setValue (0.0);
 }
 
 void BSlicer_GUI::rearrange_step_controllers (float nrSteps_newf)
@@ -216,7 +220,7 @@ void BSlicer_GUI::valueChangedCallback (BEvents::Event* event)
 			BSlicer_GUI* ui = (BSlicer_GUI*) widget->getMainWindow ();
 
 			// monitor on/off changed
-			if (widget == &ui->monitorOnOffControl)
+			if (widget == &ui->monitorSwitch)
 			{
 				int value = INT (widget->getValue ());
 				if (value == 1)
@@ -306,10 +310,10 @@ void BSlicer_GUI::redrawStepshape ()
 	cairo_fill (cr);
 	cairo_set_source_rgba (cr, CAIRO_BG_COLOR2);
 	cairo_set_line_width (cr, 1);
-	cairo_move_to (cr, 0, 0.1 * height);
-	cairo_line_to (cr, width, 0.1 * height);
-	cairo_move_to (cr, 0, 0.5 * height);
-	cairo_line_to (cr, width, 0.5 * height);
+	cairo_move_to (cr, 0, 0.2 * height);
+	cairo_line_to (cr, width, 0.2 * height);
+	cairo_move_to (cr, 0, 0.55 * height);
+	cairo_line_to (cr, width, 0.55 * height);
 	cairo_move_to (cr, 0, 0.9 * height);
 	cairo_line_to (cr, width, 0.9 * height);
 	cairo_move_to (cr, 0.25 * width, 0);
@@ -330,12 +334,12 @@ void BSlicer_GUI::redrawStepshape ()
 	{
 		float crosspointX = attack / (attack + release);
 		float crosspointY = crosspointX / attack - (crosspointX - (1 - release)) / release;
-		cairo_line_to (cr, width* 0.25 + crosspointX * width * 0.5, 0.9 * height - 0.8 * height * crosspointY);
+		cairo_line_to (cr, width* 0.25 + crosspointX * width * 0.5, 0.9 * height - 0.7 * height * crosspointY);
 	}
 	else
 	{
-		cairo_line_to (cr, width * 0.25 + attack * width * 0.5 , 0.1 * height);
-		cairo_line_to (cr, width * 0.75  - release * width * 0.5, 0.1 * height);
+		cairo_line_to (cr, width * 0.25 + attack * width * 0.5 , 0.2 * height);
+		cairo_line_to (cr, width * 0.75  - release * width * 0.5, 0.2 * height);
 
 	}
 	cairo_line_to (cr, width * 0.75, 0.9 * height);
@@ -528,9 +532,7 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 	pluginPath (bundle_path ? std::string (bundle_path) : std::string ("")), controller (NULL), write_function (NULL), map (NULL),
 
 	mContainer (0, 0, 800, 560, "main"),
-	offLabel (660, 25, 40, 20, "Off"),
-	onLabel (730, 25, 40, 20, "On"),
-	monitorOnOffControl (690, 30, 40, 14, "slider", 0.0, 0.0, 1.0, 1.0),
+	monitorSwitch (685, 15, 50, 25, "switch", 0.0),
 	monitorDisplay (260, 70, 480, 240, "monitor"),
 	monitorLabel (680, 45, 60, 20, "Monitor"),
 	scaleControl (760, 80, 14, 230, "slider", 0.0, SCALEMIN, SCALEMAX, 0.1),
@@ -540,9 +542,11 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 	releaseControl (155, 480, 40, 40, "dial", 0.2, 0.0, 1.0, -0.01, "%1.2f"),
 	releaseLabel (130, 520, 90, 20, "Release"),
 	stepsizeControl (260, 492, 120, 28, "slider", 1.0, 1.0, 8.0, 1.0, "%1.0f"),
-	stepsizeLabel (260, 520, 120, 20, "Step size"),
+	stepsizeLabel (260, 520, 120, 20, "Sequence size (1/x)"),
 	nrStepsControl (400, 492, 380, 28, "slider", 1.0, 1.0, MAXSTEPS, 1.0, "%2.0f"),
 	nrStepsLabel (400, 520, 380, 20, "Number of steps"),
+	stepshapeLabel (33, 323, 80, 20, "Step shape"),
+	sequencemonitorLabel (263, 73, 120, 20, "Sequence monitor"),
 	sContainer (260, 330, 480, 130, "widget")
 
 {
@@ -557,7 +561,7 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 	}
 
 	// Set callbacks
-	monitorOnOffControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlicer_GUI::valueChangedCallback);
+	monitorSwitch.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlicer_GUI::valueChangedCallback);
 	scaleControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlicer_GUI::valueChangedCallback);
 	attackControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlicer_GUI::valueChangedCallback);
 	releaseControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlicer_GUI::valueChangedCallback);
@@ -567,9 +571,7 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 	// Configure widgets
 	widgetBg = BStyles::Fill (pluginPath + BG_FILE);
 	mContainer.applyTheme (theme);
-	offLabel.applyTheme (theme);
-	onLabel.applyTheme (theme);
-	monitorOnOffControl.applyTheme (theme);
+	monitorSwitch.applyTheme (theme);
 	monitorDisplay.applyTheme (theme);
 	monitorLabel.applyTheme (theme);
 	scaleControl.applyTheme (theme);
@@ -582,13 +584,13 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 	stepsizeLabel.applyTheme (theme);
 	nrStepsControl.applyTheme (theme);
 	nrStepsLabel.applyTheme (theme);
+	stepshapeLabel.applyTheme (theme);
+	sequencemonitorLabel.applyTheme (theme);
 	sContainer.applyTheme (theme);
 	applyTheme (theme);
 
 	// Pack widgets
-	mContainer.add (offLabel);
-	mContainer.add (onLabel);
-	mContainer.add (monitorOnOffControl);
+	mContainer.add (monitorSwitch);
 	mContainer.add (monitorDisplay);
 	mContainer.add (monitorLabel);
 	mContainer.add (scaleControl);
@@ -601,6 +603,8 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 	mContainer.add (stepsizeLabel);
 	mContainer.add (nrStepsControl);
 	mContainer.add (nrStepsLabel);
+	mContainer.add (stepshapeLabel);
+	mContainer.add (sequencemonitorLabel);
 	mContainer.add (sContainer);
 	add (mContainer);
 
