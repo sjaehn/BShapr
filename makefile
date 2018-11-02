@@ -1,7 +1,7 @@
 BUNDLE = BSlicer.lv2
 INSTALL_DIR = /usr/lib/lv2
 CC = g++
-TK = src/BWidgets/DrawingSurface.cpp src/BWidgets/DialWithValueDisplay.cpp src/BWidgets/VSliderWithValueDisplay.cpp src/BWidgets/HSliderWithValueDisplay.cpp src/BWidgets/Dial.cpp src/BWidgets/VSlider.cpp src/BWidgets/HSlider.cpp src/BWidgets/RangeWidget.cpp src/BWidgets/ValueWidget.cpp src/BWidgets/Label.cpp src/BWidgets/Widget.cpp src/BWidgets/BStyles.cpp src/BWidgets/BColors.cpp src/BWidgets/BEvents.cpp src/BWidgets/BValues.cpp src/BWidgets/cairoplus.c src/BWidgets/pugl/pugl_x11.c
+TK = src/BWidgets/HSwitch.cpp src/BWidgets/ToggleButton.cpp src/BWidgets/Button.cpp src/BWidgets/DrawingSurface.cpp src/BWidgets/DialWithValueDisplay.cpp src/BWidgets/VSliderWithValueDisplay.cpp src/BWidgets/HSliderWithValueDisplay.cpp src/BWidgets/Dial.cpp src/BWidgets/VSlider.cpp src/BWidgets/HSlider.cpp src/BWidgets/RangeWidget.cpp src/BWidgets/ValueWidget.cpp src/BWidgets/Label.cpp src/BWidgets/Widget.cpp src/BWidgets/BStyles.cpp src/BWidgets/BColors.cpp src/BWidgets/BEvents.cpp src/BWidgets/BValues.cpp src/BWidgets/cairoplus.c src/BWidgets/pugl/pugl_x11.c
 
 $(BUNDLE): clean BSlicer.so BSlicer_GUI.so
 	cp manifest.ttl BSlicer.ttl surface.png LICENSE $(BUNDLE)
