@@ -1,5 +1,26 @@
+/* RangeWidget.hpp
+ * Copyright (C) 2018  Sven Jähnichen
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef BWIDGETS_RANGEWIDGET_HPP_
 #define BWIDGETS_RANGEWIDGET_HPP_
+
+#define BWIDGETS_DEFAULT_RANGE_MIN 0.0
+#define BWIDGETS_DEFAULT_RANGE_MAX 100.0
+#define BWIDGETS_DEFAULT_RANGE_STEP 0.0
 
 #include <math.h>
 #include "ValueWidget.hpp"
@@ -41,6 +62,13 @@ public:
 	 * @param val Value
 	 */
 	virtual void setValue (const double val) override;
+
+	/**
+	 * Calculates the value as fraction of the distance between the range lower
+	 * and upper limit (or vice versa if negative step).
+	 * @return Relative value (0..1)
+	 */
+	double getRelativeValue () const;
 
 	/**
 	 * Sets the lower limit. Forces the value into the new range. Emits a value

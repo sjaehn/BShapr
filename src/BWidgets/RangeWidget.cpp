@@ -1,3 +1,20 @@
+/* RangeWidget.cpp
+ * Copyright (C) 2018  Sven Jähnichen
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "RangeWidget.hpp"
 
 #ifndef LIMIT
@@ -6,7 +23,9 @@
 
 namespace BWidgets
 {
-RangeWidget::RangeWidget () : RangeWidget (0.0, 0.0, 200.0, 200.0, "RangeWidget", 0.0, 0.0, 100.0, 0.0) {}
+RangeWidget::RangeWidget () :
+		RangeWidget (0.0, 0.0, BWIDGETS_DEFAULT_WIDTH, BWIDGETS_DEFAULT_HEIGHT, "rangewidget",
+					 BWIDGETS_DEFAULT_VALUE, BWIDGETS_DEFAULT_RANGE_MIN, BWIDGETS_DEFAULT_RANGE_MAX, BWIDGETS_DEFAULT_RANGE_STEP) {}
 
 RangeWidget::RangeWidget (const double  x, const double y, const double width, const double height, const std::string& name,
 						  const double value, const double min, const double max, const double step) :
@@ -42,6 +61,15 @@ void RangeWidget::setValue (const double val)
 	}
 
 	if (value != valRounded) ValueWidget::setValue (valRounded);
+}
+
+double RangeWidget::getRelativeValue () const
+{
+	double relVal;
+	if (getMax () != getMin ()) relVal = (getValue () - getMin ()) / (getMax () - getMin ());
+	else relVal = 0.5;							// min == max doesn't make any sense, but need to be handled
+	if (getStep() < 0) relVal = 1 - relVal;		// Swap if reverse orientation
+	return relVal;
 }
 
 void RangeWidget::setMin (const double min)

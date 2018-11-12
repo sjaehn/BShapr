@@ -1,7 +1,25 @@
+/* cairoplus.h
+ * Copyright (C) 2018  Sven Jähnichen
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef CAIROPLUS_H_
 #define CAIROPLUS_H_
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 #include <cairo/cairo.h>
@@ -21,15 +39,17 @@ typedef struct {
 } cairo_text_decorations;
 
 /**
- * Draws a rectangle with rounded edges.
- * @param cr	 Cairo context.
- * @param x		 X coordinate upper right
- * @param y		 Y coordinate upper right
- * @param width  Rectangle width
- * @param height Rectangle height
- * @param radius Radius of edges
+ * Draws a rectangle with selected rounded edges.
+ * @param cr	  Cairo context.
+ * @param x		  X coordinate upper right
+ * @param y		  Y coordinate upper right
+ * @param width   Rectangle width
+ * @param height  Rectangle height
+ * @param radius  Radius of edges
+ * @param corners Optional, bits set for the corners with rounded edges in
+ * 				  clockwise direction starting with upper right
  */
-void cairo_rectangle_rounded (cairo_t* cr, double x, double y, double width, double height, double radius);
+void cairo_rectangle_rounded (cairo_t* cr, double x, double y, double width, double height, double radius, uint8_t corners = 0b1111);
 
 /**
  * Creates a new Cairo image surface and copies the content from a source Cairo

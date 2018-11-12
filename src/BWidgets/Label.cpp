@@ -1,20 +1,34 @@
+/* Label.cpp
+ * Copyright (C) 2018  Sven Jähnichen
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "Label.hpp"
 
 namespace BWidgets
 {
-Label::Label () : Label (0.0, 0.0, 0.0, 0.0, "Label", "Label") {}
-
-Label::Label (const std::string& text) : Label (0.0, 0.0, 200.0, 20.0, text, text) {}
+Label::Label () : Label (0.0, 0.0, 0.0, 0.0, "label", "") {}
 
 Label::Label (const double x, const double y, const double width, const double height, const std::string& text) :
 		Label (x, y, width, height, text, text) {}
 
 Label::Label (const double x, const double y, const double width, const double height, const std::string& name, const std::string& text) :
-		Widget (x, y, width, height, name), labelColors (BColors::whites), labelFont (BStyles::sans12pt), labelText (text)
+		Widget (x, y, width, height, name), labelColors (BWIDGETS_DEFAULT_TEXT_COLORS), labelFont (BWIDGETS_DEFAULT_FONT), labelText (text)
 {
-	labelFont.setTextAlign (BStyles::TEXT_ALIGN_CENTER);
-	labelFont.setTextVAlign(BStyles::TEXT_VALIGN_MIDDLE);
-	setBackground (BStyles::noFill);
+	labelFont.setTextAlign (BWIDGETS_DEFAULT_LABEL_ALIGN);
+	labelFont.setTextVAlign (BWIDGETS_DEFAULT_LABEL_VALIGN);
 }
 
 Label::Label (const Label& that) : Widget (that)
@@ -74,11 +88,11 @@ void Label::applyTheme (BStyles::Theme& theme, const std::string& name)
 	Widget::applyTheme (theme, name);
 
 	// Color
-	void* colorsPtr = theme.getStyle(name, "textcolors");
+	void* colorsPtr = theme.getStyle(name, BWIDGETS_KEYWORD_TEXTCOLORS);
 	if (colorsPtr) labelColors = *((BColors::ColorSet*) colorsPtr);
 
 	// Font
-	void* fontPtr = theme.getStyle(name, "font");
+	void* fontPtr = theme.getStyle(name, BWIDGETS_KEYWORD_FONT);
 	if (fontPtr) labelFont = *((BStyles::Font*) fontPtr);
 
 	if (colorsPtr || fontPtr) update ();
@@ -88,6 +102,8 @@ void Label::applyTheme (BStyles::Theme& theme, const std::string& name)
 
 void Label::draw (const double x, const double y, const double width, const double height)
 {
+	if ((!widgetSurface) || (cairo_surface_status (widgetSurface) != CAIRO_STATUS_SUCCESS)) return;
+
 	// Draw super class widget elements first
 	Widget::draw (x, y, width, height);
 

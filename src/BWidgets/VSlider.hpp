@@ -1,7 +1,30 @@
+/* VSlider.hpp
+ * Copyright (C) 2018  Sven Jähnichen
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef BWIDGETS_VSLIDER_HPP_
 #define BWIDGETS_VSLIDER_HPP_
 
+#define BWIDGETS_DEFAULT_VSLIDER_WIDTH BWIDGETS_DEFAULT_VSCALE_WIDTH * 2
+#define BWIDGETS_DEFAULT_VSLIDER_HEIGHT BWIDGETS_DEFAULT_VSCALE_HEIGHT
+#define BWIDGETS_DEFAULT_VSLIDER_DEPTH 1.0
+
 #include "RangeWidget.hpp"
+#include "Knob.hpp"
+#include "VScale.hpp"
 
 namespace BWidgets
 {
@@ -34,6 +57,37 @@ public:
 	 * @param that Source slider
 	 */
 	VSlider& operator= (const VSlider& that);
+
+	/**
+	 * Changes the value of the widget and keeps it within the defined range.
+	 * Passes the value to its predefined child widgets.
+	 * Emits a value changed event and (if visible) an expose event.
+	 * @param val Value
+	 */
+	virtual void setValue (const double val) override;
+
+	/**
+	 * Sets the lower limit. Forces the value into the new range. Passes the
+	 * min to its predefined child widgets. Emits a value changed event (if
+	 * value changed) and (if visible) an expose event.
+	 * @param min Lower limit
+	 */
+	virtual void setMin (const double min) override;
+
+	/**
+	 * Sets the upper limit. Forces the value into the new range. Passes the
+	 * max to its predefined child widgets. Emits a value changed event (if
+	 * value changed) and (if visible) an expose event.
+	 * @param max Upper limit
+	 */
+	virtual void setMax (const double min) override;
+
+	/**
+	 * Sets the increment steps for the value. Passes the
+	 * increment to its predefined child widgets.
+	 * @param step Increment steps.
+	 */
+		virtual void setStep (const double step);
 
 	/**
 	 * Calls a redraw of the widget and calls postRedisplay () if the the
@@ -71,8 +125,8 @@ public:
 protected:
 	virtual void draw (const double x, const double y, const double width, const double height) override;
 
-	BColors::ColorSet fgColors;
-	BColors::ColorSet bgColors;
+	VScale scale;
+	Knob knob;
 };
 
 }

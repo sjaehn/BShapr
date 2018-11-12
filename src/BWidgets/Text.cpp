@@ -1,16 +1,34 @@
+/* Text.cpp
+ * Copyright (C) 2018  Sven Jähnichen
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "Text.hpp"
 
 namespace BWidgets
 {
-Text::Text () : Text (0.0, 0.0, 0.0, 0.0, "Text", "Text") {}
+Text::Text () : Text (0.0, 0.0, 0.0, 0.0, "text", "") {}
 
-Text::Text (const std::string& text) : Text (0.0, 0.0, 200.0, 20.0, text, text) {}
+Text::Text (const std::string& text) : Text (0.0, 0.0, BWIDGETS_DEFAULT_WIDTH, BWIDGETS_DEFAULT_HEIGHT, text, text) {}
 
 Text::Text (const double x, const double y, const double width, const double height, const std::string& text) :
 		Text (x, y, width, height, text, text) {}
 
 Text::Text (const double x, const double y, const double width, const double height, const std::string& name, const std::string& text, bool resizable) :
-		Widget (x, y, width, height, name), textColors (BColors::whites), textFont (BStyles::sans12pt), textString (text), yResizable (resizable) {}
+		Widget (x, y, width, height, name),
+		textColors (BWIDGETS_DEFAULT_TEXT_COLORS), textFont (BWIDGETS_DEFAULT_FONT), textString (text), yResizable (resizable) {}
 
 Text::Text (const Text& that) : Widget (that)
 {
@@ -75,11 +93,11 @@ void Text::applyTheme (BStyles::Theme& theme, const std::string& name)
 	Widget::applyTheme (theme, name);
 
 	// Color
-	void* colorsPtr = theme.getStyle(name, "textcolors");
+	void* colorsPtr = theme.getStyle(name, BWIDGETS_KEYWORD_TEXTCOLORS);
 	if (colorsPtr) textColors = *((BColors::ColorSet*) colorsPtr);
 
 	// Font
-	void* fontPtr = theme.getStyle(name, "font");
+	void* fontPtr = theme.getStyle(name, BWIDGETS_KEYWORD_FONT);
 	if (fontPtr) textFont = *((BStyles::Font*) fontPtr);
 
 	if (colorsPtr || fontPtr) update ();
@@ -134,6 +152,8 @@ double Text::getTextBlockHeight (std::vector<std::string> textBlock)
 
 void Text::draw (const double x, const double y, const double width, const double height)
 {
+	if ((!widgetSurface) || (cairo_surface_status (widgetSurface) != CAIRO_STATUS_SUCCESS)) return;
+
 	// Draw super class widget elements first
 	Widget::draw (x, y, width, height);
 

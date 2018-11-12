@@ -1,4 +1,4 @@
-/* VSwitch.hpp
+/* HSwitch_classic.hpp
  * Copyright (C) 2018  Sven Jähnichen
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,63 +15,49 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef BWIDGETS_VSWITCH_HPP_
-#define BWIDGETS_VSWITCH_HPP_
+#ifndef BWIDGETS_HSWITCH_CLASSIC_HPP_
+#define BWIDGETS_HSWITCH_CLASSIC_HPP_
 
 #include "ToggleButton.hpp"
-#include "Knob.hpp"
-#include "VScale.hpp"
 
-#define BWIDGETS_DEFAULT_VSWITCH_WIDTH 40.0
-#define BWIDGETS_DEFAULT_VSWITCH_HEIGHT 20.0
-#define BWIDGETS_DEFAULT_VSWITCH_DEPTH 1.0
+#define BWIDGETS_DEFAULT_HSWITCH_CLASSIC_WIDTH 40.0
+#define BWIDGETS_DEFAULT_HSWITCH_CLASSIC_HEIGHT 20.0
 
 namespace BWidgets
 {
 /**
- * Class BWidgets::VSwitch
+ * Class BWidgets::HSwitch_classic
  *
  * On/OFF switch widget. Is is a BWidgets::ToggleButton and thus a
  * BWidgets::ValueWidget having two conditions: on (value != 0) or off
  * (value == 0)
  */
-class VSwitch : public ToggleButton
+class HSwitch_classic : public ToggleButton
 {
 public:
-	VSwitch ();
-	VSwitch (const double x, const double y, const double width, const double height, const std::string& name, const double defaultvalue);
+	HSwitch_classic ();
+	HSwitch_classic (const double x, const double y, const double width, const double height, const std::string& name, const double defaultValue);
 
 	/**
-	 * Creates a new (orphan) switch and copies the switch properties from a
+	 * Creates a new (orphan) switch and copies the button properties from a
 	 * source switch. This method doesn't copy any parent or child widgets.
-	 * @param that Source slider
+	 * @param that Source switch
 	 */
-	VSwitch (const VSwitch& that);
+	HSwitch_classic (const HSwitch_classic& that);
 
-	~VSwitch ();
-
-	/**
-	 * Assignment. Copies the switch properties from a source slider and keeps
-	 * its name and its position within the widget tree. Emits an expose event
-	 * if the widget is visible and a value changed event.
-	 * @param that Source slider
-	 */
-	VSwitch& operator= (const VSwitch& that);
+	~HSwitch_classic ();
 
 	/**
-	 * Calls a redraw of the widget and calls postRedisplay () if the the
-	 * Widget is visible.
-	 * This method should be called if the widgets properties are indirectly
-	 * changed.
+	 * Assignment. Copies the widget properties from a source switch and keeps
+	 * its name and its position within the widget tree. Emits a
+	 * BEvents::ExposeEvent if the widget is visible.
+	 * @param that Source switch
 	 */
-	virtual void update ();
+	HSwitch_classic& operator= (const HSwitch_classic& that);
 
 	/**
 	 * Scans theme for widget properties and applies these properties.
 	 * @param theme Theme to be scanned.
-	 * 				Styles used are:
-	 * 				"fgcolors" for BColors::ColorSet (scale active)
-	 * 				"bgcolors" for BStyles::ColorSet (knob and scale passive)
 	 * @param name Name of the BStyles::StyleSet within the theme to be
 	 * 		  	   applied.
 	 */
@@ -81,10 +67,9 @@ public:
 protected:
 	virtual void draw (const double x, const double y, const double width, const double height) override;
 
-	VScale scale;
-	Knob knob;
+	BColors::ColorSet labelColors;
 };
 
 }
 
-#endif /* BWIDGETS_VSWITCH_HPP_ */
+#endif /* BWIDGETS_HSWITCH_CLASSIC_HPP_ */

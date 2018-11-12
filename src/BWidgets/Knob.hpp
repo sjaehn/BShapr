@@ -1,4 +1,4 @@
-/* VSwitch.hpp
+/* Knob.hpp
  * Copyright (C) 2018  Sven Jähnichen
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,48 +15,56 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef BWIDGETS_VSWITCH_HPP_
-#define BWIDGETS_VSWITCH_HPP_
+#ifndef BWIDGETS_KNOB_HPP_
+#define BWIDGETS_KNOB_HPP_
 
-#include "ToggleButton.hpp"
-#include "Knob.hpp"
-#include "VScale.hpp"
+#include "RangeWidget.hpp"
 
-#define BWIDGETS_DEFAULT_VSWITCH_WIDTH 40.0
-#define BWIDGETS_DEFAULT_VSWITCH_HEIGHT 20.0
-#define BWIDGETS_DEFAULT_VSWITCH_DEPTH 1.0
+#define BWIDGETS_DEFAULT_KNOB_WIDTH 20.0
+#define BWIDGETS_DEFAULT_KNOB_HEIGHT 20.0
+#define BWIDGETS_DEFAULT_KNOB_DEPTH 1.0
 
 namespace BWidgets
 {
 /**
- * Class BWidgets::VSwitch
+ * Class BWidgets::Knob
  *
- * On/OFF switch widget. Is is a BWidgets::ToggleButton and thus a
- * BWidgets::ValueWidget having two conditions: on (value != 0) or off
- * (value == 0)
+ * Drawing widget. Draws a 3d knob.
  */
-class VSwitch : public ToggleButton
+class Knob : public Widget
 {
 public:
-	VSwitch ();
-	VSwitch (const double x, const double y, const double width, const double height, const std::string& name, const double defaultvalue);
+	Knob ();
+	Knob (const double x, const double y, const double width, const double height, const double depth, const std::string& name);
 
 	/**
-	 * Creates a new (orphan) switch and copies the switch properties from a
-	 * source switch. This method doesn't copy any parent or child widgets.
-	 * @param that Source slider
+	 * Creates a new (orphan) knob and copies the knob properties from a
+	 * source knob. This method doesn't copy any parent or child widgets.
+	 * @param that Source knob
 	 */
-	VSwitch (const VSwitch& that);
+	Knob (const Knob& that);
 
-	~VSwitch ();
+	~Knob ();
 
 	/**
-	 * Assignment. Copies the switch properties from a source slider and keeps
+	 * Assignment. Copies the knob properties from a source knob and keeps
 	 * its name and its position within the widget tree. Emits an expose event
-	 * if the widget is visible and a value changed event.
-	 * @param that Source slider
+	 * if the widget is visible.
+	 * @param that Source knob
 	 */
-	VSwitch& operator= (const VSwitch& that);
+	Knob& operator= (const Knob& that);
+
+	/**
+	 * Sets the depth of the 3d knob
+	 * @param depth Depth
+	 */
+	void setDepth (const double depth);
+
+	/**
+	 * Sets the depth of the 3d knob
+	 * @return Depth
+	 */
+	double getDepth () const;
 
 	/**
 	 * Calls a redraw of the widget and calls postRedisplay () if the the
@@ -69,9 +77,6 @@ public:
 	/**
 	 * Scans theme for widget properties and applies these properties.
 	 * @param theme Theme to be scanned.
-	 * 				Styles used are:
-	 * 				"fgcolors" for BColors::ColorSet (scale active)
-	 * 				"bgcolors" for BStyles::ColorSet (knob and scale passive)
 	 * @param name Name of the BStyles::StyleSet within the theme to be
 	 * 		  	   applied.
 	 */
@@ -81,10 +86,10 @@ public:
 protected:
 	virtual void draw (const double x, const double y, const double width, const double height) override;
 
-	VScale scale;
-	Knob knob;
+	double knobDepth;
+	BColors::ColorSet bgColors;
 };
 
 }
 
-#endif /* BWIDGETS_VSWITCH_HPP_ */
+#endif /* BWIDGETS_KNOB_HPP_ */

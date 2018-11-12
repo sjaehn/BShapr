@@ -1,4 +1,5 @@
-/* Copyright (C) 2018 by Sven Jähnichen
+/* Widget.cpp
+ * Copyright (C) 2018 by Sven Jähnichen
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,13 +21,14 @@
 namespace BWidgets
 {
 
-Widget::Widget () : Widget (0.0, 0.0, 200.0, 200.0, "Widget") {}
+Widget::Widget () : Widget (0.0, 0.0, BWIDGETS_DEFAULT_WIDTH, BWIDGETS_DEFAULT_HEIGHT, "widget") {}
 
-Widget::Widget (const double x, const double y, const double width, const double height) : Widget (x, y, width, height, "Widget") {}
+Widget::Widget (const double x, const double y, const double width, const double height) : Widget (x, y, width, height, "widget") {}
 
 Widget::Widget(const double x, const double y, const double width, const double height, const std::string& name) :
 		x_ (x), y_ (y), width_ (width), height_ (height), visible (true), clickable (true), dragable (false),
-		main_ (nullptr), parent_ (nullptr), children_ (), border_ (BStyles::noBorder), background_ (BStyles::blackFill), name_ (name)
+		main_ (nullptr), parent_ (nullptr), children_ (), border_ (BWIDGETS_DEFAULT_BORDER), background_ (BWIDGETS_DEFAULT_BACKGROUND),
+		name_ (name), widgetState (BWIDGETS_DEFAULT_STATE)
 {
 	cbfunction.fill (Widget::defaultCallback);
 
@@ -38,7 +40,7 @@ Widget::Widget (const Widget& that) :
 		x_ (that.x_), y_ (that.y_), width_ (that.width_), height_ (that.height_),
 		visible (that.visible), clickable (that.clickable), dragable (that.dragable),
 		main_ (nullptr), parent_ (nullptr), children_ (), border_ (that.border_), background_ (that.background_), name_ (that.name_),
-		cbfunction (that.cbfunction)
+		cbfunction (that.cbfunction), widgetState (that.widgetState)
 {
 	widgetSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, that.width_, that.height_);
 	draw (0, 0, width_, height_);
@@ -67,6 +69,7 @@ Widget& Widget::operator= (const Widget& that)
 	border_ = that.border_;
 	background_ = that.background_;
 	cbfunction = that.cbfunction;
+	widgetState = that.widgetState;
 
 	if (widgetSurface) cairo_surface_destroy (widgetSurface);
 	widgetSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, that.width_, that.height_);
@@ -294,6 +297,10 @@ void Widget::setHeight (const double height)
 
 double Widget::getHeight () const {return height_;}
 
+void Widget::setState (const BColors::State state) {widgetState = state;}
+
+BColors::State Widget::getState () const {return widgetState;}
+
 void Widget::setBorder (const BStyles::Border& border)
 {
 	border_ = border;
@@ -380,11 +387,11 @@ void Widget::applyTheme (BStyles::Theme& theme) {applyTheme (theme, name_);}
 void Widget::applyTheme (BStyles::Theme& theme, const std::string& name)
 {
 	// Border
-	void* borderPtr = theme.getStyle(name, "border");
+	void* borderPtr = theme.getStyle(name, BWIDGETS_KEYWORD_BORDER);
 	if (borderPtr) setBorder (*((BStyles::Border*) borderPtr));
 
 	// Background
-	void* backgroundPtr = theme.getStyle(name, "background");
+	void* backgroundPtr = theme.getStyle(name, BWIDGETS_KEYWORD_BACKGROUND);
 	if (backgroundPtr) setBackground (*((BStyles::Fill*) backgroundPtr));
 
 	if (borderPtr || backgroundPtr)
@@ -472,6 +479,7 @@ void Widget::redisplay (cairo_surface_t* surface, double x, double y, double wid
 
 void Widget::draw (const double x, const double y, const double width, const double height)
 {
+	if ((!widgetSurface) || (cairo_surface_status (widgetSurface) != CAIRO_STATUS_SUCCESS)) return;
 	cairo_surface_clear (widgetSurface);
 	cairo_t* cr = cairo_create (widgetSurface);
 
@@ -601,7 +609,7 @@ bool Widget::fitToArea (double& x, double& y, double& width, double& height)
 
 /*****************************************************************************/
 
-Window::Window () : Window (200.0, 200.0, "Main Window", 0.0) {}
+Window::Window () : Window (BWIDGETS_DEFAULT_WIDTH, BWIDGETS_DEFAULT_HEIGHT, "window", 0.0) {}
 
 Window::Window (const double width, const double height, const std::string& title, PuglNativeWindow nativeWindow, bool resizable) :
 		Widget (0.0, 0.0, width, height, title), title_ (title), view_ (NULL), nativeWindow_ (nativeWindow), quit_ (false),
@@ -624,6 +632,8 @@ Window::Window (const double width, const double height, const std::string& titl
 	puglSetHandle (view_, this);
 
 	puglSetEventFunc (view_, Window::translatePuglEvent);
+
+	setBackground (BWIDGETS_DEFAULT_WINDOW_BACKGROUND);
 }
 
 Window::~Window ()

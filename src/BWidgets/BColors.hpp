@@ -1,9 +1,10 @@
-/* Copyright (C) 2018 by Sven Jähnichen
+/* BColors.cpp
+ * Copyright (C) 2018  Sven Jähnichen
  *
- * This program is free software; you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3, or (at your option)
- * any later version.
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -11,8 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef BCOLORS_HPP_
@@ -104,6 +104,15 @@ public:
 	 */
 	int compare (const Color& that) const;
 
+	/**
+	 * Changes the red, green and blue values of the BColors::Color by a given
+	 * brightness.
+	 * @param brightness Brightness ranging from -1.0 (full darkness => black
+	 * 					 over 0.0 (normal => unchanged) to 1.0 (full brightness
+	 * 					 => white)
+	 */
+	void applyBrightness (const double brightness);
+
 private:
 	double red_, green_, blue_, alpha_;
 };
@@ -126,6 +135,7 @@ const Color lightblue = Color (0.5, 0.5, 1.0, 1.0);
 const Color darkblue = Color (0.0, 0.0, 0.5, 1.0);
 const Color lightgrey = Color (0.75, 0.75, 0.75, 1.0);
 const Color darkgrey = Color (0.25, 0.25, 0.25, 1.0);
+const Color darkdarkgrey = Color (0.1, 0.1, 0.1, 1.0);
 const Color invisible = Color (0.0, 0.0, 0.0, 0.0);
 
 /**
@@ -177,7 +187,8 @@ const ColorSet greens = ColorSet ({green, lightgreen, darkgreen, black});
 const ColorSet blues = ColorSet ({blue, lightblue, darkblue, black});
 const ColorSet greys = ColorSet ({grey, lightgrey, darkgrey, black});
 const ColorSet whites = ColorSet ({lightgrey, white, grey, black});
-const ColorSet darks = ColorSet ({darkgrey, grey, black, black});
+const ColorSet darks = ColorSet ({darkgrey, grey, darkdarkgrey, black});
+const ColorSet lights = ColorSet ({lightgrey, white, grey, darkgrey});
 
 }
 

@@ -1,9 +1,10 @@
-/* Copyright (C) 2018 by Sven Jähnichen
+/* BStyles.hpp
+ * Copyright (C) 2018  Sven Jähnichen
  *
- * This program is free software; you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3, or (at your option)
- * any later version.
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -11,8 +12,7 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef BSTYLES_HPP_
@@ -77,6 +77,7 @@ private:
 
 const Line blackLine1pt = Line (BColors::black, 1.0);
 const Line whiteLine1pt = Line (BColors::white, 1.0);
+const Line greyLine1pt = Line (BColors::grey, 1.0);
 const Line noLine = Line (BColors::invisible, 0.0);
 
 
@@ -157,6 +158,7 @@ protected:
 
 const Border blackBorder1pt = Border (blackLine1pt);
 const Border whiteBorder1pt = Border (whiteLine1pt);
+const Border greyBorder1pt = Border (greyLine1pt);
 const Border noBorder = Border (noLine);
 
 
@@ -227,6 +229,7 @@ const Fill redFill = Fill (BColors::red);
 const Fill greenFill = Fill (BColors::green);
 const Fill blueFill = Fill (BColors::blue);
 const Fill greyFill = Fill (BColors::grey);
+const Fill darkgreyFill = Fill (BColors::darkgrey);
 const Fill noFill = Fill (BColors::invisible);
 
 typedef enum {

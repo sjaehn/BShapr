@@ -1,3 +1,20 @@
+/* VSlider.cpp
+ * Copyright (C) 2018  Sven Jähnichen
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "VSlider.hpp"
 
 #ifndef PI
@@ -6,32 +23,92 @@
 
 namespace BWidgets
 {
-VSlider::VSlider () : VSlider (0, 0, 12, 100, "vslider", 0.0, 0.0, 100.0, 0.0) {}
+VSlider::VSlider () : VSlider (0.0, 0.0, BWIDGETS_DEFAULT_VSLIDER_WIDTH, BWIDGETS_DEFAULT_VSLIDER_HEIGHT, "vslider",
+		  	  	  	  	  	   BWIDGETS_DEFAULT_VALUE, BWIDGETS_DEFAULT_RANGE_MIN, BWIDGETS_DEFAULT_RANGE_MAX, BWIDGETS_DEFAULT_RANGE_STEP) {}
 
 VSlider::VSlider (const double  x, const double y, const double width, const double height, const std::string& name,
 				  const double value, const double min, const double max, const double step) :
-		RangeWidget (x, y, width, height, name, value, min, max, step), fgColors (BColors::greens), bgColors (BColors::greys)
+		RangeWidget (x, y, width, height, name, value, min, max, step),
+		scale (0, 0, 0, 0, name, value, min, max, step),
+		knob (0, 0, 0, 0, BWIDGETS_DEFAULT_KNOB_DEPTH, name)
 {
+	scale.setClickable (false);
+	scale.setDragable (false);
+	add (scale);
+	knob.setClickable (false);
+	knob.setDragable (false);
+	add (knob);
 	setClickable (true);
 	setDragable (true);
 }
 
-VSlider::VSlider (const VSlider& that) : RangeWidget (that), fgColors (that.fgColors), bgColors (that.bgColors) {}
+VSlider::VSlider (const VSlider& that) : RangeWidget (that), scale (that.scale), knob (that.knob) {}
 
 VSlider::~VSlider () {}
 
 VSlider& VSlider::operator= (const VSlider& that)
 {
-	fgColors = that.fgColors;
-	bgColors = that.bgColors;
+	scale = that.scale;
+	knob = that.knob;
 	RangeWidget::operator= (that);
 
 	return *this;
 }
 
+void VSlider::setValue (const double val)
+{
+	RangeWidget::setValue (val);
+
+	// Pass changed value to scale
+	if (value != scale.getValue ()) scale.setValue (value);
+}
+
+void VSlider::setMin (const double min)
+{
+	RangeWidget::setMin (min);
+	if (rangeMin != scale.getMin ()) scale.setMin (rangeMin);
+}
+
+void VSlider::setMax (const double max)
+{
+	RangeWidget::setMin (max);
+	if (rangeMax != scale.getMax ()) scale.setMax (rangeMax);
+}
+
+void VSlider::setStep (const double step)
+{
+	RangeWidget::setStep (step);
+	if (rangeStep != scale.getStep ()) scale.setStep (rangeStep);
+}
+
 void VSlider::update ()
 {
 	draw (0, 0, width_, height_);
+
+	// Position of knob and scale
+	// Calculate aspect ratios first
+	double h = getEffectiveHeight ();
+	double w = getEffectiveWidth ();
+	double x0 = getXOffset ();
+	double y0 = getYOffset ();
+
+	double scw = (w > 24.0 ? 12.0 : 0.5 * w);
+	if (2 * scw > h) scw = h / 2;
+	double knw = 2 * scw;
+	double knh = knw;
+	double sch = h - knh;
+
+	scale.setHeight (sch);
+	scale.setWidth (scw);
+	scale.moveTo (x0 + w/2 - scw/2, y0 + h/2 - sch/2);
+
+	double relVal = getRelativeValue ();
+	double y1 = y0 + h/2 + sch/2 - relVal * sch - knh/2;
+	double x1 = x0 + w/2 - knw/2;
+	knob.setWidth (knw);
+	knob.setHeight (knh);
+	knob.moveTo (x1, y1);
+
 	if (isVisible ()) postRedisplay ();
 }
 
@@ -40,16 +117,8 @@ void VSlider::applyTheme (BStyles::Theme& theme) {applyTheme (theme, name_);}
 void VSlider::applyTheme (BStyles::Theme& theme, const std::string& name)
 {
 	Widget::applyTheme (theme, name);
-
-	// Foreground colors (scale)
-	void* fgPtr = theme.getStyle(name, "fgcolors");
-	if (fgPtr) fgColors = *((BColors::ColorSet*) fgPtr);
-
-	// Background colors (scale background, knob)
-	void* bgPtr = theme.getStyle(name, "bgcolors");
-	if (bgPtr) bgColors = *((BColors::ColorSet*) bgPtr);
-
-	if (fgPtr || bgPtr) update ();
+	knob.applyTheme (theme, name);
+	scale.applyTheme (theme, name);
 }
 
 void VSlider::onButtonPressed (BEvents::PointerEvent* event)
@@ -62,14 +131,21 @@ void VSlider::onButtonPressed (BEvents::PointerEvent* event)
 		double x = event->getX ();
 
 		// Calculate aspect ratios first
-		double w = (width_ > 24.0 ? 12.0 : 0.5 * width_);
-		double h = (height_ / width_ >= 2 ? height_ - 2 * w : height_ - (height_ / width_) * w);
+		double h = getEffectiveHeight ();
+		double w = getEffectiveWidth ();
+		double x0 = getXOffset ();
+		double y0 = getYOffset ();
+
+		double scw = (w > 24.0 ? 12.0 : 0.5 * w);
+		if (2 * scw > h) scw = h / 2;
+		double knh = 2 * scw;
+		double sch = h - knh;
 
 		// Pointer within the scale area ? Set value!
-		if ((y >= height_/2 - h/2) && (y <= height_/2 + h/2 - 1) && (x >= 0) && (x <= width_ - 1))
+		if ((y >= y0 + h/2 - sch/2) && (y <= y0 + h/2 + sch/2) && (x >= x0) && (x <= x0 + w))
 		{
-			double frac = (y - height_/2 + h/2) / (h - 1);
-			if (getStep () >= 0) frac = 1 - frac;
+			double frac = (y0 + h/2 + sch/2 - y) / sch;
+			if (getStep () < 0) frac = 1 - frac;
 
 			double min = getMin ();
 			double max = getMax ();
@@ -82,107 +158,7 @@ void VSlider::onPointerMotionWhileButtonPressed (BEvents::PointerEvent* event) {
 
 void VSlider::draw (const double x, const double y, const double width, const double height)
 {
-	// Draw super class widget elements first
 	Widget::draw (x, y, width, height);
-
-	// Draw slider
-	// only if minimum requirements satisfied
-	if ((height_ >= 4) && (width_ >= 4))
-	{
-		cairo_surface_clear (widgetSurface);
-		cairo_t* cr = cairo_create (widgetSurface);
-
-		if (cairo_status (cr) == CAIRO_STATUS_SUCCESS)
-		{
-			cairo_pattern_t* pat;
-
-			// Limit cairo-drawing area
-			cairo_rectangle (cr, x, y, width, height);
-			cairo_clip (cr);
-
-			// Calculate aspect ratios first
-			double w = (width_ > 24.0 ? 12.0 : 0.5 * width_);
-			double h = (height_ / width_ >= 2 ? height_ - 2 * w : height_ - (height_ / width_) * w);
-
-			// Relative Value (0 .. 1) for calculation of value line
-			double relVal;
-			if (getMax () != getMin ()) relVal = (getValue () - getMin ()) / (getMax () - getMin ());
-			else relVal = 0.5;							// min == max doesn't make any sense, but need to be handled
-			if (getStep() < 0) relVal = 1 - relVal;		// Swap if reverse orientation
-
-			double x1 = width_ / 2 - w / 2; double y1 = height_ / 2 - h / 2;									// Top left
-			double x2 = width_ / 2 + w / 2 - 1; double y2 = height_ / 2 - h / 2 + (1 - relVal) * (h - 2) + 1; 	// Value line right
-			double x3 = x1; double y3 = y2;																		// Value line left
-			double x4 = x2; double y4 = height_ / 2 + h / 2 - 1; 												// Bottom right
-
-			if (getStep () < 0) std::swap (y1, y4); // Swap top <-> bottom if reverse orientation
-
-			// Colors uses within this method
-			BColors::Color fgInact = *fgColors.getColor (BColors::INACTIVE);
-			BColors::Color fgActive = *fgColors.getColor (BColors::ACTIVE);
-			BColors::Color fgNormal = *fgColors.getColor (BColors::NORMAL);
-			BColors::Color bgNormal = *bgColors.getColor (BColors::NORMAL);
-			BColors::Color bgActive = *bgColors.getColor (BColors::ACTIVE);
-			BColors::Color bgInact = *bgColors.getColor (BColors::INACTIVE);
-			BColors::Color bgOff = *bgColors.getColor (BColors::OFF);
-
-			// Frame background
-			cairo_rectangle (cr, x1, y1, x4 - x1 + 1, y4 - y1 + 1);
-			cairo_set_line_width (cr, 0.5);
-			cairo_set_source_rgba (cr, bgInact.getRed (), bgInact.getGreen (), bgInact.getBlue (), bgInact.getAlpha ());
-			cairo_fill_preserve (cr);
-			cairo_stroke (cr);
-
-			// Scale background
-			cairo_rectangle (cr,x1, y1, x4 - x1, y4 - y1);
-			cairo_set_source_rgba (cr, fgInact.getRed (), fgInact.getGreen (), fgInact.getBlue (), fgInact.getAlpha ());
-			cairo_fill_preserve (cr);
-			cairo_set_source_rgba (cr, bgOff.getRed (), bgOff.getGreen (), bgOff.getBlue (), bgOff.getAlpha ());
-			cairo_stroke (cr);
-
-			// Scale active
-			pat = cairo_pattern_create_linear (x3, y3, x2, y2);
-			cairo_pattern_add_color_stop_rgba (pat, 0.0, fgNormal.getRed (), fgNormal.getGreen (), fgNormal.getBlue (), fgNormal.getAlpha ());
-			cairo_pattern_add_color_stop_rgba (pat, 0.25, fgActive.getRed (), fgActive.getGreen (), fgActive.getBlue (), fgActive.getAlpha ());
-			cairo_pattern_add_color_stop_rgba (pat, 1, fgNormal.getRed (), fgNormal.getGreen (), fgNormal.getBlue (), fgNormal.getAlpha ());
-			cairo_rectangle (cr, x3, y3, x4 - x3, y4 - y3);
-			cairo_set_source (cr, pat);
-			cairo_fill_preserve (cr);
-			cairo_stroke (cr);
-			cairo_pattern_destroy (pat);
-
-			//Shadow
-			cairo_move_to (cr, x1, (y4 > y1 ? y4 : y1));
-			cairo_line_to (cr, x1, (y1 < y4 ? y1 : y4));
-			cairo_line_to (cr, x4, (y1 < y4 ? y1 : y4));
-			cairo_set_source_rgba (cr, 1.0, 1.0, 1.0, 1.0);
-			cairo_set_line_width (cr, 1.0);
-			cairo_set_source_rgba (cr, bgOff.getRed (), bgOff.getGreen (), bgOff.getBlue (), 0.5 * bgOff.getAlpha ());
-			cairo_stroke (cr);
-
-
-			// Knob
-			pat = cairo_pattern_create_radial ((x2 + x3) / 2 - w / 4, (y2 + y3) / 2 - w / 4, 0.1 * w,
-											   (x2 + x3) / 2, (y2 + y3) / 2, 1.5 * w);
-			cairo_arc (cr, (x2 + x3) / 2, (y2 + y3) / 2, w - 1, 0, 2 * PI);
-			cairo_pattern_add_color_stop_rgba (pat, 0, bgActive.getRed (), bgActive.getGreen (), bgActive.getBlue (), bgActive.getAlpha ());
-			cairo_pattern_add_color_stop_rgba (pat, 1, bgNormal.getRed (), bgNormal.getGreen (), bgNormal.getBlue (), bgNormal.getAlpha ());
-			cairo_set_source (cr, pat);
-			cairo_fill_preserve (cr);
-			cairo_pattern_destroy (pat);
-
-			pat = cairo_pattern_create_radial ( (x2 + x3) / 2 - w / 4, (y2 + y3) / 2 - w / 4, 0.1 * w,
-											    (x2 + x3) / 2, (y2 + y3) / 2, 1.2 * w);
-			cairo_pattern_add_color_stop_rgba (pat, 0, bgInact.getRed (), bgInact.getGreen (), bgInact.getBlue (), bgInact.getAlpha ());
-			cairo_pattern_add_color_stop_rgba (pat, 1, bgOff.getRed (), bgOff.getGreen (), bgOff.getBlue (), bgOff.getAlpha ());
-			cairo_set_line_width (cr, 0.5);
-			cairo_set_source (cr, pat);
-			cairo_stroke (cr);
-			cairo_pattern_destroy (pat);
-		}
-
-		cairo_destroy (cr);
-	}
 }
 
 }

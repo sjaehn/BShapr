@@ -1,9 +1,10 @@
-/* Copyright (C) 2018 by Sven Jähnichen
+/* Widget.hpp
+ * Copyright (C) 2018  Sven Jähnichen
  *
- * This program is free software; you can redistribute it and/or modify
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 3, or (at your option)
- * any later version.
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
  *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -11,12 +12,47 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation,
- * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
 #ifndef BWIDGETS_WIDGET_HPP_
 #define BWIDGETS_WIDGET_HPP_
+
+// Default basic widget settings
+#define BWIDGETS_DEFAULT_BORDER BStyles::noBorder
+#define BWIDGETS_DEFAULT_BACKGROUND BStyles::noFill
+#define BWIDGETS_DEFAULT_WIDTH 200
+#define BWIDGETS_DEFAULT_HEIGHT 200
+#define BWIDGETS_DEFAULT_STATE BColors::NORMAL
+#define BWIDGETS_DEFAULT_FGCOLORS BColors::greens
+#define BWIDGETS_DEFAULT_BGCOLORS BColors::darks
+#define BWIDGETS_DEFAULT_FONT BStyles::sans12pt
+#define BWIDGETS_DEFAULT_ILLUMINATED 0.333
+#define BWIDGETS_DEFAULT_NORMALLIGHTED 0.0
+#define BWIDGETS_DEFAULT_SHADOWED -0.333
+#define BWIDGETS_DEFAULT_DARKENED -0.5
+
+// Default BWidgets::Window settings (Note: use intransparent backgrounds only
+#define BWIDGETS_DEFAULT_WINDOW_BACKGROUND BStyles::blackFill
+
+// Default settings for all text containing widgets
+#define BWIDGETS_DEFAULT_TEXT_COLORS BColors::lights
+#define BWIDGETS_DEFAULT_TEXT_ALIGN BStyles::TEXT_ALIGN_LEFT
+#define BWIDGETS_DEFAULT_TEXT_VALIGN BStyles::TEXT_VALIGN_TOP
+
+// Default settings for all menu widgets
+#define BWIDGETS_DEFAULT_MENU_PADDING 10
+#define BWIDGETS_DEFAULT_MENU_BORDER BStyles::greyBorder1pt
+#define BWIDGETS_DEFAULT_MENU_BACKGROUND BStyles::darkgreyFill
+
+// BWidgets theme keywords
+#define BWIDGETS_KEYWORD_BORDER "border"
+#define BWIDGETS_KEYWORD_BACKGROUND "background"
+#define BWIDGETS_KEYWORD_FONT "font"
+#define BWIDGETS_KEYWORD_FGCOLORS "fgcolors"
+#define BWIDGETS_KEYWORD_BGCOLORS "bgcolors"
+#define BWIDGETS_KEYWORD_TEXTCOLORS "textcolors"
+
 
 #include <cairo/cairo.h>
 #include "cairoplus.h"
@@ -166,6 +202,18 @@ public:
 	 * @return Height
 	 */
 	double getHeight () const;
+
+	/**
+	 * Sets the widgets state
+	 * @param state Widget state
+	 */
+	void setState (const BColors::State state);
+
+	/**
+	 * Gets the widgets state
+	 * @return Widget state
+	 */
+	BColors::State getState () const;
 
 	/**
 	 * (Re-)Defines the border of the widget. Redraws widget and emits a
@@ -431,6 +479,7 @@ protected:
 	std::string name_;
 	std::array<std::function<void (BEvents::Event*)>, BEvents::EventType::NO_EVENT> cbfunction;
 	cairo_surface_t* widgetSurface;
+	BColors::State widgetState;
 };
 
 /**

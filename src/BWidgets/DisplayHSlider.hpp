@@ -1,4 +1,4 @@
-/* HSlider.hpp
+/* DisplayHSlider.hpp
  * Copyright (C) 2018  Sven Jähnichen
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,40 +15,40 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef BWIDGETS_HSLIDER_HPP_
-#define BWIDGETS_HSLIDER_HPP_
+#ifndef BWIDGETS_DISPLAYHSLIDER_HPP_
+#define BWIDGETS_DISPLAYHSLIDER_HPP_
 
 #include "RangeWidget.hpp"
-#include "Knob.hpp"
-#include "HScale.hpp"
+#include "Label.hpp"
+#include "HSlider.hpp"
 
-#define BWIDGETS_DEFAULT_HSLIDER_WIDTH BWIDGETS_DEFAULT_HSCALE_WIDTH
-#define BWIDGETS_DEFAULT_HSLIDER_HEIGHT BWIDGETS_DEFAULT_HSCALE_HEIGHT * 2
-#define BWIDGETS_DEFAULT_HSLIDER_DEPTH 1.0
+#define BWIDGETS_DEFAULT_DISPLAYHSLIDER_WIDTH BWIDGETS_DEFAULT_HSLIDER_WIDTH
+#define BWIDGETS_DEFAULT_DISPLAYHSLIDER_HEIGHT BWIDGETS_DEFAULT_HSLIDER_HEIGHT + BWIDGETS_DEFAULT_LABEL_HEIGHT
 
 namespace BWidgets
 {
+
 /**
- * Class BWidgets::HSlider
+ * Class BWidgets::DisplayHSlider
  *
- * RangeWidget class for a horizontal slider.
- * The Widget is clickable by default.
+ * Composite RangeWidget consisting of a horizontal slider and a label widget.
  */
-class HSlider : public RangeWidget
+class DisplayHSlider : public RangeWidget
 {
 public:
-	HSlider ();
-	HSlider (const double x, const double y, const double width, const double height, const std::string& name,
-			 const double value, const double min, const double max, const double step);
+	DisplayHSlider ();
+	DisplayHSlider (const double x, const double y, const double width, const double height, const std::string& name,
+			  	  	  	  	 const double value, const double min, const double max, const double step,
+							 const std::string& valueFormat);
 
 	/**
 	 * Creates a new (orphan) slider and copies the slider properties from a
 	 * source slider. This method doesn't copy any parent or child widgets.
 	 * @param that Source slider
 	 */
-	HSlider (const HSlider& that);
+	DisplayHSlider (const DisplayHSlider& that);
 
-	~HSlider ();
+	~DisplayHSlider ();
 
 	/**
 	 * Assignment. Copies the slider properties from a source slider and keeps
@@ -56,7 +56,7 @@ public:
 	 * if the widget is visible and a value changed event.
 	 * @param that Source slider
 	 */
-	HSlider& operator= (const HSlider& that);
+	DisplayHSlider& operator= (const DisplayHSlider& that);
 
 	/**
 	 * Changes the value of the widget and keeps it within the defined range.
@@ -90,45 +90,59 @@ public:
 	virtual void setStep (const double step);
 
 	/**
+	 * Sets the value output format.
+	 * @valueFormat Format of the output in printf standard for type double.
+	 */
+	void setValueFormat (const std::string& valueFormat);
+
+	/**
+	 * Gets the value output format.
+	 * @return Format of the output in printf standard for type double.
+	 */
+	std::string getValueFormat () const;
+
+	/**
+	 * Gets (a pointer to) the slider widget for direct access
+	 * @return Pointer to BWidgets::HSlider
+	 */
+	HSlider* getSlider ();
+
+	/**
+	 * Gets (a pointer to) the Label for direct access.
+	 * @return Pointer to the label
+	 */
+	Label* getValueDisplay ();
+
+	/**
 	 * Calls a redraw of the widget and calls postRedisplay () if the the
 	 * Widget is visible.
 	 * This method should be called if the widgets properties are indirectly
 	 * changed.
 	 */
-	virtual void update ();
+	virtual void update () override;
 
 	/**
 	 * Scans theme for widget properties and applies these properties.
 	 * @param theme Theme to be scanned.
-	 * 				Styles used are:
-	 * 				"fgcolors" for BColors::ColorSet (scale active)
-	 * 				"bgcolors" for BStyles::ColorSet (knob and scale passive)
+	 * 				For styles used see BWidgets::Dial::applyTheme and
+	 * 				BWidgets::Label::applyTheme.
 	 * @param name Name of the BStyles::StyleSet within the theme to be
 	 * 		  	   applied.
 	 */
 	virtual void applyTheme (BStyles::Theme& theme);
 	virtual void applyTheme (BStyles::Theme& theme, const std::string& name);
 
-	/**
-	 * Handles the BEvents::BUTTON_PRESS_EVENT to move the slider.
-	 * @param event Pointer to a pointer event emitted by the same widget.
-	 */
-	virtual void onButtonPressed (BEvents::PointerEvent* event) override;
-
-	/**
-	 * Handles the BEvents::POINTER_MOTION_WHILE_BUTTON_PRESSED_EVENT to move
-	 * the slider.
-	 * @param event Pointer to a pointer event emitted by the same widget.
-	 */
-	virtual void onPointerMotionWhileButtonPressed (BEvents::PointerEvent* event) override;
-
 protected:
+	static void redirectPostValueChanged (BEvents::Event* event);
+	void updateChildCoords ();
 	virtual void draw (const double x, const double y, const double width, const double height) override;
 
-	HScale scale;
-	Knob knob;
+	HSlider slider;
+	Label valueDisplay;
+
+	std::string valFormat;
 };
 
 }
 
-#endif /* BWIDGETS_HSLIDER_HPP_ */
+#endif /* BWIDGETS_DISPLAYHSLIDER_HPP_ */

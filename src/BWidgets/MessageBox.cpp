@@ -1,8 +1,25 @@
+/* MessageBox.cpp
+ * Copyright (C) 2018  Sven Jähnichen
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "MessageBox.hpp"
 
 namespace BWidgets
 {
-MessageBox::MessageBox () : MessageBox (0.0, 0.0, 0.0, 0.0, "MessageBox", "", "MessageBox") {}
+MessageBox::MessageBox () : MessageBox (0.0, 0.0, 0.0, 0.0, "messagebox", "", "MessageBox") {}
 
 MessageBox::MessageBox (const double x, const double y, const double width, const double height,
 						const std::string& text, std::vector<std::string> buttons) :
@@ -15,20 +32,19 @@ MessageBox::MessageBox (const double x, const double y, const double width, cons
 MessageBox::MessageBox (const double x, const double y, const double width, const double height,
 						const std::string& name, const std::string& title, const std::string& text, std::vector<std::string> buttonLabels) :
 		ValueWidget (x, y, width, height, name, 0.0),
-		titleBox (0, 0, 0, 0, name, ""), textBox (0, 0, 0, 0, name, ""), okButton (0, 0, 40, 20, "OK", 0.0), buttons (),
+		titleBox (0, 0, 0, 0, name + BWIDGETS_DEFAULT_MESSAGEBOX_TITLE_NAME, ""),
+		textBox (0, 0, 0, 0, name + BWIDGETS_DEFAULT_MESSAGEBOX_TEXT_NAME, ""),
+		okButton (0, 0, BWIDGETS_DEFAULT_BUTTON_WIDTH, BWIDGETS_DEFAULT_BUTTON_HEIGHT, name + BWIDGETS_DEFAULT_MESSAGEBOX_BUTTON_NAME, "OK", 0.0),
+		buttons (),
 		v (0.0)
 {
 	// Title
 	setTitle (title);
-	titleBox.setBackground (BStyles::noFill);
-	titleBox.setTextColors (BColors::darks);
 	titleBox.setClickable (false);
 	add (titleBox);
 
 	// Text
 	setText (text);
-	textBox.setBackground (BStyles::noFill);
-	textBox.setTextColors (BColors::darks);
 	textBox.setClickable (false);
 	add (textBox);
 
@@ -38,15 +54,14 @@ MessageBox::MessageBox (const double x, const double y, const double width, cons
 	// Or at least the OK button
 	if (buttons.empty ())
 	{
-		okButton.getLabel ()->setTextColors(BColors::darks);
 		okButton.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, MessageBox::redirectPostValueChanged);
 		buttons.push_back (&okButton);
 		rearrangeButtons ();
 		add (okButton);
 	}
 
-	setBackground (BStyles::greyFill);
-	setBorder (BStyles::whiteBorder1pt);
+	setBackground (BWIDGETS_DEFAULT_MENU_BACKGROUND);
+	setBorder (BWIDGETS_DEFAULT_MENU_BORDER);
 	setDragable (true);
 }
 
@@ -124,13 +139,19 @@ void MessageBox::setTitle (const std::string& title)
 	{
 		double width = getEffectiveWidth ();
 		double height = getEffectiveHeight ();
-		titleBox.setWidth (width > 20 ? width - 20 : 0);
-		titleBox.setHeight (height > 50 ? height - 50 : 0);
+		titleBox.setWidth (width > 2 * BWIDGETS_DEFAULT_MENU_PADDING ? width - 2 * BWIDGETS_DEFAULT_MENU_PADDING : 0);
+		titleBox.setHeight (height > 3 * BWIDGETS_DEFAULT_MENU_PADDING + BWIDGETS_DEFAULT_BUTTON_HEIGHT ?
+								height - (3 * BWIDGETS_DEFAULT_MENU_PADDING + BWIDGETS_DEFAULT_BUTTON_HEIGHT) :
+								0);
 		titleBox.getFont ()->setFontWeight (CAIRO_FONT_WEIGHT_BOLD);
 		titleBox.setText (title);
 		double titleheight = titleBox.getTextBlockHeight(titleBox.getTextBlock ());
-		titleBox.setHeight (titleheight < height - 50 ? titleheight : (height > 50 ? height - 50 : 0));
-		titleBox.moveTo (10, 10);
+		titleBox.setHeight (titleheight < height - (3 * BWIDGETS_DEFAULT_MENU_PADDING + BWIDGETS_DEFAULT_BUTTON_HEIGHT) ?
+								titleheight :
+								(height > (3 * BWIDGETS_DEFAULT_MENU_PADDING + BWIDGETS_DEFAULT_BUTTON_HEIGHT) ?
+										height - (3 * BWIDGETS_DEFAULT_MENU_PADDING + BWIDGETS_DEFAULT_BUTTON_HEIGHT) :
+										0));
+		titleBox.moveTo (BWIDGETS_DEFAULT_MENU_PADDING, BWIDGETS_DEFAULT_MENU_PADDING);
 	}
 	else
 	{
@@ -146,13 +167,15 @@ void MessageBox::setText (const std::string& text)
 {
 	if (text != "")
 	{
-		double titleheight = titleBox.getHeight () + 10;
+		double titleheight = titleBox.getHeight () + BWIDGETS_DEFAULT_MENU_PADDING;
 		double width = getEffectiveWidth ();
 		double height = getEffectiveHeight ();
-		textBox.setWidth (width > 20 ? width - 20 : 0);
-		textBox.setHeight (height > 50 + titleheight ? height - (50 + titleheight) : 0);
+		textBox.setWidth (width > 2 * BWIDGETS_DEFAULT_MENU_PADDING ? width - 2 * BWIDGETS_DEFAULT_MENU_PADDING : 0);
+		textBox.setHeight (height > (3 * BWIDGETS_DEFAULT_MENU_PADDING + BWIDGETS_DEFAULT_BUTTON_HEIGHT) + titleheight ?
+									height - ((3 * BWIDGETS_DEFAULT_MENU_PADDING + BWIDGETS_DEFAULT_BUTTON_HEIGHT) + titleheight) :
+									0);
 		textBox.setText (text);
-		textBox.moveTo (10, 10 + titleheight);
+		textBox.moveTo (BWIDGETS_DEFAULT_MENU_PADDING, BWIDGETS_DEFAULT_MENU_PADDING + titleheight);
 	}
 	else
 	{
@@ -166,14 +189,16 @@ std::string MessageBox::getText () const {return textBox.getText ();}
 
 void MessageBox::addButton (const std::string& label)
 {
-	TextButton* b = new TextButton(0, 0, 40, 20, label, 0.0);
+	TextButton* b = new TextButton(0, 0, BWIDGETS_DEFAULT_BUTTON_WIDTH, BWIDGETS_DEFAULT_BUTTON_HEIGHT,
+								   name_ + BWIDGETS_DEFAULT_MESSAGEBOX_BUTTON_NAME, label, 0.0);
 	if (b)
 	{
 		cairo_t* cr = cairo_create (widgetSurface);
 		cairo_text_extents_t ext = b->getLabel()->getFont()->getTextExtents (cr, label);
 		cairo_destroy (cr);
-		b->setWidth (ext.width > 30 ? ext.width + 10 : 40);
-		b->getLabel()->setTextColors(BColors::darks);
+		b->setWidth (ext.width > BWIDGETS_DEFAULT_BUTTON_WIDTH - BWIDGETS_DEFAULT_MENU_PADDING ?
+				ext.width + BWIDGETS_DEFAULT_MENU_PADDING :
+				BWIDGETS_DEFAULT_BUTTON_WIDTH);
 		b->setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, MessageBox::redirectPostValueChanged);
 		buttons.push_back (b);
 		rearrangeButtons ();
@@ -230,10 +255,11 @@ void MessageBox::applyTheme (BStyles::Theme& theme) {applyTheme (theme, name_);}
 
 void MessageBox::applyTheme (BStyles::Theme& theme, const std::string& name)
 {
-	/*Widget::applyTheme (theme, name);
-	textBox.applyTheme (theme, name);
-	okButton.applyTheme (theme, name);
-	update ();*/
+	Widget::applyTheme (theme, name);
+	titleBox.applyTheme (theme, name + BWIDGETS_DEFAULT_MESSAGEBOX_TEXT_NAME);
+	textBox.applyTheme (theme, name + BWIDGETS_DEFAULT_MESSAGEBOX_TEXT_NAME);
+	okButton.applyTheme (theme, name + BWIDGETS_DEFAULT_MESSAGEBOX_BUTTON_NAME);
+	update ();
 }
 
 void MessageBox::rearrangeButtons ()
@@ -252,7 +278,7 @@ void MessageBox::rearrangeButtons ()
 
 	// Calculate spaces and offset
 	double buttonspace = (width - totalbuttonwidth) / (nrbuttons + 1);
-	if (buttonspace < 10) buttonspace = 10;
+	if (buttonspace < BWIDGETS_DEFAULT_MENU_PADDING) buttonspace = BWIDGETS_DEFAULT_MENU_PADDING;
 	double buttonxpos = (totalbuttonwidth + (nrbuttons + 1) * buttonspace < width ?
 						 buttonspace :
 						 width / 2 - (totalbuttonwidth + (nrbuttons - 1) * buttonspace) / 2);
@@ -260,7 +286,7 @@ void MessageBox::rearrangeButtons ()
 	// Rearrange
 	for (TextButton* b : buttons)
 	{
-		b->moveTo (buttonxpos, height - 30);
+		b->moveTo (buttonxpos, height - BWIDGETS_DEFAULT_MENU_PADDING - BWIDGETS_DEFAULT_BUTTON_HEIGHT);
 		buttonxpos = buttonxpos + buttonspace + b->getWidth ();
 	}
 }

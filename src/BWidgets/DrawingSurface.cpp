@@ -1,8 +1,25 @@
+/* DrawingSurface.cpp
+ * Copyright (C) 2018  Sven Jähnichen
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #include "DrawingSurface.hpp"
 
 namespace BWidgets
 {
-DrawingSurface::DrawingSurface () : DrawingSurface (0.0, 0.0, 50.0, 50.0, "dial") {}
+DrawingSurface::DrawingSurface () : DrawingSurface (0.0, 0.0, BWIDGETS_DEFAULT_WIDTH, BWIDGETS_DEFAULT_HEIGHT, "drawingsurface") {}
 
 DrawingSurface::DrawingSurface (const double x, const double y, const double width, const double height, const std::string& name) :
 		Widget (x, y, width, height, name)
@@ -89,6 +106,8 @@ void DrawingSurface::update ()
 
 void DrawingSurface::draw (const double x, const double y, const double width, const double height)
 {
+	if ((!widgetSurface) || (cairo_surface_status (widgetSurface) != CAIRO_STATUS_SUCCESS)) return;
+
 	if ((width_ >= 4) && (height_ >= 4))
 	{
 		// Draw super class widget elements first

@@ -1,7 +1,32 @@
+/* Dial.hpp
+ * Copyright (C) 2018  Sven Jähnichen
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
 #ifndef BWIDGETS_DIAL_HPP_
 #define BWIDGETS_DIAL_HPP_
 
 #include "RangeWidget.hpp"
+#include "Knob.hpp"
+#include "DrawingSurface.hpp"
+
+#define BWIDGETS_DEFAULT_DIAL_WIDTH 50.0
+#define BWIDGETS_DEFAULT_DIAL_HEIGHT 50.0
+#define BWIDGETS_DEFAULT_DIAL_KNOB_SIZE 0.6
+#define BWIDGETS_DEFAULT_DIAL_DEPTH 1.0
+#define BWIDGETS_DEFAULT_DIAL_DOT_SIZE 0.1
 
 namespace BWidgets
 {
@@ -70,8 +95,11 @@ public:
 
 
 protected:
+	void drawDot ();
 	virtual void draw (const double x, const double y, const double width, const double height) override;
 
+	Knob knob;
+	DrawingSurface dot;
 	BColors::ColorSet fgColors;
 	BColors::ColorSet bgColors;
 };
