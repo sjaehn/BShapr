@@ -84,13 +84,13 @@ private:
 	BWidgets::HSwitch monitorSwitch;
 	BWidgets::VSlider scaleControl;
 	BWidgets::DrawingSurface monitorDisplay;
-	BWidgets::HSliderWithValueDisplay nrStepsControl;
-	BWidgets::DialWithValueDisplay attackControl;
-	BWidgets::DialWithValueDisplay releaseControl;
-	BWidgets::HSliderWithValueDisplay stepsizeControl;
+	BWidgets::DisplayHSlider nrStepsControl;
+	BWidgets::DisplayDial attackControl;
+	BWidgets::DisplayDial releaseControl;
+	BWidgets::DisplayHSlider stepsizeControl;
 	BWidgets::Label stepshapeLabel;
 	BWidgets::Label sequencemonitorLabel;
-	std::array<BWidgets::VSliderWithValueDisplay, MAXSTEPS> stepControl;
+	std::array<BWidgets::DisplayVSlider, MAXSTEPS> stepControl;
 
 	struct 	{
 		bool record_on;
@@ -151,12 +151,8 @@ private:
 							 {"textcolors", STYLEPTR (&fgColors)},
 							 {"font", STYLEPTR (&defaultFont)}}},
 		 {"switch",			{{"uses", STYLEPTR (&defaultStyles)},
-							 {"buttoncolors", STYLEPTR (&bgColors)},
-							 {"bgcolors", STYLEPTR (&bgColors)},
-							 {"labelcolors", STYLEPTR (&fgColors)},
-							 {"font", STYLEPTR (&defaultFont)}}},
-		{"On", 				{{"uses", STYLEPTR (&labelStyles)}}},
-		{"Off", 			{{"uses", STYLEPTR (&labelStyles)}}},
+							 {"fgcolors", STYLEPTR (&fgColors)},
+							 {"bgcolors", STYLEPTR (&bgColors)}}},
 		{"Monitor", 		{{"uses", STYLEPTR (&labelStyles)}}},
 		{"Attack", 			{{"uses", STYLEPTR (&labelStyles)}}},
 		{"Release", 		{{"uses", STYLEPTR (&labelStyles)}}},
@@ -532,7 +528,7 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 	pluginPath (bundle_path ? std::string (bundle_path) : std::string ("")), controller (NULL), write_function (NULL), map (NULL),
 
 	mContainer (0, 0, 800, 560, "main"),
-	monitorSwitch (685, 15, 50, 25, "switch", 0.0),
+	monitorSwitch (690, 25, 40, 16, "switch", 0.0),
 	monitorDisplay (260, 70, 480, 240, "monitor"),
 	monitorLabel (680, 45, 60, 20, "Monitor"),
 	scaleControl (760, 80, 14, 230, "slider", 0.0, SCALEMIN, SCALEMAX, 0.1),
@@ -553,7 +549,7 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 	//Initialialize and configure stepControllers
 	for (int i = 0; i < MAXSTEPS; ++i)
 	{
-		stepControl[i] = BWidgets::VSliderWithValueDisplay ((i + 0.5) * 480 / MAXSTEPS - 10, 0, 28, 130, "slider", 1.0, 0.0, 1.0, 0.01, "%1.2f");
+		stepControl[i] = BWidgets::DisplayVSlider ((i + 0.5) * 480 / MAXSTEPS - 10, 0, 28, 130, "slider", 1.0, 0.0, 1.0, 0.01, "%1.2f");
 		stepControl[i].rename ("slider");
 		stepControl[i].setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlicer_GUI::valueChangedCallback);
 		stepControl[i].applyTheme (theme, "slider");
@@ -797,6 +793,4 @@ LV2_SYMBOL_EXPORT const LV2UI_Descriptor *lv2ui_descriptor(uint32_t index)
 	case 0: return &guiDescriptor;
 	default:return NULL;
     }
-
-
 }
