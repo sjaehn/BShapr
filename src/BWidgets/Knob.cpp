@@ -46,7 +46,11 @@ Knob& Knob::operator= (const Knob& that)
 	return *this;
 }
 
-void Knob::setDepth (const double depth) {knobDepth = depth;}
+void Knob::setDepth (const double depth)
+{
+	knobDepth = depth;
+	update ();
+}
 
 double Knob::getDepth () const {return knobDepth;}
 

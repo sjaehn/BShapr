@@ -50,10 +50,16 @@ DisplayHSlider::DisplayHSlider (const DisplayHSlider& that) :
 
 DisplayHSlider& DisplayHSlider::operator= (const DisplayHSlider& that)
 {
+	release (&slider);
+	release (&valueDisplay);
+
 	valFormat = that.valFormat;
 	RangeWidget::operator= (that);
 	slider = that.slider;
 	valueDisplay = that.valueDisplay;
+
+	add (slider);
+	add (valueDisplay);
 
 	return *this;
 }

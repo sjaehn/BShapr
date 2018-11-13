@@ -43,8 +43,13 @@ TextButton:: ~TextButton () {}
 
 TextButton& TextButton::operator= (const TextButton& that)
 {
+	release (&buttonLabel);
+
 	Button::operator= (that);
 	buttonLabel = that.buttonLabel;
+
+	add (buttonLabel);
+
 	return *this;
 }
 

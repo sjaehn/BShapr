@@ -43,7 +43,7 @@ public:
 
 	/**
 	 * Creates a new (orphan) switch and copies the switch properties from a
-	 * source switch. This method doesn't copy any parent or child widgets.
+	 * source switch.
 	 * @param that Source slider
 	 */
 	VSwitch (const VSwitch& that);

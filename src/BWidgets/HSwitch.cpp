@@ -39,15 +39,25 @@ HSwitch::HSwitch (const double  x, const double y, const double width, const dou
 	add (knob);
 }
 
-HSwitch::HSwitch (const HSwitch& that) : ToggleButton (that), knob (that.knob), scale (that.scale) {}
+HSwitch::HSwitch (const HSwitch& that) : ToggleButton (that), knob (that.knob), scale (that.scale)
+{
+	add (scale);
+	add (knob);
+}
 
 HSwitch::~HSwitch () {}
 
 HSwitch& HSwitch::operator= (const HSwitch& that)
 {
+	release (&scale);
+	release (&knob);
+
 	knob = that.knob;
 	scale = that.scale;
 	ToggleButton::operator= (that);
+
+	add (scale);
+	add (knob);
 
 	return *this;
 }

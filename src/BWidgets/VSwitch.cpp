@@ -39,15 +39,25 @@ VSwitch::VSwitch (const double  x, const double y, const double width, const dou
 	add (knob);
 }
 
-VSwitch::VSwitch (const VSwitch& that) : ToggleButton (that), knob (that.knob), scale (that.scale) {}
+VSwitch::VSwitch (const VSwitch& that) : ToggleButton (that), knob (that.knob), scale (that.scale)
+{
+	add (scale);
+	add (knob);
+}
 
 VSwitch::~VSwitch () {}
 
 VSwitch& VSwitch::operator= (const VSwitch& that)
 {
+	release (&scale);
+	release (&knob);
+
 	knob = that.knob;
 	scale = that.scale;
 	ToggleButton::operator= (that);
+
+	add (scale);
+	add (knob);
 
 	return *this;
 }

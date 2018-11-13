@@ -53,8 +53,7 @@ public:
 
 	/**
 	 * Creates a new (orphan) message box and copies the properties from a
-	 * source message box widget. This method doesn't copy any parent or child
-	 * widgets.
+	 * source message box widget.
 	 * @param that Source message box
 	 */
 	MessageBox (const MessageBox& that);

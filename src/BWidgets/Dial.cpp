@@ -47,16 +47,26 @@ Dial::Dial (const double x, const double y, const double width, const double hei
 	add (dot);
 }
 
-Dial::Dial (const Dial& that) : RangeWidget (that), knob (that.knob), fgColors (that.fgColors), bgColors (that.bgColors) {}
+Dial::Dial (const Dial& that) : RangeWidget (that), knob (that.knob), fgColors (that.fgColors), bgColors (that.bgColors)
+{
+	add (knob);
+	add (dot);
+}
 
 Dial:: ~Dial () {}
 
 Dial& Dial::operator= (const Dial& that)
 {
+	release (&knob);
+	release (&dot);
+
 	knob = that.knob;
 	fgColors = that.fgColors;
 	bgColors = that.bgColors;
 	RangeWidget::operator= (that);
+
+	add (knob);
+	add (dot);
 
 	return *this;
 }

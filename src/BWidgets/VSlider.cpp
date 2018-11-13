@@ -42,15 +42,25 @@ VSlider::VSlider (const double  x, const double y, const double width, const dou
 	setDragable (true);
 }
 
-VSlider::VSlider (const VSlider& that) : RangeWidget (that), scale (that.scale), knob (that.knob) {}
+VSlider::VSlider (const VSlider& that) : RangeWidget (that), scale (that.scale), knob (that.knob)
+{
+	add (scale);
+	add (knob);
+}
 
 VSlider::~VSlider () {}
 
 VSlider& VSlider::operator= (const VSlider& that)
 {
+	release (&scale);
+	release (&knob);
+
 	scale = that.scale;
 	knob = that.knob;
 	RangeWidget::operator= (that);
+
+	add (scale);
+	add (knob);
 
 	return *this;
 }

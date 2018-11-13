@@ -40,7 +40,7 @@ public:
 
 	/**
 	 * Creates a new (orphan) button and copies the button properties from a
-	 * source button. This method doesn't copy any parent or child widgets.
+	 * source button.
 	 * @param that Source button
 	 */
 	TextToggleButton (const TextToggleButton& that);

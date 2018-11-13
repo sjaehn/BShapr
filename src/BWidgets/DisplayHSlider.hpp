@@ -43,7 +43,7 @@ public:
 
 	/**
 	 * Creates a new (orphan) slider and copies the slider properties from a
-	 * source slider. This method doesn't copy any parent or child widgets.
+	 * source slider.
 	 * @param that Source slider
 	 */
 	DisplayHSlider (const DisplayHSlider& that);

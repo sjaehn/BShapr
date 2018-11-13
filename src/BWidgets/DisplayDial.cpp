@@ -52,10 +52,14 @@ DisplayDial::~DisplayDial () {}
 
 DisplayDial& DisplayDial::operator= (const DisplayDial& that)
 {
+	release (&dial);
+	release (&valueDisplay);
 	valFormat = that.valFormat;
 	RangeWidget::operator= (that);
 	dial = that.dial;
 	valueDisplay = that.valueDisplay;
+	add (dial);
+	add (valueDisplay);
 
 	return *this;
 }

@@ -45,7 +45,7 @@ public:
 
 	/**
 	 * Creates a new (orphan) dial and copies the dial properties from a
-	 * source dial. This method doesn't copy any parent or child widgets.
+	 * source dial.
 	 * @param that Source dial
 	 */
 	Dial (const Dial& that);

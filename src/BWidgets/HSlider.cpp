@@ -42,15 +42,25 @@ HSlider::HSlider (const double  x, const double y, const double width, const dou
 	setDragable (true);
 }
 
-HSlider::HSlider (const HSlider& that) : RangeWidget (that), knob (that.knob), scale (that.scale) {}
+HSlider::HSlider (const HSlider& that) : RangeWidget (that), knob (that.knob), scale (that.scale)
+{
+	add (scale);
+	add (knob);
+}
 
 HSlider::~HSlider () {}
 
 HSlider& HSlider::operator= (const HSlider& that)
 {
+	release (&scale);
+	release (&knob);
+
 	knob = that.knob;
 	scale = that.scale;
 	RangeWidget::operator= (that);
+
+	add (scale);
+	add (knob);
 
 	return *this;
 }

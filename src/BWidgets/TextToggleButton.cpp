@@ -43,8 +43,13 @@ TextToggleButton:: ~TextToggleButton () {}
 
 TextToggleButton& TextToggleButton::operator= (const TextToggleButton& that)
 {
+	release (&buttonLabel);
+
 	ToggleButton::operator= (that);
 	buttonLabel = that.buttonLabel;
+
+	add (buttonLabel);
+
 	return *this;
 }
 
