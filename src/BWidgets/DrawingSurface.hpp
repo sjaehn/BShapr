@@ -82,14 +82,6 @@ public:
 	 */
 	virtual void setBorder (const BStyles::Border& border) override;
 
-	/**
-	 * Calls a redraw of the widget and calls postRedisplay () if the the
-	 * Widget is visible.
-	 * This method should be called if the widgets properties are indirectly
-	 * changed.
-	 */
-	virtual void update () override;
-
 protected:
 	virtual void draw (const double x, const double y, const double width, const double height) override;
 

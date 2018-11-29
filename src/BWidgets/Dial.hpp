@@ -72,8 +72,10 @@ public:
 	 * Scans theme for widget properties and applies these properties.
 	 * @param theme Theme to be scanned.
 	 * 				Styles used are:
-	 * 				"fgcolors" for BColors::ColorSet (scale and dot)
-	 * 				"fgcolors" for BStyles::ColorSet (knob and background)
+	 * 				BWIDGETS_KEYWORD_BORDER
+	 * 				BWIDGETS_KEYWORD_BACKGROUND
+	 * 				BWIDGETS_KEYWORD_FGCOLORS
+	 * 				BWIDGETS_KEYWORD_BGCOLORS
 	 * @param name Name of the BStyles::StyleSet within the theme to be
 	 * 		  	   applied.
 	 */
@@ -96,7 +98,12 @@ public:
 
 protected:
 	void drawDot ();
+	virtual void updateCoords ();
 	virtual void draw (const double x, const double y, const double width, const double height) override;
+
+	double dialCenterX;
+	double dialCenterY;
+	double dialRadius;
 
 	Knob knob;
 	DrawingSurface dot;

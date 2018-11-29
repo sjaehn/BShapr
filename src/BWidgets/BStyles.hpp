@@ -78,6 +78,7 @@ private:
 const Line blackLine1pt = Line (BColors::black, 1.0);
 const Line whiteLine1pt = Line (BColors::white, 1.0);
 const Line greyLine1pt = Line (BColors::grey, 1.0);
+const Line lightgreyLine1pt = Line (BColors::lightgrey, 1.0);
 const Line noLine = Line (BColors::invisible, 0.0);
 
 
@@ -159,6 +160,7 @@ protected:
 const Border blackBorder1pt = Border (blackLine1pt);
 const Border whiteBorder1pt = Border (whiteLine1pt);
 const Border greyBorder1pt = Border (greyLine1pt);
+const Border lightgreyBorder1pt = Border (lightgreyLine1pt);
 const Border noBorder = Border (noLine);
 
 
@@ -230,6 +232,7 @@ const Fill greenFill = Fill (BColors::green);
 const Fill blueFill = Fill (BColors::blue);
 const Fill greyFill = Fill (BColors::grey);
 const Fill darkgreyFill = Fill (BColors::darkgrey);
+const Fill grey20Fill = Fill (BColors::grey20);
 const Fill noFill = Fill (BColors::invisible);
 
 typedef enum {

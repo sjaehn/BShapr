@@ -136,6 +136,10 @@ const Color darkblue = Color (0.0, 0.0, 0.5, 1.0);
 const Color lightgrey = Color (0.75, 0.75, 0.75, 1.0);
 const Color darkgrey = Color (0.25, 0.25, 0.25, 1.0);
 const Color darkdarkgrey = Color (0.1, 0.1, 0.1, 1.0);
+const Color grey80 = Color (0.8, 0.8, 0.8, 1.0);
+const Color grey60 = Color (0.6, 0.6, 0.6, 1.0);
+const Color grey40 = Color (0.4, 0.4, 0.4, 1.0);
+const Color grey20 = Color (0.2, 0.2, 0.2, 1.0);
 const Color invisible = Color (0.0, 0.0, 0.0, 0.0);
 
 /**

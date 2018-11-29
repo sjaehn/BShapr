@@ -18,11 +18,10 @@
 #ifndef BWIDGETS_VSLIDER_HPP_
 #define BWIDGETS_VSLIDER_HPP_
 
-#define BWIDGETS_DEFAULT_VSLIDER_WIDTH BWIDGETS_DEFAULT_VSCALE_WIDTH * 2
+#define BWIDGETS_DEFAULT_VSLIDER_WIDTH (BWIDGETS_DEFAULT_VSCALE_WIDTH * 2)
 #define BWIDGETS_DEFAULT_VSLIDER_HEIGHT BWIDGETS_DEFAULT_VSCALE_HEIGHT
 #define BWIDGETS_DEFAULT_VSLIDER_DEPTH 1.0
 
-#include "RangeWidget.hpp"
 #include "Knob.hpp"
 #include "VScale.hpp"
 
@@ -34,7 +33,7 @@ namespace BWidgets
  * RangeWidget class for a vertical slider.
  * The Widget is clickable by default.
  */
-class VSlider : public RangeWidget
+class VSlider : public VScale
 {
 public:
 	VSlider ();
@@ -59,37 +58,6 @@ public:
 	VSlider& operator= (const VSlider& that);
 
 	/**
-	 * Changes the value of the widget and keeps it within the defined range.
-	 * Passes the value to its predefined child widgets.
-	 * Emits a value changed event and (if visible) an expose event.
-	 * @param val Value
-	 */
-	virtual void setValue (const double val) override;
-
-	/**
-	 * Sets the lower limit. Forces the value into the new range. Passes the
-	 * min to its predefined child widgets. Emits a value changed event (if
-	 * value changed) and (if visible) an expose event.
-	 * @param min Lower limit
-	 */
-	virtual void setMin (const double min) override;
-
-	/**
-	 * Sets the upper limit. Forces the value into the new range. Passes the
-	 * max to its predefined child widgets. Emits a value changed event (if
-	 * value changed) and (if visible) an expose event.
-	 * @param max Upper limit
-	 */
-	virtual void setMax (const double min) override;
-
-	/**
-	 * Sets the increment steps for the value. Passes the
-	 * increment to its predefined child widgets.
-	 * @param step Increment steps.
-	 */
-		virtual void setStep (const double step);
-
-	/**
 	 * Calls a redraw of the widget and calls postRedisplay () if the the
 	 * Widget is visible.
 	 * This method should be called if the widgets properties are indirectly
@@ -100,33 +68,24 @@ public:
 	/**
 	 * Scans theme for widget properties and applies these properties.
 	 * @param theme Theme to be scanned.
-	 * 				Styles used are:
-	 * 				"fgcolors" for BColors::ColorSet (scale)
-	 * 				"bgcolors" for BStyles::ColorSet (knob and background)
+	 * 				styles used are:
+	 * 				BWIDGETS_KEYWORD_BORDER
+	 * 				BWIDGETS_KEYWORD_BACKGROUND
+	 * 				BWIDGETS_KEYWORD_FGCOLORS
+	 * 				BWIDGETS_KEYWORD_BGCOLORS
 	 * @param name Name of the BStyles::StyleSet within the theme to be
 	 * 		  	   applied.
 	 */
 	virtual void applyTheme (BStyles::Theme& theme);
 	virtual void applyTheme (BStyles::Theme& theme, const std::string& name);
 
-	/**
-	 * Handles the BEvents::BUTTON_PRESS_EVENT to move the slider.
-	 * @param event Pointer to a poiter event emitted by the same widget.
-	 */
-	virtual void onButtonPressed (BEvents::PointerEvent* event) override;
-
-	/**
-	 * Handles the BEvents::POINTER_MOTION_WHILE_BUTTON_PRESSED_EVENT to move
-	 * the slider.
-	 * @param event Pointer to a pointer event emitted by the same widget.
-	 */
-	virtual void onPointerMotionWhileButtonPressed (BEvents::PointerEvent* event) override;
-
 protected:
-	virtual void draw (const double x, const double y, const double width, const double height) override;
+	virtual void updateCoords () override;
 
-	VScale scale;
 	Knob knob;
+	double knobRadius;
+	double knobXCenter;
+	double knobYCenter;
 };
 
 }

@@ -23,35 +23,20 @@ Button::Button () : Button (0.0, 0.0, BWIDGETS_DEFAULT_BUTTON_WIDTH, BWIDGETS_DE
 
 Button::Button (const double x, const double y, const double width, const double height, const std::string& name, double defaultValue) :
 		ValueWidget (x, y, width, height, name, defaultValue),
-		buttonColors (BWIDGETS_DEFAULT_BGCOLORS), bgColors (BWIDGETS_DEFAULT_BGCOLORS)
+		bgColors (BWIDGETS_DEFAULT_BGCOLORS)
 {
 	setClickable (true);
 }
 
-Button::Button (const Button& that) : ValueWidget (that), buttonColors (that.buttonColors), bgColors (that.buttonColors) {}
+Button::Button (const Button& that) : ValueWidget (that), bgColors (that.bgColors) {}
 
 Button:: ~Button () {}
 
 Button& Button::operator= (const Button& that)
 {
-	buttonColors = that.buttonColors;
 	bgColors = that.bgColors;
 	ValueWidget::operator= (that);
 	return *this;
-}
-
-void Button::setButtonColors (const BColors::ColorSet& colors)
-{
-	buttonColors = colors;
-	update ();
-}
-
-BColors::ColorSet* Button::getButtonColors () {return &buttonColors;}
-
-void Button::update ()
-{
-	draw (0, 0, width_, height_);
-	if (isVisible ()) postRedisplay ();
 }
 
 void Button::applyTheme (BStyles::Theme& theme) {applyTheme (theme, name_);}
@@ -60,18 +45,25 @@ void Button::applyTheme (BStyles::Theme& theme, const std::string& name)
 {
 	Widget::applyTheme (theme, name);
 
-	void* btPtr = theme.getStyle(name, BWIDGETS_KEYWORD_BUTTONCOLORS);
-	if (btPtr) buttonColors = *((BColors::ColorSet*) btPtr);
-
 	void* bgPtr = theme.getStyle(name, BWIDGETS_KEYWORD_BGCOLORS);
-	if (bgPtr) bgColors = *((BColors::ColorSet*) bgPtr);
-
-	if (btPtr || bgPtr) update ();
+	if (bgPtr)
+	{
+		bgColors = *((BColors::ColorSet*) bgPtr);
+		update ();
+	}
 }
 
-void Button::onButtonPressed (BEvents::PointerEvent* event) {setValue (1.0);}
+void Button::onButtonPressed (BEvents::PointerEvent* event)
+{
+	setValue (1.0);
+	Widget::cbfunction[BEvents::EventType::BUTTON_PRESS_EVENT] (event);
+}
 
-void Button::onButtonReleased (BEvents::PointerEvent* event) {setValue (0.0);}
+void Button::onButtonReleased (BEvents::PointerEvent* event)
+{
+	setValue (0.0);
+	Widget::cbfunction[BEvents::EventType::BUTTON_RELEASE_EVENT] (event);
+}
 
 void Button::draw (const double x, const double y, const double width, const double height)
 {
@@ -85,16 +77,14 @@ void Button::draw (const double x, const double y, const double width, const dou
 		cairo_t* cr = cairo_create (widgetSurface);
 		if (cairo_status (cr) == CAIRO_STATUS_SUCCESS)
 		{
-			cairo_pattern_t* pat;
-
 			// Limit cairo-drawing area
 			cairo_rectangle (cr, x, y, width, height);
 			cairo_clip (cr);
 
-			BColors::Color butColorLo = *bgColors.getColor (BColors::NORMAL); butColorLo.applyBrightness (BWIDGETS_DEFAULT_NORMALLIGHTED);
-			BColors::Color butColorHi = *bgColors.getColor (BColors::NORMAL); butColorHi.applyBrightness (BWIDGETS_DEFAULT_ILLUMINATED);
-			BColors::Color butColorMid = *bgColors.getColor (BColors::NORMAL); butColorMid.applyBrightness ((BWIDGETS_DEFAULT_NORMALLIGHTED + BWIDGETS_DEFAULT_ILLUMINATED) / 2);
-			BColors::Color butColorSh = *bgColors.getColor (BColors::NORMAL); butColorSh.applyBrightness (BWIDGETS_DEFAULT_SHADOWED);
+			BColors::Color butColorLo = *bgColors.getColor (getState ()); butColorLo.applyBrightness (BWIDGETS_DEFAULT_NORMALLIGHTED);
+			BColors::Color butColorHi = *bgColors.getColor (getState ()); butColorHi.applyBrightness (BWIDGETS_DEFAULT_ILLUMINATED);
+			BColors::Color butColorMid = *bgColors.getColor (getState ()); butColorMid.applyBrightness ((BWIDGETS_DEFAULT_NORMALLIGHTED));
+			BColors::Color butColorSh = *bgColors.getColor (getState ()); butColorSh.applyBrightness (BWIDGETS_DEFAULT_SHADOWED);
 
 
 			double xb, yb, wb, hb;
@@ -122,46 +112,38 @@ void Button::draw (const double x, const double y, const double width, const dou
 			wf = wb;
 
 			// Button top
-			pat = cairo_pattern_create_radial (0.75 * width_, 0.75 * height_, 0.1 * width_,  0.75 * width_, 0.75 * height_, 1.5 * width_);
-			if (pat && (cairo_pattern_status (pat) == CAIRO_STATUS_SUCCESS))
-			{
-				cairo_pattern_add_color_stop_rgba (pat, 0, butColorMid.getRed (), butColorMid.getGreen (), butColorMid.getBlue (), butColorMid.getAlpha ());
-				cairo_pattern_add_color_stop_rgba (pat, 1, butColorLo.getRed (), butColorLo.getGreen (), butColorLo.getBlue (), butColorLo.getAlpha ());
-				cairo_rectangle (cr, xb, yb, wb, hb);
-				cairo_set_source (cr, pat);
-				cairo_fill (cr);
-				cairo_pattern_destroy (pat);
-			}
+			cairo_set_source_rgba (cr, butColorMid.getRed (), butColorMid.getGreen (), butColorMid.getBlue (), butColorMid.getAlpha ());
+			cairo_rectangle (cr, xb, yb, wb, hb);
+			cairo_fill (cr);
+
 
 			// Button front
-			pat = cairo_pattern_create_linear (xb, yb, xf + wf, yf + hf);
-			if (pat && (cairo_pattern_status (pat) == CAIRO_STATUS_SUCCESS))
-			{
-				cairo_pattern_add_color_stop_rgba (pat, 1, butColorHi.getRed (), butColorHi.getGreen (), butColorHi.getBlue (), butColorHi.getAlpha ());
-				cairo_pattern_add_color_stop_rgba (pat, 0, butColorSh.getRed (), butColorSh.getGreen (), butColorSh.getBlue (), butColorSh.getAlpha ());
-				cairo_move_to (cr, xb, yf);
-				cairo_line_to (cr, xb + wb, yf);
-				cairo_line_to (cr, xb + wb, yb);
-				cairo_line_to (cr, xb + wb + hf, yb + hf);
-				cairo_line_to (cr, xb + wb + hf, yf + hf);
-				cairo_line_to (cr, xb + hf, yf + hf);
-				cairo_close_path (cr);
-				cairo_set_source (cr, pat);
-				cairo_fill (cr);
+			cairo_move_to (cr, xb, yf);
+			cairo_line_to (cr, xb + wb, yf);
+			cairo_line_to (cr, xb + wb, yb);
+			cairo_line_to (cr, xb + wb + hf, yb + hf);
+			cairo_line_to (cr, xb + wb + hf, yf + hf);
+			cairo_line_to (cr, xb + hf, yf + hf);
+			cairo_close_path (cr);
+			cairo_set_source_rgba (cr, butColorHi.getRed (), butColorHi.getGreen (), butColorHi.getBlue (), butColorHi.getAlpha ());
+			cairo_fill (cr);
 
-				// Button edges
-				cairo_set_line_width (cr, 0.2 * BWIDGETS_DEFAULT_BUTTON_DEPTH);
-				cairo_rectangle (cr, xb, yb, wb, hb);
-				cairo_set_source (cr, pat);
-				cairo_stroke (cr);
+			// Button edges
+			cairo_set_source_rgba (cr, butColorSh.getRed (), butColorSh.getGreen (), butColorSh.getBlue (), butColorSh.getAlpha ());
+			cairo_set_line_width (cr, 0.2 * BWIDGETS_DEFAULT_BUTTON_DEPTH);
+			cairo_move_to (cr, xb, yb + hb);
+			cairo_line_to (cr, xb, yb);
+			cairo_line_to (cr, xb + wb, yb);
+			cairo_stroke (cr);
 
-				cairo_move_to (cr, xb + wb, yf);
-				cairo_line_to (cr, xb + wb + hf, yf + hf);
-				cairo_set_source_rgba (cr, butColorHi.getRed (), butColorHi.getGreen (), butColorHi.getBlue (), butColorHi.getAlpha ());
-				cairo_stroke (cr);
+			cairo_set_source_rgba (cr, butColorHi.getRed (), butColorHi.getGreen (), butColorHi.getBlue (), butColorHi.getAlpha ());
+			cairo_move_to (cr, xb, yb + hb);
+			cairo_line_to (cr, xb + wb, yb + hb);
+			cairo_line_to (cr, xb + wb, yb);
+			cairo_move_to (cr, xb + wb, yf);
+			cairo_line_to (cr, xb + wb + hf, yf + hf);
+			cairo_stroke (cr);
 
-				cairo_pattern_destroy (pat);
-			}
 		}
 		cairo_destroy (cr);
 	}

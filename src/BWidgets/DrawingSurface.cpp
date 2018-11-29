@@ -25,7 +25,6 @@ DrawingSurface::DrawingSurface (const double x, const double y, const double wid
 		Widget (x, y, width, height, name)
 {
 	drawingSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, getEffectiveWidth (), getEffectiveHeight ());
-	draw (0, 0, width_, height_);
 }
 
 DrawingSurface::DrawingSurface (const DrawingSurface& that) :
@@ -33,7 +32,6 @@ DrawingSurface::DrawingSurface (const DrawingSurface& that) :
 {
 	drawingSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, getEffectiveWidth (), getEffectiveHeight ());
 	//TODO copy surface data
-	draw (0, 0, width_, height_);
 }
 
 DrawingSurface::~DrawingSurface ()
@@ -96,12 +94,6 @@ void DrawingSurface::setBorder (const BStyles::Border& border)
 	}
 
 	update ();
-}
-
-void DrawingSurface::update ()
-{
-	draw (0, 0, width_, height_);
-	if (isVisible ()) postRedisplay ();
 }
 
 void DrawingSurface::draw (const double x, const double y, const double width, const double height)

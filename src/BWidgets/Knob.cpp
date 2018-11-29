@@ -54,12 +54,6 @@ void Knob::setDepth (const double depth)
 
 double Knob::getDepth () const {return knobDepth;}
 
-void Knob::update ()
-{
-	draw (0, 0, width_, height_);
-	if (isVisible ()) postRedisplay ();
-}
-
 void Knob::applyTheme (BStyles::Theme& theme) {applyTheme (theme, name_);}
 
 void Knob::applyTheme (BStyles::Theme& theme, const std::string& name)

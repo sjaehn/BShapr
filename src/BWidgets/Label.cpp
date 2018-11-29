@@ -36,8 +36,6 @@ Label::Label (const Label& that) : Widget (that)
 	labelColors = that.labelColors;
 	labelFont = that.labelFont;
 	labelText = that.labelText;
-
-	draw (0, 0, width_, height_);
 }
 
 Label::~Label () {}
@@ -74,12 +72,6 @@ void Label::setFont (const BStyles::Font& font)
 	update ();
 }
 BStyles::Font* Label::getFont () {return &labelFont;}
-
-void Label::update ()
-{
-	draw (0, 0, width_, height_);
-	if (isVisible ()) postRedisplay ();
-}
 
 void Label::applyTheme (BStyles::Theme& theme) {applyTheme (theme, name_);}
 
@@ -121,7 +113,7 @@ void Label::draw (const double x, const double y, const double width, const doub
 		double h = getEffectiveHeight ();
 
 		cairo_text_extents_t ext = labelFont.getTextExtents(cr, labelText);
-		BColors::Color lc = *labelColors.getColor (BColors::NORMAL);
+		BColors::Color lc = *labelColors.getColor (getState ());
 		cairo_set_source_rgba (cr, lc.getRed (), lc.getGreen (), lc.getBlue (), lc.getAlpha ());
 		cairo_select_font_face (cr, labelFont.getFontFamily ().c_str (), labelFont.getFontSlant (), labelFont.getFontWeight ());
 		cairo_set_font_size (cr, labelFont.getFontSize ());

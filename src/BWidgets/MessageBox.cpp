@@ -60,8 +60,8 @@ MessageBox::MessageBox (const double x, const double y, const double width, cons
 		add (okButton);
 	}
 
-	setBackground (BWIDGETS_DEFAULT_MENU_BACKGROUND);
-	setBorder (BWIDGETS_DEFAULT_MENU_BORDER);
+	background_ = BWIDGETS_DEFAULT_MENU_BACKGROUND;
+	border_ = BWIDGETS_DEFAULT_MENU_BORDER;
 	setDragable (true);
 }
 
@@ -92,14 +92,11 @@ MessageBox::MessageBox (const MessageBox& that) : ValueWidget (that)
 
 MessageBox::~MessageBox ()
 {
-	for (std::vector<TextButton*>::iterator it = buttons.end (); !buttons.empty (); it = buttons.end ())
+	while (!buttons.empty ())
 	{
-		release (buttons.back ());
-		if (buttons.back () != &okButton)
-		{
-			TextButton* b = buttons.back ();
-			delete b;
-		}
+		TextButton* b = buttons.back ();
+		if (b && (b != &okButton)) delete b;
+		else release (b);
 		buttons.pop_back ();
 	}
 }
@@ -111,7 +108,13 @@ MessageBox& MessageBox::operator= (const MessageBox& that)
 	okButton = that.okButton;
 
 	// Clean buttons first
-	for (TextButton* b : buttons) delete b;
+	while (!buttons.empty ())
+	{
+		TextButton* b = buttons.back ();
+		if (b && (b != &okButton)) delete b;
+		else release (b);
+		buttons.pop_back ();
+	}
 
 	// Hard copy buttons
 	for (TextButton* b : that.buttons)
@@ -218,7 +221,7 @@ void MessageBox::removeButton  (const std::string& label)
 		TextButton* b = (TextButton*) *it;
 		if (b->getLabel ()->getText () == label)
 		{
-			delete b;
+			if (b != &okButton) delete b;
 			buttons.erase (it);
 			rearrangeButtons ();
 			return;
@@ -244,12 +247,6 @@ BColors::ColorSet* MessageBox::getTextColors () {return textBox.getTextColors ()
 void MessageBox::setFont (const BStyles::Font& font) {textBox.setFont (font);}
 
 BStyles::Font* MessageBox::getFont () {return textBox.getFont ();}
-
-void MessageBox::update ()
-{
-	draw (0, 0, width_, height_);
-	if (isVisible ()) postRedisplay ();
-}
 
 void MessageBox::applyTheme (BStyles::Theme& theme) {applyTheme (theme, name_);}
 
@@ -315,12 +312,6 @@ void MessageBox::redirectPostValueChanged (BEvents::Event* event)
 			}
 		}
 	}
-}
-
-void MessageBox::draw (const double x, const double y, const double width, const double height)
-{
-	// Draw super class widget elements only
-	Widget::draw (x, y, width, height);
 }
 
 }

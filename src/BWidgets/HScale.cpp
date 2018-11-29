@@ -17,10 +17,6 @@
 
 #include "HScale.hpp"
 
-#ifndef PI
-#define PI 3.14159265
-#endif
-
 namespace BWidgets
 {
 HScale::HScale () : HScale (0.0, 0.0, BWIDGETS_DEFAULT_HSCALE_WIDTH, BWIDGETS_DEFAULT_HSCALE_HEIGHT, "hscale",
@@ -29,13 +25,17 @@ HScale::HScale () : HScale (0.0, 0.0, BWIDGETS_DEFAULT_HSCALE_WIDTH, BWIDGETS_DE
 HScale::HScale (const double  x, const double y, const double width, const double height, const std::string& name,
 				  const double value, const double min, const double max, const double step) :
 		RangeWidget (x, y, width, height, name, value, min, max, step),
-		fgColors (BWIDGETS_DEFAULT_FGCOLORS), bgColors (BWIDGETS_DEFAULT_BGCOLORS)
+		fgColors (BWIDGETS_DEFAULT_FGCOLORS), bgColors (BWIDGETS_DEFAULT_BGCOLORS),
+		scaleX0 (0), scaleY0 (0), scaleWidth (width), scaleHeight (height), scaleXValue (0)
 {
 	setClickable (true);
 	setDragable (true);
 }
 
-HScale::HScale (const HScale& that) : RangeWidget (that), fgColors (that.fgColors), bgColors (that.bgColors){}
+HScale::HScale (const HScale& that) :
+		RangeWidget (that), fgColors (that.fgColors), bgColors (that.bgColors), scaleX0 (that.scaleX0), scaleY0 (that.scaleY0),
+		scaleWidth (that.scaleWidth), scaleHeight (that.scaleHeight), scaleXValue (that.scaleXValue)
+{}
 
 HScale::~HScale () {}
 
@@ -43,6 +43,11 @@ HScale& HScale::operator= (const HScale& that)
 {
 	fgColors = that.fgColors;
 	bgColors = that.bgColors;
+	scaleX0 = that.scaleX0;
+	scaleY0 = that.scaleY0;
+	scaleWidth = that.scaleWidth;
+	scaleHeight = that.scaleHeight;
+	scaleXValue = that.scaleXValue;
 	RangeWidget::operator= (that);
 
 	return *this;
@@ -50,8 +55,8 @@ HScale& HScale::operator= (const HScale& that)
 
 void HScale::update ()
 {
-	draw (0, 0, width_, height_);
-	if (isVisible ()) postRedisplay ();
+	updateCoords ();
+	Widget::update();
 }
 
 void HScale::applyTheme (BStyles::Theme& theme) {applyTheme (theme, name_);}
@@ -80,15 +85,10 @@ void HScale::onButtonPressed (BEvents::PointerEvent* event)
 		double y = event->getY ();
 		double x = event->getX ();
 
-		double h = getEffectiveHeight ();
-		double w = getEffectiveWidth ();
-		double x0 = getXOffset ();
-		double y0 = getYOffset ();
-
 		// Pointer within the scale area ? Set value!
-		if ((w > 0) && (x >= x0) && (x <= x0 + w) && (y >= y0) && (y <= y0 + h))
+		if ((scaleWidth > 0) && (x >= scaleX0) && (x <= scaleX0 + scaleWidth) && (y >= scaleY0 - scaleHeight) && (y <= scaleY0 + 2 * scaleHeight))
 		{
-			double frac = (x - x0) / w;
+			double frac = (x - scaleX0) / scaleWidth;
 			if (getStep () < 0) frac = 1 - frac;
 
 			double min = getMin ();
@@ -100,6 +100,15 @@ void HScale::onButtonPressed (BEvents::PointerEvent* event)
 
 void HScale::onPointerMotionWhileButtonPressed (BEvents::PointerEvent* event) {onButtonPressed (event);}
 
+void HScale::updateCoords ()
+{
+	scaleX0 = getXOffset ();
+	scaleY0 = getYOffset ();
+	scaleWidth = getEffectiveWidth ();
+	scaleHeight = getEffectiveHeight ();
+	scaleXValue = scaleX0 + getRelativeValue () * scaleWidth;
+}
+
 void HScale::draw (const double x, const double y, const double width, const double height)
 {
 	if ((!widgetSurface) || (cairo_surface_status (widgetSurface) != CAIRO_STATUS_SUCCESS)) return;
@@ -108,7 +117,7 @@ void HScale::draw (const double x, const double y, const double width, const dou
 	Widget::draw (x, y, width, height);
 
 	// Draw scale only if it is not a null widget
-	if ((height_ >= 1) && (width_ >= 1))
+	if ((scaleHeight >= 1) && (scaleWidth >= 1))
 	{
 		cairo_surface_clear (widgetSurface);
 		cairo_t* cr = cairo_create (widgetSurface);
@@ -122,12 +131,11 @@ void HScale::draw (const double x, const double y, const double width, const dou
 			cairo_clip (cr);
 
 			// Calculate aspect ratios first
-			double h = getEffectiveHeight ();
-			double w = getEffectiveWidth ();
-			double relVal = getRelativeValue ();
-			double x1 = getXOffset (); double y1 = getYOffset ();	// Top left
-			double x2 = x1 + relVal * w; double y2 = y1 + h; 		// Value line bottom
-			double x3 = x2; double y3 = y1;							// Value line top
+			double h = scaleHeight;
+			double w = scaleWidth;
+			double x1 = scaleX0; double y1 = scaleY0;				// Top left
+			double x2 = scaleXValue; double y2 = y1 + h; 			// Value line bottom
+			double x3 = scaleXValue; double y3 = y1;				// Value line top
 			double x4 = x1 + w; double y4 = y2; 					// Bottom right
 
 			// Colors uses within this method

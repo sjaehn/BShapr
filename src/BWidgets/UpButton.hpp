@@ -1,4 +1,4 @@
-/* BWidgets.hpp
+/* UpButton.hpp
  * Copyright (C) 2018  Sven Jähnichen
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,29 +15,31 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef BWIDGETS_HPP_
-#define BWIDGETS_HPP_
+#ifndef BWIDGETS_UPBUTTON_HPP_
+#define BWIDGETS_UPBUTTON_HPP_
 
-#include "BColors.hpp"
-#include "BStyles.hpp"
-#include "BEvents.hpp"
-#include "BValues.hpp"
-#include "Widget.hpp"
+#include "Button.hpp"
 #include "Label.hpp"
-#include "Knob.hpp"
-#include "ValueWidget.hpp"
-#include "RangeWidget.hpp"
-#include "HScale.hpp"
-#include "HSlider.hpp"
-#include "VScale.hpp"
-#include "VSlider.hpp"
-#include "Dial.hpp"
-#include "DisplayDial.hpp"
-#include "DisplayHSlider.hpp"
-#include "DisplayVSlider.hpp"
-#include "HSwitch.hpp"
-#include "DrawingSurface.hpp"
 
-#endif /*BWIDGETS_HPP_*/
+namespace BWidgets
+{
+/**
+ * Class BWidgets::UpButton
+ *
+ * Text button widget. Is is a BWidgets::Button and thus a
+ * BWidgets::ValueWidget having two conditions: on (value != 0) or off
+ * (value == 0)
+ */
+class UpButton : public Button
+{
+public:
+	UpButton ();
+	UpButton (const double x, const double y, const double width, const double height, const std::string& name, double defaultValue = 0.0);
 
+protected:
+	virtual void draw (const double x, const double y, const double width, const double height) override;
+};
 
+}
+
+#endif /* BWIDGETS_TOGGLEBUTTON_HPP_ */

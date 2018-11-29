@@ -28,23 +28,18 @@ DisplayVSlider::DisplayVSlider () :
 DisplayVSlider::DisplayVSlider (const double x, const double y, const double width, const double height, const std::string& name,
 												  const double value, const double min, const double max, const double step,
 												  const std::string& valueFormat) :
-	RangeWidget (x, y, width, height, name, value, min, max, step),
-	slider (0, 0, width, width, name, value, min, max, step),
-	valueDisplay(0, 0.75 * height, width, 0.25 * height, name),
-	valFormat (valueFormat)
+	VSlider (x, y, width, height, name, value, min, max, step),
+	valueDisplay(0, 0, width, height, name),
+	valFormat (valueFormat), displayHeight (0), displayWidth (0), displayX0 (0), displayY0 (0)
 {
-	slider.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, DisplayVSlider::redirectPostValueChanged);
 	valueDisplay.setText (BValues::toBString (valueFormat, value));
-	update ();
-	add (slider);
 	add (valueDisplay);
 }
 
 DisplayVSlider::DisplayVSlider (const DisplayVSlider& that) :
-		RangeWidget (that),
-		slider (that.slider), valueDisplay (that.valueDisplay), valFormat (that.valFormat)
+		VSlider (that), valueDisplay (that.valueDisplay), valFormat (that.valFormat),
+		displayHeight (that.displayHeight), displayWidth (that.displayWidth), displayX0 (that.displayX0), displayY0 (that.displayY0)
 {
-	add (slider);
 	add (valueDisplay);
 }
 
@@ -52,15 +47,16 @@ DisplayVSlider::~DisplayVSlider () {}
 
 DisplayVSlider& DisplayVSlider::operator= (const DisplayVSlider& that)
 {
-	release (&slider);
 	release (&valueDisplay);
 
+	displayHeight = that.displayHeight;
+	displayWidth = that.displayWidth;
+	displayX0 = that.displayX0;
+	displayY0 = that.displayY0;
 	valFormat = that.valFormat;
-	RangeWidget::operator= (that);
-	slider = that.slider;
 	valueDisplay = that.valueDisplay;
+	VSlider::operator= (that);
 
-	add (slider);
 	add (valueDisplay);
 
 	return *this;
@@ -69,33 +65,8 @@ DisplayVSlider& DisplayVSlider::operator= (const DisplayVSlider& that)
 void DisplayVSlider::setValue (const double val)
 {
 	RangeWidget::setValue (val);
-
-	// Pass changed value to dial and display
-	if (value != slider.getValue ()) slider.setValue (value);
 	valueDisplay.setText(BValues::toBString (valFormat, value));
 }
-
-void DisplayVSlider::setMin (const double min)
-{
-	RangeWidget::setMin (min);
-
-	if (rangeMin != slider.getMin ()) slider.setMin (rangeMin);
-}
-
-void DisplayVSlider::setMax (const double max)
-{
-	RangeWidget::setMin (max);
-
-	if (rangeMax != slider.getMax ()) slider.setMax (rangeMax);
-}
-
-void DisplayVSlider::setStep (const double step)
-{
-	RangeWidget::setStep (step);
-
-	if (rangeStep != slider.getStep ()) slider.setStep (rangeStep);
-}
-
 
 void DisplayVSlider::setValueFormat (const std::string& valueFormat)
 {
@@ -105,76 +76,51 @@ void DisplayVSlider::setValueFormat (const std::string& valueFormat)
 
 std::string DisplayVSlider::getValueFormat () const {return valFormat;}
 
-VSlider* DisplayVSlider::getSlider () {return &slider;}
-
-Label* DisplayVSlider::getValueDisplay () {return &valueDisplay;}
+Label* DisplayVSlider::getDisplayLabel () {return &valueDisplay;}
 
 void DisplayVSlider::update ()
 {
-	updateChildCoords ();
-	draw (0, 0, width_, height_);
-	if (isVisible ()) postRedisplay ();
+	VSlider::update ();
+
+	// Update display
+	valueDisplay.moveTo (displayX0, displayY0);
+	valueDisplay.setWidth (displayWidth);
+	valueDisplay.setHeight (displayHeight);
+	if (valueDisplay.getFont ()->getFontSize () != displayHeight * 0.8)
+	{
+		valueDisplay.getFont ()->setFontSize (displayHeight * 0.8);
+		valueDisplay.update ();
+	}
+	valueDisplay.setText (BValues::toBString (valFormat, value));
 }
 
 void DisplayVSlider::applyTheme (BStyles::Theme& theme) {applyTheme (theme, name_);}
 void DisplayVSlider::applyTheme (BStyles::Theme& theme, const std::string& name)
 {
-	Widget::applyTheme (theme, name);
-	slider.applyTheme (theme, name);
+	VSlider::applyTheme (theme, name);
 	valueDisplay.applyTheme (theme, name);
-	update ();
 }
 
-void DisplayVSlider::redirectPostValueChanged (BEvents::Event* event)
+void DisplayVSlider::updateCoords ()
 {
+	double w = getEffectiveWidth ();
+	double h = getEffectiveHeight ();
 
-	if (event && (event->getEventType () == BEvents::EventType::VALUE_CHANGED_EVENT) && event->getWidget ())
-	{
-		BEvents::ValueChangedEvent* ev = (BEvents::ValueChangedEvent*) event;
-		RangeWidget* w = (RangeWidget*) ev->getWidget ();
-		if (w->getParent ())
-		{
-			DisplayVSlider* p = (DisplayVSlider*) w->getParent ();
+	displayWidth = (w < h ? w : h);
+	displayHeight = displayWidth / 2.2;
+	displayX0 = getXOffset () + w / 2 - displayWidth / 2;
+	displayY0 = getYOffset ();
 
-			// Get value and range from slider
-			if (p->getValue () != w->getValue ()) p->setValue (w->getValue ());
-			if (p->getMin () != w->getMin ()) p->setMin (w->getMin ());
-			if (p->getMax () != w->getMax ()) p->setMax (w->getMax ());
-			if (p->getStep () != w->getStep ()) p->setStep (w->getStep ());
-
-			p->updateChildCoords ();
-		}
-	}
-}
-
-void DisplayVSlider::updateChildCoords ()
-{
-	double tw = getWidth ();
-	double th = tw / 2.2;
-	double ty = 0;
-	double tx = 0;
-
-	double sh = getHeight () - th;
-	double sw = getWidth () / 2;
-	double sx = getWidth () / 2 - sw / 2;
-	double sy = th;
-
-	slider.moveTo (sx, sy);
-	slider.setWidth (sw);
-	slider.setHeight (sh);
-
-	valueDisplay.getFont ()->setFontSize (th * 0.8);
-	valueDisplay.moveTo (tx, ty);
-	valueDisplay.setWidth (tw);
-	valueDisplay.setHeight (th);
-	valueDisplay.update ();
-
-}
-
-void DisplayVSlider::draw (const double x, const double y, const double width, const double height)
-{
-	// Draw super class widget elements only
-	Widget::draw (x, y, width, height);
+	double h2 = h - displayHeight;
+	double w2 = displayWidth / 2;
+	knobRadius = (w2 < h2 / 2 ? w2 / 2 : h2 / 4);
+	scaleX0 = getXOffset () + w / 2 - knobRadius / 2;
+	scaleY0 = getYOffset () + displayHeight + knobRadius;
+	scaleWidth = knobRadius;
+	scaleHeight = h2 - 2 * knobRadius;
+	scaleYValue = scaleY0 + (1 - getRelativeValue ()) * scaleHeight;
+	knobXCenter = scaleX0 + scaleWidth / 2;
+	knobYCenter = scaleYValue;
 }
 
 }

@@ -106,14 +106,6 @@ public:
 	bool isYResizable () const;
 
 	/**
-	 * Calls a redraw of the widget and calls postRedisplay () if the the
-	 * Widget is visible.
-	 * This method should be called if the widgets properties are indirectly
-	 * changed.
-	 */
-	virtual void update () override;
-
-	/**
 	 * Scans theme for widget properties and applies these properties.
 	 * @param theme Theme to be scanned.
 	 * 				Styles used are:

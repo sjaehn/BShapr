@@ -18,12 +18,11 @@
 #ifndef BWIDGETS_DISPLAYHSLIDER_HPP_
 #define BWIDGETS_DISPLAYHSLIDER_HPP_
 
-#include "RangeWidget.hpp"
 #include "Label.hpp"
 #include "HSlider.hpp"
 
 #define BWIDGETS_DEFAULT_DISPLAYHSLIDER_WIDTH BWIDGETS_DEFAULT_HSLIDER_WIDTH
-#define BWIDGETS_DEFAULT_DISPLAYHSLIDER_HEIGHT BWIDGETS_DEFAULT_HSLIDER_HEIGHT + BWIDGETS_DEFAULT_LABEL_HEIGHT
+#define BWIDGETS_DEFAULT_DISPLAYHSLIDER_HEIGHT (BWIDGETS_DEFAULT_HSLIDER_HEIGHT + BWIDGETS_DEFAULT_LABEL_HEIGHT)
 
 namespace BWidgets
 {
@@ -31,15 +30,15 @@ namespace BWidgets
 /**
  * Class BWidgets::DisplayHSlider
  *
- * Composite RangeWidget consisting of a horizontal slider and a label widget.
+ * Composite BWidgets::HSlider widget that additionally displays the value.
  */
-class DisplayHSlider : public RangeWidget
+class DisplayHSlider : public HSlider
 {
 public:
 	DisplayHSlider ();
 	DisplayHSlider (const double x, const double y, const double width, const double height, const std::string& name,
-			  	  	  	  	 const double value, const double min, const double max, const double step,
-							 const std::string& valueFormat);
+				    const double value, const double min, const double max, const double step,
+				    const std::string& valueFormat);
 
 	/**
 	 * Creates a new (orphan) slider and copies the slider properties from a
@@ -67,29 +66,6 @@ public:
 	virtual void setValue (const double val) override;
 
 	/**
-	 * Sets the lower limit. Forces the value into the new range. Passes the
-	 * min to its predefined child widgets. Emits a value changed event (if
-	 * value changed) and (if visible) an expose event.
-	 * @param min Lower limit
-	 */
-	virtual void setMin (const double min) override;
-
-	/**
-	 * Sets the upper limit. Forces the value into the new range. Passes the
-	 * max to its predefined child widgets. Emits a value changed event (if
-	 * value changed) and (if visible) an expose event.
-	 * @param max Upper limit
-	 */
-	virtual void setMax (const double min) override;
-
-	/**
-	 * Sets the increment steps for the value. Passes the
-	 * increment to its predefined child widgets.
-	 * @param step Increment steps.
-	 */
-	virtual void setStep (const double step);
-
-	/**
 	 * Sets the value output format.
 	 * @valueFormat Format of the output in printf standard for type double.
 	 */
@@ -102,16 +78,10 @@ public:
 	std::string getValueFormat () const;
 
 	/**
-	 * Gets (a pointer to) the slider widget for direct access
-	 * @return Pointer to BWidgets::HSlider
-	 */
-	HSlider* getSlider ();
-
-	/**
 	 * Gets (a pointer to) the Label for direct access.
 	 * @return Pointer to the label
 	 */
-	Label* getValueDisplay ();
+	Label* getDisplayLabel ();
 
 	/**
 	 * Calls a redraw of the widget and calls postRedisplay () if the the
@@ -124,8 +94,13 @@ public:
 	/**
 	 * Scans theme for widget properties and applies these properties.
 	 * @param theme Theme to be scanned.
-	 * 				For styles used see BWidgets::Dial::applyTheme and
-	 * 				BWidgets::Label::applyTheme.
+	 * 				Styles used are:
+	 * 				BWIDGETS_KEYWORD_BORDER
+	 * 				BWIDGETS_KEYWORD_BACKGROUND
+	 * 				BWIDGETS_KEYWORD_FGCOLORS
+	 * 				BWIDGETS_KEYWORD_BGCOLORS
+	 * 				BWIDGETS_KEYWORD_TEXTCOLORS
+	 * 				BWIDGETS_KEYWORD_FONT.
 	 * @param name Name of the BStyles::StyleSet within the theme to be
 	 * 		  	   applied.
 	 */
@@ -133,14 +108,15 @@ public:
 	virtual void applyTheme (BStyles::Theme& theme, const std::string& name);
 
 protected:
-	static void redirectPostValueChanged (BEvents::Event* event);
-	void updateChildCoords ();
-	virtual void draw (const double x, const double y, const double width, const double height) override;
+	virtual void updateCoords () override;
 
-	HSlider slider;
 	Label valueDisplay;
 
 	std::string valFormat;
+	double displayHeight;
+	double displayWidth;
+	double displayX0;
+	double displayY0;
 };
 
 }

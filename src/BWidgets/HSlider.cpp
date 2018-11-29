@@ -17,10 +17,6 @@
 
 #include "HSlider.hpp"
 
-#ifndef PI
-#define PI 3.14159265
-#endif
-
 namespace BWidgets
 {
 HSlider::HSlider () : HSlider (0.0, 0.0, BWIDGETS_DEFAULT_HSLIDER_WIDTH, BWIDGETS_DEFAULT_HSLIDER_HEIGHT, "hslider",
@@ -28,23 +24,17 @@ HSlider::HSlider () : HSlider (0.0, 0.0, BWIDGETS_DEFAULT_HSLIDER_WIDTH, BWIDGET
 
 HSlider::HSlider (const double  x, const double y, const double width, const double height, const std::string& name,
 				  const double value, const double min, const double max, const double step) :
-		RangeWidget (x, y, width, height, name, value, min, max, step),
-		scale (0, 0, 0, 0, name, value, min, max, step),
-		knob (0, 0, 0, 0, BWIDGETS_DEFAULT_KNOB_DEPTH, name)
+		HScale (x, y, width, height, name, value, min, max, step),
+		knob (0, 0, 0, 0, BWIDGETS_DEFAULT_KNOB_DEPTH, name), knobRadius (0), knobXCenter (0), knobYCenter (0)
 {
-	scale.setClickable (false);
-	scale.setDragable (false);
-	add (scale);
 	knob.setClickable (false);
 	knob.setDragable (false);
 	add (knob);
-	setClickable (true);
-	setDragable (true);
 }
 
-HSlider::HSlider (const HSlider& that) : RangeWidget (that), knob (that.knob), scale (that.scale)
+HSlider::HSlider (const HSlider& that) :
+		HScale (that), knob (that.knob), knobRadius (that.knobRadius), knobXCenter (that.knobXCenter), knobYCenter (that.knobYCenter)
 {
-	add (scale);
 	add (knob);
 }
 
@@ -52,124 +42,49 @@ HSlider::~HSlider () {}
 
 HSlider& HSlider::operator= (const HSlider& that)
 {
-	release (&scale);
 	release (&knob);
 
 	knob = that.knob;
-	scale = that.scale;
-	RangeWidget::operator= (that);
+	knobRadius = that.knobRadius;
+	knobXCenter = that.knobXCenter;
+	knobYCenter = that.knobYCenter;
+	HScale::operator= (that);
 
-	add (scale);
 	add (knob);
 
 	return *this;
 }
 
-void HSlider::setValue (const double val)
-{
-	RangeWidget::setValue (val);
-
-	// Pass changed value to scale
-	if (value != scale.getValue ()) scale.setValue (value);
-}
-
-void HSlider::setMin (const double min)
-{
-	RangeWidget::setMin (min);
-	if (rangeMin != scale.getMin ()) scale.setMin (rangeMin);
-}
-
-void HSlider::setMax (const double max)
-{
-	RangeWidget::setMin (max);
-	if (rangeMax != scale.getMax ()) scale.setMax (rangeMax);
-}
-
-void HSlider::setStep (const double step)
-{
-	RangeWidget::setStep (step);
-	if (rangeStep != scale.getStep ()) scale.setStep (rangeStep);
-}
-
 void HSlider::update ()
 {
-	draw (0, 0, width_, height_);
+	HScale::update ();
 
-	// Position of knob and scale
-	// Calculate aspect ratios first
-	double h = getEffectiveHeight ();
-	double w = getEffectiveWidth ();
-	double x0 = getXOffset ();
-	double y0 = getYOffset ();
-
-	double sch = (h > 24.0 ? 12.0 : 0.5 * h);
-	if (2 * sch > w) sch = w / 2;
-	double knw = 2 * sch;
-	double knh = knw;
-	double scw = w - knw;
-
-	scale.setHeight (sch);
-	scale.setWidth (scw);
-	scale.moveTo (x0 + w/2 - scw/2, y0 + h/2 - sch/2);
-
-	double relVal = getRelativeValue ();
-	double x1 = x0 + w/2 - scw/2 + relVal * scw - knw/2;
-	double y1 = y0 + h/2 - knh/2;
-	knob.setWidth (knw);
-	knob.setHeight (knh);
-	knob.moveTo (x1, y1);
-
-	if (isVisible ()) postRedisplay ();
+	// Update Knob
+	knob.moveTo (knobXCenter - knobRadius, knobYCenter - knobRadius);
+	knob.setWidth (2 * knobRadius);
+	knob.setHeight (2 * knobRadius);
 }
 
 void HSlider::applyTheme (BStyles::Theme& theme) {applyTheme (theme, name_);}
 
 void HSlider::applyTheme (BStyles::Theme& theme, const std::string& name)
 {
-	Widget::applyTheme (theme, name);
+	HScale::applyTheme (theme, name);
 	knob.applyTheme (theme, name);
-	scale.applyTheme (theme, name);
 }
 
-void HSlider::onButtonPressed (BEvents::PointerEvent* event)
+void HSlider::updateCoords ()
 {
-	// Perform only if minimum requirements are satisfied
-	if (main_ && isVisible () && (height_ >= 4) && (width_ >= 4) && (event->getButton() == BEvents::LEFT_BUTTON))
-	{
-		// Get pointer coords
-		double y = event->getY ();
-		double x = event->getX ();
+	double w = getEffectiveWidth ();
+	double h = getEffectiveHeight ();
 
-		// Calculate aspect ratios first
-		double h = getEffectiveHeight ();
-		double w = getEffectiveWidth ();
-		double x0 = getXOffset ();
-		double y0 = getYOffset ();
-
-		double sch = (h > 24.0 ? 12.0 : 0.5 * h);
-		if (2 * sch > w) sch = w / 2;
-		double knw = 2 * sch;
-		//double knh = knw;
-		double scw = w - knw;
-
-		// Pointer within the scale area ? Set value!
-		if ((x >= x0 + w/2 - scw/2) && (x <= x0 + w/2 + scw/2) && (y >= y0) && (y <= y0 + h))
-		{
-			double frac = (x - x0 - w/2 + scw/2) / scw;
-			if (getStep () < 0) frac = 1 - frac;
-
-			double min = getMin ();
-			double max = getMax ();
-			setValue (min + frac * (max - min));
-		}
-	}
+	knobRadius = (h < w / 2 ? h / 2 : w / 4);
+	scaleX0 = getXOffset () + knobRadius;
+	scaleY0 = getYOffset () + h / 2 - knobRadius / 2;
+	scaleWidth = w - 2 * knobRadius;
+	scaleHeight = knobRadius;
+	scaleXValue = scaleX0 + getRelativeValue () * scaleWidth;
+	knobXCenter = scaleXValue;
+	knobYCenter = scaleY0 + scaleHeight / 2;
 }
-
-void HSlider::onPointerMotionWhileButtonPressed (BEvents::PointerEvent* event) {onButtonPressed (event);}
-
-void HSlider::draw (const double x, const double y, const double width, const double height)
-{
-	Widget::draw (x, y, width, height);
-}
-
 }

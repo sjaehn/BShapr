@@ -1,4 +1,4 @@
-/* Label.hpp
+/* ItemBox.hpp
  * Copyright (C) 2018  Sven Jähnichen
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,59 +15,67 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef BWIDGETS_LABEL_HPP_
-#define BWIDGETS_LABEL_HPP_
+#ifndef BWIDGETS_ITEMBOX_HPP_
+#define BWIDGETS_ITEMBOX_HPP_
 
-#define BWIDGETS_DEFAULT_LABEL_WIDTH 60
-#define BWIDGETS_DEFAULT_LABEL_HEIGHT 20
-#define BWIDGETS_DEFAULT_LABEL_ALIGN BStyles::TEXT_ALIGN_CENTER
-#define BWIDGETS_DEFAULT_LABEL_VALIGN BStyles::TEXT_VALIGN_MIDDLE
+#include "Label.hpp"
 
-#include "Widget.hpp"
+#define BWIDGETS_DEFAULT_ITEMBOX_WIDTH 100.0
+#define BWIDGETS_DEFAULT_ITEMBOX_HEIGHT 20.0
+
+#define BWIDGETS_DEFAULT_ITEMBOX_ITEM_NAME "/item"
+#define BWIDGETS_DEFAULT_ITEMBOX_ITEM_PADDING 4.0
+#define BWIDGETS_DEFAULT_ITEMBOX_PADDING (BWIDGETS_DEFAULT_MENU_PADDING - BWIDGETS_DEFAULT_ITEMBOX_ITEM_PADDING)
+
 
 namespace BWidgets
 {
 
 /**
- * Class BWidgets::Label
+ * Class BWidgets::ItemBox
  *
- * Simple text output widget.
+ * Single line text box widget.
  */
-class Label : public Widget
+class ItemBox : public Widget
 {
 public:
-	Label ();
-	Label (const double x, const double y, const double width, const double height, const std::string& text);
-	Label (const double x, const double y, const double width, const double height, const std::string& name, const std::string& text);
+	ItemBox ();
+	ItemBox (const double x, const double y, const double width, const double height, const std::string& name, const std::string& text);
 
 	/**
-	 * Creates a new (orphan) label and copies the label properties from a
-	 * source label. This method doesn't copy any parent or child widgets.
-	 * @param that Source label
+	 * Creates a new (orphan) item box and copies the properties from a
+	 * source item box widget.
+	 * @param that Source choice box
 	 */
-	Label (const Label& that);
+	ItemBox (const ItemBox& that);
 
-	~Label ();
+	~ItemBox ();
 
 	/**
-	 * Assignment. Copies the label properties from a source label and keeps
-	 * its name and its position within the widget tree. Emits a
-	 * BEvents::ExposeEvent if the label is visible.
-	 * @param that Source label
+	 * Assignment. Copies the properties from a source item box widget
+	 * and keeps its name and its position within the widget tree. Emits a
+	 * BEvents::ExposeEvent if the text widget is visible.
+	 * @param that Source text widget
 	 */
-	Label& operator= (const Label& that);
+	ItemBox& operator= (const ItemBox& that);
 
 	/**
-	 * Sets the output text.
-	 * @param text Output text
+	 * Sets the text of the item.
+	 * @param text Text string of the item
 	 */
 	void setText (const std::string& text);
 
 	/**
-	 * Gets the output text
-	 * @return Output text
+	 * Gets the text of the item.
+	 * @return Text string of the item
 	 */
 	std::string getText () const;
+
+	/**
+	 * Gets (a pointer to) the internal BWidgets::Label of the item.
+	 * @return BWidgets::Label of the item
+	 */
+	Label* getLabel ();
 
 	/**
 	 * Sets the BColors::ColorSet for this widget
@@ -96,23 +104,25 @@ public:
 	/**
 	 * Scans theme for widget properties and applies these properties.
 	 * @param theme Theme to be scanned.
-	 * 				Styles used are:
-	 * 				"textcolors" for BColors::ColorSet
-	 * 				"font" for BStyles::Font
 	 * @param name Name of the BStyles::StyleSet within the theme to be
 	 * 		  	   applied.
 	 */
 	virtual void applyTheme (BStyles::Theme& theme);
 	virtual void applyTheme (BStyles::Theme& theme, const std::string& name);
 
-protected:
-	virtual void draw (const double x, const double y, const double width, const double height) override;
+	/**
+	 * Calls a redraw of the widget and calls postRedisplay () if the the
+	 * Widget is visible.
+	 * This method should be called if the widgets properties are indirectly
+	 * changed.
+	 */
+	virtual void update () override;
 
-	BColors::ColorSet labelColors;
-	BStyles::Font labelFont;
-	std::string labelText;
+protected:
+	Label itemLabel;
+
 };
 
 }
 
-#endif /* BWIDGETS_LABEL_HPP_ */
+#endif /* BWIDGETS_ITEMBOX_HPP_ */

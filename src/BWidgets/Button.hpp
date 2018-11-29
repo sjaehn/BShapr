@@ -57,25 +57,6 @@ public:
 	 */
 	Button& operator= (const Button& that);
 
-	/**
-	 * Sets the colors of the button
-	 * @param colors BColors::ColorSet
-	 */
-	void setButtonColors (const BColors::ColorSet& colors);
-
-	/**
-	 * Gets the colors of the button
-	 * @return BColors::ColorSet
-	 */
-	BColors::ColorSet* getButtonColors ();
-
-	/**
-	 * Calls a redraw of the widget and calls postRedisplay () if the the
-	 * Widget is visible.
-	 * This method should be called if the widgets properties are indirectly
-	 * changed.
-	 */
-	virtual void update () override;
 
 	/**
 	 * Scans theme for widget properties and applies these properties.
@@ -103,7 +84,6 @@ public:
 protected:
 	virtual void draw (const double x, const double y, const double width, const double height) override;
 
-	BColors::ColorSet buttonColors;
 	BColors::ColorSet bgColors;
 };
 

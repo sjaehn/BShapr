@@ -31,9 +31,8 @@ Widget::Widget(const double x, const double y, const double width, const double 
 		name_ (name), widgetState (BWIDGETS_DEFAULT_STATE)
 {
 	cbfunction.fill (Widget::defaultCallback);
-
 	widgetSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width, height);
-	draw (0, 0, width_, height_);
+	id = (long) this;
 }
 
 Widget::Widget (const Widget& that) :
@@ -43,7 +42,7 @@ Widget::Widget (const Widget& that) :
 		cbfunction (that.cbfunction), widgetState (that.widgetState)
 {
 	widgetSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, that.width_, that.height_);
-	draw (0, 0, width_, height_);
+	id = (long) this;
 }
 
 Widget::~Widget()
@@ -52,7 +51,14 @@ Widget::~Widget()
 	if (parent_) parent_->release (this);
 
 	//Release children
-	for (Widget* w : children_) release (w);
+	while (!children_.empty ())
+	{
+		Widget* w = children_.back ();
+		release (w);
+
+		// Hard kick out if release failed
+		if (w == children_.back ()) children_.pop_back ();
+	}
 
 	cairo_surface_destroy (widgetSurface);
 }
@@ -87,7 +93,6 @@ void Widget::show ()
 		std::vector<Widget*> queue = getChildrenAsQueue ();
 		for (Widget* w : queue)
 		{
-			w->main_ = main_;
 			if (w->isVisible ()) w->draw (0, 0, w->width_, w->height_);
 		}
 
@@ -98,50 +103,71 @@ void Widget::show ()
 
 void Widget::hide ()
 {
+	bool wasVisible = isVisible ();
 	visible = false;
-	if ((parent_) && parent_->isVisible ()) postRedisplay ();
+	if (wasVisible) postRedisplay ();
 }
 
 void Widget::add (Widget& child)
 {
+	// Check if already added? -> Release first
+	if (child.parent_) child.parent_->release (&child);
+
 	child.main_ = main_;
 	child.parent_ = this;
+
 	children_.push_back (&child);
 
-	// (Re-)draw children of child as they may become visible too
-	if (child.isVisible ())
+	// Link all children of child to main_ and update children of child as
+	// they may become visible too
+	if (main_)
 	{
 		std::vector<Widget*> queue = child.getChildrenAsQueue ();
 		for (Widget* w : queue)
 		{
 			w->main_ = main_;
-			if (w->isVisible ()) w->draw (0, 0, w->width_, w->height_);
+			/*if (w->isVisible ())*/ w->update ();
 		}
-
-		// (Re-)draw child widget and post redisplay
-		child.update ();
 	}
+
+	// (Re-)draw child widget and post redisplay
+	if (child.isVisible ()) child.update ();
 }
 
 void Widget::release (Widget* child)
 {
 	if (child)
 	{
+		//std::cout << "Release " << child->name_ << ":" << child->id << "\n";
 		bool wasVisible = child->isVisible ();
 
 		// Delete child's connection to this widget
 		child->parent_ = nullptr;
 
+		// Release child from main window and from main windows input connections
 		if (child->main_)
 		{
-			// Release child from main window input connections
 			for (int i = (int) BEvents::NO_BUTTON; i < (int) BEvents::NR_OF_BUTTONS; ++i)
 			{
 				if (child->main_-> getInput ((BEvents::InputDevice) i) == child) child->main_-> setInput ((BEvents::InputDevice) i, nullptr);
 			}
 
-			// Remove connection to main window
 			child->main_ = nullptr;
+		}
+
+		// And the same for all children of child
+		std::vector<Widget*> queue = child->getChildrenAsQueue ();
+		for (Widget* w : queue)
+		{
+			if (w->main_)
+			{
+				for (int i = (int) BEvents::NO_BUTTON; i < (int) BEvents::NR_OF_BUTTONS; ++i)
+				{
+					if (w->main_-> getInput ((BEvents::InputDevice) i) == w) w->main_-> setInput ((BEvents::InputDevice) i, nullptr);
+				}
+
+				w->main_ = nullptr;
+			}
 		}
 
 		// Delete connection to released child
@@ -155,7 +181,8 @@ void Widget::release (Widget* child)
 			}
 		}
 
-		std::cerr << "Msg from BWidgets::Widget::release(): Child " << child->name_ << " is already released." << std::endl;
+		std::cerr << "Msg from BWidgets::Widget::release(): Child " << child->name_ << ":" << child->id << " is not a child of "
+				  << name_ << ":" << id << std::endl;
 	}
 }
 
@@ -254,8 +281,7 @@ void Widget::setWidth (const double width)
 			visible = vis;
 			cairo_surface_destroy (widgetSurface);	// destroy old surface first
 			widgetSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width_, height_);
-			draw (0, 0, width_, height_);
-			postRedisplay ();
+			update ();
 		}
 		else
 		{
@@ -282,8 +308,7 @@ void Widget::setHeight (const double height)
 			visible = vis;
 			cairo_surface_destroy (widgetSurface);	// destroy old surface first
 			widgetSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width_, height_);
-			draw (0, 0, width_, height_);
-			postRedisplay ();
+			update ();
 		}
 		else
 		{
@@ -337,12 +362,12 @@ void Widget::setCallbackFunction (const BEvents::EventType eventType, const std:
 bool Widget::isVisible()
 {
 	Widget* w;
-	for (w = this; w; w = w->parent_)		// Go backwards in widget tree until nullptr
+	for (w = this; w; w = w->parent_)				// Go backwards in widget tree until nullptr
 	{
-		if (!w->visible) return false;		// widget invisible? -> break as invisible
-		if (w == main_) return true;		// main reached ? -> visible
+		if (!w->visible || !main_) return false;	// widget invisible? -> break as invisible
+		if (w == main_) return true;				// main reached ? -> visible
 	}
-	return false;							// nullptr reached ? -> not connected to main -> invisible
+	return false;									// nullptr reached ? -> not connected to main -> invisible
 }
 
 void Widget::setClickable (const bool status) {clickable = status;}
@@ -640,6 +665,8 @@ Window::~Window ()
 {
 	purgeEventQueue ();
 	puglDestroy(view_);
+	main_ = nullptr;	// Important switch for the super destructor. It took
+						// days of debugging ...
 }
 
 PuglView* Window::getPuglView () {return view_;}
@@ -712,7 +739,7 @@ void Window::handleEvents ()
 {
 	puglProcessEvents (view_);
 
-	while (eventQueue.size () > 0)
+	while (!eventQueue.empty ())
 	{
 		BEvents::Event* event = eventQueue.front ();
 		if (event)
@@ -885,11 +912,11 @@ void Window::translatePuglEvent (PuglView* view, const PuglEvent* event)
 
 void Window::purgeEventQueue ()
 {
-	while (eventQueue.size () > 0)
+	while (!eventQueue.empty ())
 	{
-		BEvents::Event* event = eventQueue.front ();
+		BEvents::Event* event = eventQueue.back ();
 		if (event) delete event;
-		eventQueue.erase (eventQueue.begin ());
+		eventQueue.pop_back ();
 	}
 }
 

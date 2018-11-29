@@ -17,96 +17,28 @@
 
 #include "VSwitch.hpp"
 
-#ifndef PI
-#define PI 3.14159265
-#endif
-
 namespace BWidgets
 {
 VSwitch::VSwitch () : VSwitch (0.0, 0.0, BWIDGETS_DEFAULT_VSWITCH_WIDTH, BWIDGETS_DEFAULT_VSWITCH_HEIGHT, "vswitch", BWIDGETS_DEFAULT_VALUE) {}
 
 VSwitch::VSwitch (const double  x, const double y, const double width, const double height, const std::string& name,
 				  const double defaultvalue) :
-		ToggleButton (x, y, width, height, name, value),
-		scale (0, 0, 0, 0, name, defaultvalue, 0.0, 1.0, 0.0),
-		knob (0, 0, 0, 0, BWIDGETS_DEFAULT_KNOB_DEPTH, name)
+		VSlider (x, y, width, height, name, defaultvalue, 0.0, 1.0, 1.0) {}
+
+void VSwitch::updateCoords ()
 {
-	scale.setClickable (false);
-	scale.setDragable (false);
-	add (scale);
-	knob.setClickable (false);
-	knob.setDragable (false);
-	add (knob);
-}
-
-VSwitch::VSwitch (const VSwitch& that) : ToggleButton (that), knob (that.knob), scale (that.scale)
-{
-	add (scale);
-	add (knob);
-}
-
-VSwitch::~VSwitch () {}
-
-VSwitch& VSwitch::operator= (const VSwitch& that)
-{
-	release (&scale);
-	release (&knob);
-
-	knob = that.knob;
-	scale = that.scale;
-	ToggleButton::operator= (that);
-
-	add (scale);
-	add (knob);
-
-	return *this;
-}
-
-void VSwitch::update ()
-{
-	draw (0, 0, width_, height_);
-
-	// Position of knob and scale
-	// Calculate aspect ratios first
-	double d = knob.getDepth ();
-	double h = getEffectiveHeight ();
 	double w = getEffectiveWidth ();
-	double x0 = getXOffset ();
-	double y0 = getYOffset ();
-	double relVal = getValue ();
+	double h = getEffectiveHeight ();
 
-	double scw = (w > 24.0 ? 24.0 : w);
-	if (2 * scw > h) scw = h / 2;
-	double knw = scw;
-	double knh = knw;
-	double sch = h;
+	knobRadius = (w < h / 2 ? w / 2 : h / 4);
+	scaleX0 = getXOffset () + w / 2 - knobRadius;
+	scaleY0 = getYOffset ();
+	scaleWidth = 2 * knobRadius;
+	scaleHeight = h;
+	scaleYValue = scaleY0 + knobRadius + (1 - getRelativeValue ()) * (scaleHeight - 2 * knobRadius);
 
-	scale.setValue (relVal);
-	scale.setHeight (sch);
-	scale.setWidth (scw);
-	scale.moveTo (x0 + w/2 - scw/2, y0 + h/2 - sch/2);
-
-	double x1 = x0 + w/2 - knw/2 + d/2;
-	double y1 = y0 + h/2 - sch/2 + relVal * (sch - knh) + d/2;
-	knob.setWidth (knw - d/2);
-	knob.setHeight (knh - d/2);
-	knob.moveTo (x1, y1);
-
-	if (isVisible ()) postRedisplay ();
-}
-
-void VSwitch::applyTheme (BStyles::Theme& theme) {applyTheme (theme, name_);}
-
-void VSwitch::applyTheme (BStyles::Theme& theme, const std::string& name)
-{
-	Widget::applyTheme (theme, name);
-	knob.applyTheme (theme, name);
-	scale.applyTheme (theme, name);
-}
-
-void VSwitch::draw (const double x, const double y, const double width, const double height)
-{
-	Widget::draw (x, y, width, height);
+	knobXCenter = scaleX0 + scaleWidth / 2 + BWIDGETS_DEFAULT_KNOB_DEPTH;
+	knobYCenter = scaleYValue + BWIDGETS_DEFAULT_KNOB_DEPTH;
 }
 
 }

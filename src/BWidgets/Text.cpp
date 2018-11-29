@@ -36,8 +36,6 @@ Text::Text (const Text& that) : Widget (that)
 	textFont = that.textFont;
 	textString = that.textString;
 	yResizable = that.yResizable;
-
-	draw (0, 0, width_, height_);
 }
 
 Text::~Text () {}
@@ -79,12 +77,6 @@ BStyles::Font* Text::getFont () {return &textFont;}
 void Text::setYResizable (const bool resizable) {yResizable = resizable;}
 
 bool Text::isYResizable () const {return yResizable;}
-
-void Text::update ()
-{
-	draw (0, 0, width_, height_);
-	if (isVisible ()) postRedisplay ();
-}
 
 void Text::applyTheme (BStyles::Theme& theme) {applyTheme (theme, name_);}
 

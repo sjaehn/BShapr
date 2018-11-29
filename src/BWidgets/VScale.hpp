@@ -62,14 +62,16 @@ public:
 	 * This method should be called if the widgets properties are indirectly
 	 * changed.
 	 */
-	virtual void update ();
+	virtual void update () override;
 
 	/**
 	 * Scans theme for widget properties and applies these properties.
 	 * @param theme Theme to be scanned.
 	 * 				Styles used are:
-	 * 				"fgcolors" for BColors::ColorSet (scale)
-	 * 				"bgcolors" for BStyles::ColorSet (background)
+	 * 				BWIDGETS_KEYWORD_BORDER
+	 * 				BWIDGETS_KEYWORD_BACKGROUND
+	 * 				BWIDGETS_KEYWORD_FGCOLORS
+	 * 				BWIDGETS_KEYWORD_BGCOLORS
 	 * @param name Name of the BStyles::StyleSet within the theme to be
 	 * 		  	   applied.
 	 */
@@ -90,10 +92,16 @@ public:
 	virtual void onPointerMotionWhileButtonPressed (BEvents::PointerEvent* event) override;
 
 protected:
+	virtual void updateCoords ();
 	virtual void draw (const double x, const double y, const double width, const double height) override;
 
 	BColors::ColorSet fgColors;
 	BColors::ColorSet bgColors;
+	double scaleX0;
+	double scaleY0;
+	double scaleWidth;
+	double scaleHeight;
+	double scaleYValue;
 };
 
 }

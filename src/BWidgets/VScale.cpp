@@ -17,10 +17,6 @@
 
 #include "VScale.hpp"
 
-#ifndef PI
-#define PI 3.14159265
-#endif
-
 namespace BWidgets
 {
 VScale::VScale () : VScale (0.0, 0.0, BWIDGETS_DEFAULT_VSCALE_WIDTH, BWIDGETS_DEFAULT_VSCALE_HEIGHT, "vscale",
@@ -29,13 +25,16 @@ VScale::VScale () : VScale (0.0, 0.0, BWIDGETS_DEFAULT_VSCALE_WIDTH, BWIDGETS_DE
 VScale::VScale (const double  x, const double y, const double width, const double height, const std::string& name,
 				  const double value, const double min, const double max, const double step) :
 		RangeWidget (x, y, width, height, name, value, min, max, step),
-		fgColors (BWIDGETS_DEFAULT_FGCOLORS), bgColors (BWIDGETS_DEFAULT_BGCOLORS)
+		fgColors (BWIDGETS_DEFAULT_FGCOLORS), bgColors (BWIDGETS_DEFAULT_BGCOLORS),
+		scaleX0 (0), scaleY0 (0), scaleWidth (width), scaleHeight (height), scaleYValue (0)
 {
 	setClickable (true);
 	setDragable (true);
 }
 
-VScale::VScale (const VScale& that) : RangeWidget (that), fgColors (that.fgColors), bgColors (that.bgColors){}
+VScale::VScale (const VScale& that) :
+		RangeWidget (that), fgColors (that.fgColors), bgColors (that.bgColors), scaleX0 (that.scaleX0), scaleY0 (that.scaleY0),
+		scaleWidth (that.scaleWidth), scaleHeight (that.scaleHeight), scaleYValue (that.scaleYValue) {}
 
 VScale::~VScale () {}
 
@@ -43,6 +42,11 @@ VScale& VScale::operator= (const VScale& that)
 {
 	fgColors = that.fgColors;
 	bgColors = that.bgColors;
+	scaleX0 = that.scaleX0;
+	scaleY0 = that.scaleY0;
+	scaleWidth = that.scaleWidth;
+	scaleHeight = that.scaleHeight;
+	scaleYValue = that.scaleYValue;
 	RangeWidget::operator= (that);
 
 	return *this;
@@ -50,8 +54,8 @@ VScale& VScale::operator= (const VScale& that)
 
 void VScale::update ()
 {
-	draw (0, 0, width_, height_);
-	if (isVisible ()) postRedisplay ();
+	updateCoords ();
+	Widget::update();
 }
 
 void VScale::applyTheme (BStyles::Theme& theme) {applyTheme (theme, name_);}
@@ -86,9 +90,9 @@ void VScale::onButtonPressed (BEvents::PointerEvent* event)
 		double y0 = getYOffset ();
 
 		// Pointer within the scale area ? Set value!
-		if ((h > 0) && (x >= x0) && (x <= x0 + w) && (y >= y0) && (y <= y0 + h))
+		if ((scaleHeight > 0) && (x >= scaleX0 - scaleWidth) && (x <= scaleX0 + 2 * scaleWidth) && (y >= scaleY0) && (y <= scaleY0 + scaleHeight))
 		{
-			double frac = (y0 + h - y) / h;
+			double frac = (scaleY0 + scaleHeight - y) / scaleHeight;
 			if (getStep () < 0) frac = 1 - frac;
 
 			double min = getMin ();
@@ -100,6 +104,15 @@ void VScale::onButtonPressed (BEvents::PointerEvent* event)
 
 void VScale::onPointerMotionWhileButtonPressed (BEvents::PointerEvent* event) {onButtonPressed (event);}
 
+void VScale::updateCoords ()
+{
+	scaleX0 = getXOffset ();
+	scaleY0 = getYOffset ();
+	scaleWidth = getEffectiveWidth ();
+	scaleHeight = getEffectiveHeight ();
+	scaleYValue = scaleY0 + (1 - getRelativeValue ()) * scaleHeight;
+}
+
 void VScale::draw (const double x, const double y, const double width, const double height)
 {
 	if ((!widgetSurface) || (cairo_surface_status (widgetSurface) != CAIRO_STATUS_SUCCESS)) return;
@@ -108,7 +121,7 @@ void VScale::draw (const double x, const double y, const double width, const dou
 	Widget::draw (x, y, width, height);
 
 	// Draw scale only if it is not a null widget
-	if ((height_ >= 1) && (width_ >= 1))
+	if ((scaleHeight >= 1) && (scaleWidth >= 1))
 	{
 		cairo_surface_clear (widgetSurface);
 		cairo_t* cr = cairo_create (widgetSurface);
@@ -122,12 +135,11 @@ void VScale::draw (const double x, const double y, const double width, const dou
 			cairo_clip (cr);
 
 			// Calculate aspect ratios first
-			double h = getEffectiveHeight ();
-			double w = getEffectiveWidth ();
-			double relVal = getRelativeValue ();
-			double x1 = getXOffset (); double y1 = getYOffset ();	// Top left
+			double h = scaleHeight;
+			double w = scaleWidth;
+			double x1 = scaleX0; double y1 = scaleY0;				// Top left
 			double x4 = x1 + w; double y4 = y1 + h; 				// Bottom right
-			double x2 = x1 + w; double y2 = y4 - relVal * h; 		// Value line right
+			double x2 = x1 + w; double y2 = scaleYValue; 			// Value line right
 			double x3 = x1; double y3 = y2;							// Value line left
 
 

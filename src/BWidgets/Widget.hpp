@@ -32,7 +32,7 @@
 #define BWIDGETS_DEFAULT_SHADOWED -0.333
 #define BWIDGETS_DEFAULT_DARKENED -0.5
 
-// Default BWidgets::Window settings (Note: use intransparent backgrounds only
+// Default BWidgets::Window settings (Note: use non-transparent backgrounds only)
 #define BWIDGETS_DEFAULT_WINDOW_BACKGROUND BStyles::blackFill
 
 // Default settings for all text containing widgets
@@ -43,7 +43,7 @@
 // Default settings for all menu widgets
 #define BWIDGETS_DEFAULT_MENU_PADDING 10
 #define BWIDGETS_DEFAULT_MENU_BORDER BStyles::greyBorder1pt
-#define BWIDGETS_DEFAULT_MENU_BACKGROUND BStyles::darkgreyFill
+#define BWIDGETS_DEFAULT_MENU_BACKGROUND BStyles::grey20Fill
 
 // BWidgets theme keywords
 #define BWIDGETS_KEYWORD_BORDER "border"
@@ -202,6 +202,35 @@ public:
 	 * @return Height
 	 */
 	double getHeight () const;
+
+	/**
+	 * Gets the x offset of the widget content. This is distance between the
+	 * outer border and the widget content. It is also the sum of margin,
+	 * border, and padding.
+	 * @return X offset of the widget
+	 */
+	double getXOffset ();
+
+	/**
+	 * Gets the y offset of the widget content. This is distance between the
+	 * outer border and the widget content. It is also the sum of margin,
+	 * border, and padding.
+	 * @return Y offset of the widget
+	 */
+	double getYOffset ();
+
+	/**
+	 * Gets the effective width of the widget content without its borders.
+	 * @return Effective width of the widget
+	 */
+	double getEffectiveWidth ();
+
+	/**
+	 * Gets the effective height of the widget content without its borders.
+	 * @return Effective height of the widget
+	 */
+	double getEffectiveHeight ();
+
 
 	/**
 	 * Sets the widgets state
@@ -422,34 +451,6 @@ public:
 protected:
 
 	/**
-	 * Gets the x offset of the widget content. This is distance between the
-	 * outer border and the widget content. It is also the sum of margin,
-	 * border, and padding.
-	 * @return X offset of the widget
-	 */
-	double getXOffset ();
-
-	/**
-	 * Gets the y offset of the widget content. This is distance between the
-	 * outer border and the widget content. It is also the sum of margin,
-	 * border, and padding.
-	 * @return Y offset of the widget
-	 */
-	double getYOffset ();
-
-	/**
-	 * Gets the effective width of the widget content without its borders.
-	 * @return Effective width of the widget
-	 */
-	double getEffectiveWidth ();
-
-	/**
-	 * Gets the effective height of the widget content without its borders.
-	 * @return Effective height of the widget
-	 */
-	double getEffectiveHeight ();
-
-	/**
 	 * Linearizes the whole children tree.
 	 * @param queue Vector to which all (pointers to) children shall be added.
 	 * 				Default = empty.
@@ -467,6 +468,7 @@ protected:
 
 	bool fitToArea (double& x, double& y, double& width, double& height);
 
+	long id;
 	double x_, y_, width_, height_;
 	bool visible;
 	bool clickable;
