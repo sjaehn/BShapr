@@ -114,7 +114,7 @@ void Label::draw (const double x, const double y, const double width, const doub
 
 		cairo_text_extents_t ext = labelFont.getTextExtents(cr, labelText);
 		BColors::Color lc = *labelColors.getColor (getState ());
-		cairo_set_source_rgba (cr, lc.getRed (), lc.getGreen (), lc.getBlue (), lc.getAlpha ());
+		BColors::Color bc = lc; bc.applyBrightness (BWIDGETS_DEFAULT_DARKENED);
 		cairo_select_font_face (cr, labelFont.getFontFamily ().c_str (), labelFont.getFontSlant (), labelFont.getFontWeight ());
 		cairo_set_font_size (cr, labelFont.getFontSize ());
 
@@ -142,6 +142,11 @@ void Label::draw (const double x, const double y, const double width, const doub
 		default:							y0 = 0;
 		}
 
+		cairo_set_source_rgba (cr, bc.getRed (), bc.getGreen (), bc.getBlue (), bc.getAlpha ());
+		cairo_move_to (cr, xoff + x0 + 1, yoff + y0 + 1);
+		cairo_show_text (cr, labelText.c_str ());
+
+		cairo_set_source_rgba (cr, lc.getRed (), lc.getGreen (), lc.getBlue (), lc.getAlpha ());
 		cairo_move_to (cr, xoff + x0, yoff + y0);
 		cairo_show_text (cr, labelText.c_str ());
 	}
