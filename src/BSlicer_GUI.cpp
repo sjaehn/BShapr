@@ -116,7 +116,7 @@ private:
 
 
 	// Definition of styles
-	BColors::ColorSet fgColors = {{{0.0, 0.75, 0.2, 1.0}, {0.0, 1.0, 0.4, 1.0}, {0.0, 0.2, 0.0, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
+	BColors::ColorSet fgColors = {{{0.0, 0.75, 0.2, 1.0}, {0.2, 1.0, 0.6, 1.0}, {0.0, 0.2, 0.0, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
 	BColors::ColorSet txColors = {{{0.0, 1.0, 0.4, 1.0}, {1.0, 1.0, 1.0, 1.0}, {0.0, 0.5, 0.0, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
 	BColors::ColorSet bgColors = {{{0.15, 0.15, 0.15, 1.0}, {0.3, 0.3, 0.3, 1.0}, {0.05, 0.05, 0.05, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
 	BColors::Color ink = {0.0, 0.75, 0.2, 1.0};
@@ -553,6 +553,7 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 		stepControl[i].rename ("slider");
 		stepControl[i].setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlicer_GUI::valueChangedCallback);
 		stepControl[i].applyTheme (theme, "slider");
+		stepControl[i].getDisplayLabel ()->setState (BColors::ACTIVE);
 		sContainer.add (stepControl[i]);
 	}
 
