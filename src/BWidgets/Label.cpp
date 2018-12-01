@@ -142,10 +142,6 @@ void Label::draw (const double x, const double y, const double width, const doub
 		default:							y0 = 0;
 		}
 
-		cairo_set_source_rgba (cr, bc.getRed (), bc.getGreen (), bc.getBlue (), bc.getAlpha ());
-		cairo_move_to (cr, xoff + x0 + 1, yoff + y0 + 1);
-		cairo_show_text (cr, labelText.c_str ());
-
 		cairo_set_source_rgba (cr, lc.getRed (), lc.getGreen (), lc.getBlue (), lc.getAlpha ());
 		cairo_move_to (cr, xoff + x0, yoff + y0);
 		cairo_show_text (cr, labelText.c_str ());
