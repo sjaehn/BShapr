@@ -29,11 +29,11 @@ BSlicer::BSlicer (double samplerate, const LV2_Feature* const* features) :
 	nrSteps(NULL), attack(NULL), release (NULL), stepsize (NULL),
 	rate(samplerate), bpm(120.0f), speed(1), position(0), refFrame(0), beatUnit (4), beatsPerBar (4),
 	prevStep(NULL), actStep(NULL), nextStep(NULL),
-	record_on(true), count(0), maxInput(0), maxOutput(0), notificationsCount(0), notifyblocksize (64)
+	record_on(true), monitorpos(-1)
 
 {
-	notifications = new BSlicerNotifications [NOTIFYBUFFERSIZE];
-	notifications[0] = endNote;
+	notifications.fill (defaultNotification);
+	monitor.fill (defaultMonitorData);
 
 	//Scan host features for URID map
 	LV2_URID_Map* m = NULL;
@@ -59,10 +59,7 @@ BSlicer::BSlicer (double samplerate, const LV2_Feature* const* features) :
 
 }
 
-BSlicer::~BSlicer ()
-{
-	delete notifications;
-}
+BSlicer::~BSlicer () {}
 
 void BSlicer::connect_port(uint32_t port, void *data)
 {
@@ -119,16 +116,8 @@ void BSlicer::run (uint32_t n_samples)
 			if (lv2_atom_forge_is_object_type(&forge, ev2->body.type))
 			{
 				const LV2_Atom_Object* obj2 = (const LV2_Atom_Object*)&ev2->body;
-				if (obj2->body.otype == uris.ui_on)
-				{
-					record_on = true;
-					notificationsCount = 0;
-					notifications[0] = endNote;
-				}
-				else if (obj2->body.otype == uris.ui_off)
-				{
-					record_on = false;
-				}
+				if (obj2->body.otype == uris.ui_on) record_on = true;
+				else if (obj2->body.otype == uris.ui_off) record_on = false;
 			}
 			ev2 = lv2_atom_sequence_next(ev2);
 		}
@@ -164,24 +153,10 @@ void BSlicer::run (uint32_t n_samples)
 									  NULL);
 
 			// BPM changed?
-			if (oBpm && (oBpm->type == uris.atom_Float))
-			{
-				bpm = ((LV2_Atom_Float*)oBpm)->body;
-				// Calculate notification block size to fit 1 beat in a half monitorBuffer
-				notifyblocksize = (uint32_t) (rate / (bpm / 60) / (MONITORBUFFERSIZE / 2) / *stepsize * beatsPerBar);
-				// Prevent overflow of notifyBuffer due to too many too small blocks
-				if (notifyblocksize < (uint32_t) (n_samples / NOTIFYBUFFERSIZE)) notifyblocksize = (uint32_t) (n_samples / NOTIFYBUFFERSIZE);
-			}
+			if (oBpm && (oBpm->type == uris.atom_Float)) bpm = ((LV2_Atom_Float*)oBpm)->body;
 
 			// Beats per bar changed?
-			if (oBpb && (oBpb->type == uris.atom_Float) && (((LV2_Atom_Float*)oBpb)->body > 0))
-			{
-				beatsPerBar = ((LV2_Atom_Float*)oBpb)->body;
-				// Calculate notification block size to fit 1 beat in a half monitorBuffer
-				notifyblocksize = (uint32_t) (rate / (bpm / 60) / (MONITORBUFFERSIZE / 2) / *stepsize * beatsPerBar);
-				// Prevent overflow of notifyBuffer due to too many too small blocks
-				if (notifyblocksize < (uint32_t) (n_samples / NOTIFYBUFFERSIZE)) notifyblocksize = (uint32_t) (n_samples / NOTIFYBUFFERSIZE);
-			}
+			if (oBpb && (oBpb->type == uris.atom_Float) && (((LV2_Atom_Float*)oBpb)->body > 0)) beatsPerBar = ((LV2_Atom_Float*)oBpb)->body;
 
 			// BeatUnit changed?
 			if (oBu && (oBu->type == uris.atom_Int) && (((LV2_Atom_Int*)oBu)->body > 0)) beatUnit = ((LV2_Atom_Int*)oBu)->body;
@@ -219,11 +194,40 @@ void BSlicer::notifyGUI()
 {
 	if (record_on)
 	{
+		int notificationsCount = 0;
+		// Scan monitor and build notifications
+		for (int i = 0; i < MONITORBUFFERSIZE; ++i)
+		{
+			if (monitor[i].ready)
+			{
+				// Copy data monitor -> notifications
+				if (notificationsCount < NOTIFYBUFFERSIZE - 1)
+				{
+					int count = monitor[i].count;
+					notifications[notificationsCount].position = i;
+					notifications[notificationsCount].input = monitor[i].input;
+					notifications[notificationsCount].output = monitor[i].output;
+					notificationsCount++;
+				}
+
+				// Reset monitor data
+				monitor[i].ready = false;
+				monitor[i].input = 0.0;
+				monitor[i].output = 0.0;
+			}
+		}
+
+		// And build one closing notification block for submission of current position (horizon)
+		notifications[notificationsCount].position = monitorpos;
+		notifications[notificationsCount].input = monitor[monitorpos].input;
+		notifications[notificationsCount].output = monitor[monitorpos].output;
+
+		// Send notifications
 		LV2_Atom_Forge_Frame frame;
 		lv2_atom_forge_frame_time(&forge, 0);
 		lv2_atom_forge_object(&forge, &frame, 0, uris.notify_event);
 		lv2_atom_forge_key(&forge, uris.notify_key);
-		lv2_atom_forge_vector(&forge, sizeof(float), uris.atom_Float, (uint32_t) (3 * notificationsCount), notifications);
+		lv2_atom_forge_vector(&forge, sizeof(float), uris.atom_Float, (uint32_t) (3 * notificationsCount), &notifications);
 		lv2_atom_forge_pop(&forge, &frame);
 
 		// Close off sequence
@@ -285,31 +289,25 @@ void BSlicer::play(uint32_t start, uint32_t end)
 		// Analyze input and output data for GUI notification
 		if (record_on)
 		{
-			count++;
+			// Calculate position in monitor
+			int newmonitorpos = (int) (pos * MONITORBUFFERSIZE);
+			if (newmonitorpos >= MONITORBUFFERSIZE) newmonitorpos = MONITORBUFFERSIZE;
+			if (newmonitorpos < 0) newmonitorpos = 0;
+
+			// Position changed? => Ready to send
+			if (newmonitorpos != monitorpos)
+			{
+				if (monitorpos >= 0) monitor[monitorpos].ready = true;
+				monitorpos = newmonitorpos;
+			}
 
 			// Get max input and output values for a block
-			if (fabs(effect1) > maxOutput) maxOutput = fabs(effect1);
-			if (fabs(effect2) > maxOutput) maxOutput = fabs(effect2);
-			if (fabs(audioInput1[i]) > maxInput) maxInput = fabs(audioInput1[i]);
-			if (fabs(audioInput2[i]) > maxInput) maxInput = fabs(audioInput2[i]);
+			if (fabs(effect1) > monitor[monitorpos].output) monitor[monitorpos].output = fabs(effect1);
+			if (fabs(effect2) > monitor[monitorpos].output) monitor[monitorpos].output = fabs(effect2);
+			if (fabs(audioInput1[i]) > monitor[monitorpos].input) monitor[monitorpos].input = fabs(audioInput1[i]);
+			if (fabs(audioInput2[i]) > monitor[monitorpos].input) monitor[monitorpos].input = fabs(audioInput2[i]);
 
-			if (count >= notifyblocksize)
-			{
-				// Generate data block for GUI notification
-				if (notificationsCount < NOTIFYBUFFERSIZE - 1)
-				{
-					notifications[notificationsCount].position = pos;
-					notifications[notificationsCount].input = maxInput;
-					notifications[notificationsCount].output = maxOutput;
-					notifications[notificationsCount + 1] = endNote;
-					notificationsCount++;
-				}
-
-				// Reset block values
-				maxOutput = 0;
-				maxInput = 0;
-				count = 0;
-			}
+			monitor[monitorpos].ready = false;
 		}
 
 		// Send effect to audio output

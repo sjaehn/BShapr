@@ -21,7 +21,8 @@
 #ifndef BSLICER_H_
 #define BSLICER_H_
 
-#include <math.h>
+#include <cmath>
+#include <array>
 #include <lv2/lv2plug.in/ns/lv2core/lv2.h>
 #include <lv2/lv2plug.in/ns/ext/atom/atom.h>
 #include <lv2/lv2plug.in/ns/ext/atom/util.h>
@@ -29,6 +30,16 @@
 #include <lv2/lv2plug.in/ns/ext/urid/urid.h>
 #include <lv2/lv2plug.in/ns/ext/time/time.h>
 #include "main.h"
+
+typedef struct
+{
+	int count;
+	bool ready;
+	double input;
+	double output;
+} BSlicerMonitor_t;
+
+BSlicerMonitor_t defaultMonitorData = {0, false, 0.0, 0.0};
 
 class BSlicer
 {
@@ -77,12 +88,9 @@ private:
 	LV2_Atom_Forge_Frame notify_frame;
 
 	bool record_on;
-	float maxInput;
-	float maxOutput;
-	uint32_t count;
-	BSlicerNotifications* notifications;
-	uint32_t notificationsCount;
-	uint32_t notifyblocksize;
+	int monitorpos;
+	std::array<BSlicerNotifications, NOTIFYBUFFERSIZE> notifications;
+	std::array<BSlicerMonitor_t, MONITORBUFFERSIZE> monitor;
 
 	void play(uint32_t start, uint32_t end);
 	void notifyGUI();

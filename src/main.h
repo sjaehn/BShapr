@@ -22,7 +22,7 @@
 #define MAIN_H_
 
 #define NOTIFYBUFFERSIZE 64
-#define MONITORBUFFERSIZE 256
+#define MONITORBUFFERSIZE 64
 #define MAXSTEPS 16
 #define BSLICER_URI "https://www.jahnichen.de/plugins/lv2/BSlicer"
 #define BSLICER_GUI_URI "https://www.jahnichen.de/plugins/lv2/BSlicer#gui"
@@ -63,12 +63,12 @@ typedef struct
 }  BSlicerURIs;
 
 typedef struct {
-	float position;
+	int position;
 	float input;
 	float output;
 } BSlicerNotifications;
 
-BSlicerNotifications endNote = {-1.0f, 0.0f, 0.0f};
+BSlicerNotifications defaultNotification = {0, 0.0, 0.0};
 
 void getURIs (LV2_URID_Map* m, BSlicerURIs* uris)
 {

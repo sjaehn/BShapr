@@ -21,13 +21,14 @@
 #include <string>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
+#include <cmath>
 #include <lv2/lv2plug.in/ns/lv2core/lv2.h>
 #include <lv2/lv2plug.in/ns/extensions/ui/ui.h>
 #include <lv2/lv2plug.in/ns/ext/atom/atom.h>
 #include <lv2/lv2plug.in/ns/ext/atom/forge.h>
 #include <lv2/lv2plug.in/ns/ext/time/time.h>
 #include "BWidgets/BWidgets.hpp"
+#include "looparray.hpp"
 
 #include "main.h"
 
@@ -36,10 +37,7 @@
 #define SCALEMAX 30
 #define CAIRO_BG_COLOR 0.0, 0.0, 0.0, 1.0
 #define CAIRO_BG_COLOR2 0.2, 0.2, 0.2, 1.0
-#define GDK_BG_COLOR {0, 0x0000, 0x0000, 0x0000}
-#define GDK_WHITE {0, 0xFFFF, 0xFFFF, 0xFFFF}
-#define GDK_FG_COLOR {0, 0x0000, 0xffff, 0x5fff}
-#define GDK_FG_COLOR2 {0, 0xcfff, 0x9fff, 0x2fff}
+#define CAIRO_TRANSPARENT 0.0, 0.0, 0.0, 0.0
 #define CAIRO_FG_COLOR 1.0, 1.0, 1.0, 1.0
 #define CAIRO_INK1 0.0, 1.0, 0.4
 #define CAIRO_INK2 0.8, 0.6, 0.2
@@ -69,7 +67,7 @@ private:
 	static void valueChangedCallback (BEvents::Event* event);
 	void redrawStepshape ();
 	void clear_monitor_data ();
-	void add_monitor_data (BSlicerNotifications* notifications, uint32_t notificationsCount, uint32_t* end);
+	void add_monitor_data (BSlicerNotifications* notifications, uint32_t notificationsCount, uint32_t& end);
 	void redrawMainMonitor ();
 
 
@@ -96,7 +94,7 @@ private:
 		bool record_on;
 		uint32_t width;
 		uint32_t height;
-		BSlicerNotifications* data;
+		std::array<BSlicerNotifications, MONITORBUFFERSIZE> data;
 		uint32_t horizonPos;
 	} mainMonitor;
 
@@ -358,19 +356,20 @@ void BSlicer_GUI::redrawStepshape ()
 
 void BSlicer_GUI::clear_monitor_data ()
 {
-	for (int i = 0; i < MONITORBUFFERSIZE; i++) mainMonitor.data[i] = endNote;
+	mainMonitor.data.fill (defaultNotification);
 }
 
-void BSlicer_GUI::add_monitor_data (BSlicerNotifications* notifications, uint32_t notificationsCount, uint32_t* end)
+void BSlicer_GUI::add_monitor_data (BSlicerNotifications* notifications, uint32_t notificationsCount, uint32_t& end)
 {
-	int offset = *end + 1;
-	int i = 0;
-	while ((i < notificationsCount) && (notifications[i].position >= 0.0f))
+	for (int i = 0; i < notificationsCount; ++i)
 	{
-		if ((offset + i) >= MONITORBUFFERSIZE) offset = -i;
-		mainMonitor.data[offset + i] = notifications[i];
-		*end = (uint32_t) (offset + i);
-		i++;
+		int monitorpos = notifications[i].position;
+		if (monitorpos >= MONITORBUFFERSIZE) monitorpos = MONITORBUFFERSIZE;
+		if (monitorpos < 0) monitorpos = 0;
+
+		mainMonitor.data[monitorpos].input = notifications[i].input;
+		mainMonitor.data[monitorpos].output = notifications[i].output;
+		mainMonitor.horizonPos = monitorpos;
 	}
 }
 
@@ -379,19 +378,17 @@ void BSlicer_GUI::redrawMainMonitor ()
 	uint32_t i;
 	bool lineBreak;
 	double pos, nextpos, linebreakpos;
-	double width = monitorDisplay.getWidth () - 6.0;
-	double height = monitorDisplay.getHeight () - 6.0;
+	double width = monitorDisplay.getEffectiveWidth ();
+	double height = monitorDisplay.getEffectiveHeight ();
 
-	cairo_t* cr;
-	cairo_t* cr2;
-	cairo_pattern_t* pat;
-	cairo_pattern_t* pat2;
-	cr = cairo_create (monitorDisplay.getDrawingSurface ());
-	cr2 = cairo_create (monitorDisplay.getDrawingSurface ());
-	pat = cairo_pattern_create_linear (0, 0, 0, height);
-	cairo_pattern_add_color_stop_rgba (pat, 0.1, CAIRO_INK1, 1);
-	cairo_pattern_add_color_stop_rgba (pat, 0.9, CAIRO_INK1, 0);
-	pat2 = cairo_pattern_create_linear (0, 0, 0, height);
+	cairo_t* cr = cairo_create (monitorDisplay.getDrawingSurface ());
+	cairo_surface_t* surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width, height);
+	cairo_t* cr1 = cairo_create (surface);
+	cairo_t* cr2 = cairo_create (surface);
+	cairo_pattern_t* pat1 = cairo_pattern_create_linear (0, 0, 0, height);
+	cairo_pattern_add_color_stop_rgba (pat1, 0.1, CAIRO_INK1, 1);
+	cairo_pattern_add_color_stop_rgba (pat1, 0.9, CAIRO_INK1, 0);
+	cairo_pattern_t* pat2 = cairo_pattern_create_linear (0, 0, 0, height);
 	cairo_pattern_add_color_stop_rgba (pat2, 0.1, CAIRO_INK2, 1);
 	cairo_pattern_add_color_stop_rgba (pat2, 0.9, CAIRO_INK2, 0);
 
@@ -420,104 +417,78 @@ void BSlicer_GUI::redrawMainMonitor ()
 
 	if (mainMonitor.record_on)
 	{
-		uint32_t horizoni = mainMonitor.horizonPos;
-		float horizonpos = mainMonitor.data[horizoni].position;
-		if (horizonpos >= 0.0f)
+		// Draw input (cr) and output (cr2) curves
+		cairo_move_to (cr1, 0, height * (0.9  - (0.8 * LIM ((mainMonitor.data[0].input / scale), 1.0f))));
+		cairo_move_to (cr2, 0, height * (0.9  - (0.8 * LIM ((mainMonitor.data[0].output / scale), 1.0f))));
+
+		for (int i = 0; i < MONITORBUFFERSIZE; ++i)
 		{
-			// Draw horizon line
-			cairo_set_source_rgba (cr, CAIRO_FG_COLOR);
-			cairo_set_line_width (cr, 1);
-			cairo_move_to (cr, (uint32_t) (horizonpos * width), 0);
-			cairo_line_to (cr, (uint32_t) (horizonpos * width), height);
-			cairo_stroke (cr);
-
-			// Draw data: input@cr, output@cr2
-			cairo_move_to (cr, (uint32_t) (horizonpos * width), (uint32_t) (height * (0.9  - (0.8 * LIM ((mainMonitor.data[horizoni].input / scale), 1.0f)))));
-			cairo_move_to (cr2, (uint32_t) (horizonpos * width), (uint32_t) (height * (0.9  - (0.8 * LIM ((mainMonitor.data[horizoni].output / scale), 1.0f)))));
-			lineBreak = false;
-			i = horizoni;
-			nextpos = horizonpos;
-			linebreakpos = horizonpos;
-
-			do
-			{
-				pos = nextpos;
-	//			fprintf (stdout, "%i %f %f %f\n", i, pos, ui->mainMonitor.data[i].input, ui->mainMonitor.data[i].output);
-				cairo_line_to (cr, (uint32_t) (pos * width), (uint32_t) (height * (0.9  - (0.8 * LIM ((mainMonitor.data[i].input / scale), 1.0f)))));
-				cairo_line_to (cr2, (uint32_t) (pos * width), (uint32_t) (height * (0.9  - (0.8 * LIM ((mainMonitor.data[i].output / scale), 1.0f)))));
-				if (i == 0) i = MONITORBUFFERSIZE - 1;
-				else i--;
-				nextpos = mainMonitor.data[i].position;
-
-				// Line break in raw data?
-				if (nextpos > pos)
-				{
-	//				fprintf (stdout, "lb: %i %f %f %f %f\n", i, pos, nextpos, ui->mainMonitor.data[i].input, ui->mainMonitor.data[i].output);
-					// Visualize input (cr) and output (cr2) curves between horizon and breakpoint
-					cairo_set_source_rgba (cr, CAIRO_INK1, 1.0);
-					cairo_set_line_width (cr, 3);
-					cairo_set_source_rgba (cr2, CAIRO_INK2, 1.0);
-					cairo_set_line_width (cr2, 3);
-					cairo_stroke_preserve (cr);
-					cairo_stroke_preserve (cr2);
-
-					// Visualize input (cr) and output (cr2) areas under the curves between horizon and breakpoint
-					cairo_line_to (cr, (uint32_t) (pos * width), (uint32_t) (height * 0.9));
-					cairo_line_to (cr, (uint32_t) (horizonpos * width), (uint32_t) (height * 0.9));
-					cairo_close_path (cr);
-					cairo_line_to (cr2, (uint32_t) (pos * width), (uint32_t) (height * 0.9));
-					cairo_line_to (cr2, (uint32_t) (horizonpos * width), (uint32_t) (height * 0.9));
-					cairo_close_path (cr2);
-					cairo_set_source (cr, pat);
-					cairo_set_line_width (cr, 0);
-					cairo_set_source (cr2, pat2);
-					cairo_set_line_width (cr2, 0);
-					cairo_fill (cr);
-					cairo_fill (cr2);
-
-					lineBreak = true;
-					linebreakpos = nextpos;
-					cairo_move_to (cr, (uint32_t) (nextpos * width), (uint32_t) (height * (0.9  - (0.8 * LIM ((mainMonitor.data[i].input / scale), 1.0f)))));
-					cairo_move_to (cr2, (uint32_t) (nextpos * width), (uint32_t) (height * (0.9  - (0.8 * LIM ((mainMonitor.data[i].output / scale), 1.0f)))));
-				}
-			} while ((nextpos >= 0.0f) && (((nextpos < horizonpos) && !lineBreak) || ((nextpos > horizonpos) && lineBreak)));
-
-			// Visualize (remaining parts of) input (cr) and output (cr2) curves
-			cairo_set_source_rgba (cr, CAIRO_INK1, 1.0);
-			cairo_set_line_width (cr, 3);
-			cairo_set_source_rgba (cr2, CAIRO_INK2, 1.0);
-			cairo_set_line_width (cr2, 3);
-
-
-			if (nextpos > pos)
-			{
-				cairo_stroke (cr);
-				cairo_stroke (cr2);
-				// Do not visualize areas under the curves if do while loop ended exactly on line break
-			}
-			else
-			{
-				cairo_stroke_preserve (cr);
-				cairo_stroke_preserve (cr2);
-
-				// Visualize (remaining parts of) input (cr) and output (cr2) areas under the curves
-				cairo_line_to (cr, (uint32_t) (pos * width), (uint32_t) (height * 0.9));
-				cairo_line_to (cr, (uint32_t) (linebreakpos * width), (uint32_t) (height * 0.9));
-				cairo_close_path (cr);
-				cairo_line_to (cr2, (uint32_t) (pos * width), (uint32_t) (height * 0.9));
-				cairo_line_to (cr2, (uint32_t) (linebreakpos * width), (uint32_t) (height * 0.9));
-				cairo_close_path (cr2);
-				cairo_set_source (cr, pat);
-				cairo_set_line_width (cr, 0);
-				cairo_set_source (cr2, pat2);
-				cairo_set_line_width (cr2, 0);
-				cairo_fill (cr);
-				cairo_fill (cr2);
-			}
+			double pos = ((double) i) / (MONITORBUFFERSIZE - 1.0f);
+			cairo_line_to (cr1, pos * width, height * (0.9  - (0.8 * LIM ((mainMonitor.data[i].input / scale), 1.0f))));
+			cairo_line_to (cr2, pos * width, height * (0.9  - (0.8 * LIM ((mainMonitor.data[i].output / scale), 1.0f))));
 		}
+
+		// Visualize input (cr) and output (cr2) curves
+		cairo_set_source_rgba (cr1, CAIRO_INK1, 1.0);
+		cairo_set_line_width (cr1, 3);
+		cairo_set_source_rgba (cr2, CAIRO_INK2, 1.0);
+		cairo_set_line_width (cr2, 3);
+		cairo_stroke_preserve (cr1);
+		cairo_stroke_preserve (cr2);
+
+		// Visualize input (cr) and output (cr2) areas under the curves
+		cairo_line_to (cr1, width, height * 0.9);
+		cairo_line_to (cr1, 0, height * 0.9);
+		cairo_close_path (cr1);
+		cairo_line_to (cr2, width, height * 0.9);
+		cairo_line_to (cr2, 0, height * 0.9);
+		cairo_close_path (cr2);
+		cairo_set_source (cr1, pat1);
+		cairo_set_line_width (cr1, 0);
+		cairo_set_source (cr2, pat2);
+		cairo_set_line_width (cr2, 0);
+		cairo_fill (cr1);
+		cairo_fill (cr2);
+
+		// Draw fade out
+		double horizon = ((double) mainMonitor.horizonPos) / (MONITORBUFFERSIZE - 1.0f);
+		cairo_pattern_t* pat3 = cairo_pattern_create_linear (horizon * width, 0, horizon * width + 63, 0);
+		cairo_pattern_add_color_stop_rgba (pat3, 0.0, CAIRO_BG_COLOR);
+		cairo_pattern_add_color_stop_rgba (pat3, 1.0, CAIRO_TRANSPARENT);
+		cairo_set_line_width (cr1, 0.0);
+		cairo_set_source (cr1, pat3);
+		cairo_rectangle (cr1, horizon * width, 0, 63, height);
+		cairo_fill (cr1);
+		cairo_pattern_destroy (pat3);
+
+		if (horizon * width > width - 63)
+		{
+			cairo_pattern_t* pat3 = cairo_pattern_create_linear ((horizon - 1) * width, 0, (horizon - 1) * width + 63, 0);
+			cairo_pattern_add_color_stop_rgba (pat3, 0.0, CAIRO_BG_COLOR);
+			cairo_pattern_add_color_stop_rgba (pat3, 1.0, CAIRO_TRANSPARENT);
+			cairo_set_line_width (cr1, 0.0);
+			cairo_set_source (cr1, pat3);
+			cairo_rectangle (cr1, (horizon - 1) * width, 0, 63, height);
+			cairo_fill (cr1);
+			cairo_pattern_destroy (pat3);
+		}
+
+		// Draw horizon line
+		cairo_set_source_rgba (cr1, CAIRO_FG_COLOR);
+		cairo_set_line_width (cr1, 1);
+		cairo_move_to (cr1, horizon * width, 0);
+		cairo_line_to (cr1, horizon * width, height);
+		cairo_stroke (cr1);
 	}
-	cairo_destroy (cr);
+	cairo_pattern_destroy (pat2);
+	cairo_pattern_destroy (pat1);
 	cairo_destroy (cr2);
+	cairo_destroy (cr1);
+
+	cairo_set_source_surface (cr, surface, 0, 0);
+	cairo_paint (cr);
+	cairo_surface_destroy (surface);
+	cairo_destroy (cr);
 
 	monitorDisplay.update ();
 }
@@ -609,7 +580,6 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 	mainMonitor.record_on = true;
 	mainMonitor.width = 0;
 	mainMonitor.height = 0;
-	mainMonitor.data = new BSlicerNotifications[MONITORBUFFERSIZE];
 	clear_monitor_data();
 	mainMonitor.horizonPos = 0;
 
@@ -639,7 +609,6 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 BSlicer_GUI::~BSlicer_GUI()
 {
 	send_record_off ();
-	delete mainMonitor.data;
 }
 
 
@@ -666,7 +635,7 @@ void BSlicer_GUI::portEvent(uint32_t port_index, uint32_t buffer_size, uint32_t 
 						BSlicerNotifications* notifications = (BSlicerNotifications*) (&vec->body + 1);
 						if (notificationsCount > 0)
 						{
-							add_monitor_data (notifications, notificationsCount, &mainMonitor.horizonPos);
+							add_monitor_data (notifications, notificationsCount, mainMonitor.horizonPos);
 							redrawMainMonitor ();
 						}
 					}
