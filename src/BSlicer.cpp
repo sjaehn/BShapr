@@ -20,8 +20,9 @@
 
 #include "BSlicer.h"
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <string>
+#include <exception>
 
 BSlicer::BSlicer (double samplerate, const LV2_Feature* const* features) :
 	map(NULL), controlPort1(NULL), controlPort2(NULL),  notifyPort(NULL),
@@ -44,11 +45,7 @@ BSlicer::BSlicer (double samplerate, const LV2_Feature* const* features) :
 			m = (LV2_URID_Map*) features[i]->data;
 		}
 	}
-	if (!m)
-	{
-		fprintf(stderr, "BSlicer.lv2: Host does not support urid:map.\n");
-		return;
-	}
+	if (!m) throw std::invalid_argument ("Host does not support urid:map");
 
 	//Map URIS
 	map = m;
@@ -319,7 +316,14 @@ void BSlicer::play(uint32_t start, uint32_t end)
 LV2_Handle instantiate (const LV2_Descriptor* descriptor, double samplerate, const char* bundle_path, const LV2_Feature* const* features)
 {
 	// New instance
-	BSlicer* instance = new BSlicer(samplerate, features);
+	BSlicer* instance;
+	try {instance = new BSlicer(samplerate, features);}
+	catch (std::exception& exc)
+	{
+		fprintf (stderr, "BSlicer.lv2: Plugin instantiation failed. %s\n", exc.what ());
+		return NULL;
+	}
+
 	if (!instance)
 	{
 		fprintf(stderr, "BSlicer.lv2: Plugin instantiation failed.\n");

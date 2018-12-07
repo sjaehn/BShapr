@@ -19,9 +19,10 @@
  */
 
 #include <string>
-#include <stdio.h>
-#include <stdlib.h>
+#include <iostream>
+#include <cstdlib>
 #include <cmath>
+#include <exception>
 #include <lv2/lv2plug.in/ns/lv2core/lv2.h>
 #include <lv2/lv2plug.in/ns/extensions/ui/ui.h>
 #include <lv2/lv2plug.in/ns/ext/atom/atom.h>
@@ -64,7 +65,11 @@ public:
 private:
 	void rearrange_step_controllers (float nrSteps_newf);
 	static void valueChangedCallback (BEvents::Event* event);
+	bool init_Stepshape ();
+	void destroy_Stepshape ();
 	void redrawStepshape ();
+	bool init_mainMonitor ();
+	void destroy_mainMonitor ();
 	void add_monitor_data (BSlicerNotifications* notifications, uint32_t notificationsCount, uint32_t& end);
 	void redrawMainMonitor ();
 
@@ -93,6 +98,7 @@ private:
 	cairo_t* cr2;
 	cairo_pattern_t* pat1;
 	cairo_pattern_t* pat2;
+	cairo_pattern_t* pat4;
 
 	struct 	{
 		bool record_on;
@@ -294,13 +300,28 @@ void BSlicer_GUI::valueChangedCallback (BEvents::Event* event)
 	}
 }
 
+bool BSlicer_GUI::init_Stepshape ()
+{
+	double width = stepshapeDisplay.getEffectiveWidth ();
+	double height = stepshapeDisplay.getEffectiveHeight ();
+	pat4 = cairo_pattern_create_linear (0, 0, 0, height);
+
+	return (pat4 && (cairo_pattern_status (pat4) == CAIRO_STATUS_SUCCESS));
+}
+
+void BSlicer_GUI::destroy_Stepshape ()
+{
+	//Destroy also mainMonitors cairo data
+	if (pat4 && (cairo_pattern_status (pat4) == CAIRO_STATUS_SUCCESS)) cairo_pattern_destroy (pat4);
+}
+
 void BSlicer_GUI::redrawStepshape ()
 {
 	double width = stepshapeDisplay.getEffectiveWidth ();
 	double height = stepshapeDisplay.getEffectiveHeight ();
 
-	cairo_t* cr = cairo_create (stepshapeDisplay.getDrawingSurface ());;
-	cairo_pattern_t* pat = cairo_pattern_create_linear (0, 0, 0, height);
+	cairo_t* cr = cairo_create (stepshapeDisplay.getDrawingSurface ());
+	if (cairo_status (cr) != CAIRO_STATUS_SUCCESS) return;
 
 	// Draw background
 	cairo_set_source_rgba (cr, CAIRO_BG_COLOR);
@@ -345,17 +366,55 @@ void BSlicer_GUI::redrawStepshape ()
 
 	cairo_stroke_preserve (cr);
 
-	cairo_pattern_add_color_stop_rgba (pat, 0.1, CAIRO_INK1, 1);
-	cairo_pattern_add_color_stop_rgba (pat, 0.9, CAIRO_INK1, 0);
-	cairo_set_source (cr, pat);
+	cairo_pattern_add_color_stop_rgba (pat4, 0.1, CAIRO_INK1, 1);
+	cairo_pattern_add_color_stop_rgba (pat4, 0.9, CAIRO_INK1, 0);
+	cairo_set_source (cr, pat4);
 	cairo_line_to(cr, 0, 0.9 * height);
 	cairo_set_line_width (cr, 0);
 	cairo_fill (cr);
 
-	cairo_pattern_destroy (pat);
 	cairo_destroy (cr);
 
 	stepshapeDisplay.update ();
+}
+
+bool BSlicer_GUI::init_mainMonitor ()
+{
+	//Initialize mainMonitor
+	mainMonitor.record_on = true;
+	mainMonitor.width = 0;
+	mainMonitor.height = 0;
+	mainMonitor.data.fill (defaultNotification);
+	mainMonitor.horizonPos = 0;
+
+	//Initialize mainMonitors cairo data
+	double width = monitorDisplay.getEffectiveWidth ();
+	double height = monitorDisplay.getEffectiveHeight ();
+	surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width, height);
+	cr1 = cairo_create (surface);
+	cr2 = cairo_create (surface);
+	pat1 = cairo_pattern_create_linear (0, 0, 0, height);
+	cairo_pattern_add_color_stop_rgba (pat1, 0.1, CAIRO_INK1, 1);
+	cairo_pattern_add_color_stop_rgba (pat1, 0.9, CAIRO_INK1, 0);
+	pat2 = cairo_pattern_create_linear (0, 0, 0, height);
+	cairo_pattern_add_color_stop_rgba (pat2, 0.1, CAIRO_INK2, 1);
+	cairo_pattern_add_color_stop_rgba (pat2, 0.9, CAIRO_INK2, 0);
+
+	return (pat2 && (cairo_pattern_status (pat2) == CAIRO_STATUS_SUCCESS) &&
+			pat1 && (cairo_pattern_status (pat1) == CAIRO_STATUS_SUCCESS) &&
+			cr2 && (cairo_status (cr2) == CAIRO_STATUS_SUCCESS) &&
+			cr1 && (cairo_status (cr1) == CAIRO_STATUS_SUCCESS)&&
+			surface && (cairo_surface_status (surface) == CAIRO_STATUS_SUCCESS));
+}
+
+void BSlicer_GUI::destroy_mainMonitor ()
+{
+	//Destroy also mainMonitors cairo data
+	if (pat2 && (cairo_pattern_status (pat2) == CAIRO_STATUS_SUCCESS)) cairo_pattern_destroy (pat2);
+	if (pat1 && (cairo_pattern_status (pat1) == CAIRO_STATUS_SUCCESS)) cairo_pattern_destroy (pat1);
+	if (cr2 && (cairo_status (cr2) == CAIRO_STATUS_SUCCESS)) cairo_destroy (cr2);
+	if (cr1 && (cairo_status (cr1) == CAIRO_STATUS_SUCCESS)) cairo_destroy (cr1);
+	if (surface && (cairo_surface_status (surface) == CAIRO_STATUS_SUCCESS)) cairo_surface_destroy (surface);
 }
 
 void BSlicer_GUI::add_monitor_data (BSlicerNotifications* notifications, uint32_t notificationsCount, uint32_t& end)
@@ -378,6 +437,7 @@ void BSlicer_GUI::redrawMainMonitor ()
 	double height = monitorDisplay.getEffectiveHeight ();
 
 	cairo_t* cr = cairo_create (monitorDisplay.getDrawingSurface ());
+	if (cairo_status (cr) != CAIRO_STATUS_SUCCESS) return;
 
 	// Draw background
 	cairo_set_source_rgba (cr, CAIRO_BG_COLOR);
@@ -440,24 +500,30 @@ void BSlicer_GUI::redrawMainMonitor ()
 		// Draw fade out
 		double horizon = ((double) mainMonitor.horizonPos) / (MONITORBUFFERSIZE - 1.0f);
 		cairo_pattern_t* pat3 = cairo_pattern_create_linear (horizon * width, 0, horizon * width + 63, 0);
-		cairo_pattern_add_color_stop_rgba (pat3, 0.0, CAIRO_BG_COLOR);
-		cairo_pattern_add_color_stop_rgba (pat3, 1.0, CAIRO_TRANSPARENT);
-		cairo_set_line_width (cr1, 0.0);
-		cairo_set_source (cr1, pat3);
-		cairo_rectangle (cr1, horizon * width, 0, 63, height);
-		cairo_fill (cr1);
-		cairo_pattern_destroy (pat3);
-
-		if (horizon * width > width - 63)
+		if (cairo_pattern_status (pat3) == CAIRO_STATUS_SUCCESS)
 		{
-			cairo_pattern_t* pat3 = cairo_pattern_create_linear ((horizon - 1) * width, 0, (horizon - 1) * width + 63, 0);
 			cairo_pattern_add_color_stop_rgba (pat3, 0.0, CAIRO_BG_COLOR);
 			cairo_pattern_add_color_stop_rgba (pat3, 1.0, CAIRO_TRANSPARENT);
 			cairo_set_line_width (cr1, 0.0);
 			cairo_set_source (cr1, pat3);
-			cairo_rectangle (cr1, (horizon - 1) * width, 0, 63, height);
+			cairo_rectangle (cr1, horizon * width, 0, 63, height);
 			cairo_fill (cr1);
 			cairo_pattern_destroy (pat3);
+		}
+
+		if (horizon * width > width - 63)
+		{
+			cairo_pattern_t* pat3 = cairo_pattern_create_linear ((horizon - 1) * width, 0, (horizon - 1) * width + 63, 0);
+			if (cairo_pattern_status (pat3) == CAIRO_STATUS_SUCCESS)
+			{
+				cairo_pattern_add_color_stop_rgba (pat3, 0.0, CAIRO_BG_COLOR);
+				cairo_pattern_add_color_stop_rgba (pat3, 1.0, CAIRO_TRANSPARENT);
+				cairo_set_line_width (cr1, 0.0);
+				cairo_set_source (cr1, pat3);
+				cairo_rectangle (cr1, (horizon - 1) * width, 0, 63, height);
+				cairo_fill (cr1);
+				cairo_pattern_destroy (pat3);
+			}
 		}
 
 		// Draw horizon line
@@ -480,6 +546,7 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 	Window (800, 560, "B.Slicer", parentWindow),
 	scale (DB_CO(0.0)), attack (0.2), release (0.2), nrSteps (16.0), stepsize (4.0), step (),
 	pluginPath (bundle_path ? std::string (bundle_path) : std::string ("")), controller (NULL), write_function (NULL), map (NULL),
+	surface (NULL), cr1 (NULL), cr2 (NULL), pat1 (NULL), pat2 (NULL), pat4 (NULL),
 
 	mContainer (0, 0, 800, 560, "main"),
 	monitorSwitch (690, 25, 40, 16, "switch", 0.0),
@@ -500,6 +567,14 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 	sContainer (260, 330, 480, 130, "widget")
 
 {
+	if (!init_mainMonitor () || !init_Stepshape ())
+	{
+		std::cerr << "BSlicer.lv2#GUI: Failed to init monitor." <<  std::endl;
+		destroy_mainMonitor ();
+		destroy_Stepshape ();
+		throw std::bad_alloc ();
+	}
+
 	//Initialialize and configure stepControllers
 	for (int i = 0; i < MAXSTEPS; ++i)
 	{
@@ -559,40 +634,13 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 	mContainer.add (sContainer);
 	add (mContainer);
 
-	//Initialize mainMonitor
-	mainMonitor.record_on = true;
-	mainMonitor.width = 0;
-	mainMonitor.height = 0;
-	mainMonitor.data.fill (defaultNotification);
-	mainMonitor.horizonPos = 0;
-
-	//Initialize mainMonitors cairo data
-	double width = monitorDisplay.getEffectiveWidth ();
-	double height = monitorDisplay.getEffectiveHeight ();
-	surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width, height);
-	cr1 = cairo_create (surface);
-	cr2 = cairo_create (surface);
-	pat1 = cairo_pattern_create_linear (0, 0, 0, height);
-	cairo_pattern_add_color_stop_rgba (pat1, 0.1, CAIRO_INK1, 1);
-	cairo_pattern_add_color_stop_rgba (pat1, 0.9, CAIRO_INK1, 0);
-	pat2 = cairo_pattern_create_linear (0, 0, 0, height);
-	cairo_pattern_add_color_stop_rgba (pat2, 0.1, CAIRO_INK2, 1);
-	cairo_pattern_add_color_stop_rgba (pat2, 0.9, CAIRO_INK2, 0);
-
 	//Scan host features for URID map
 	LV2_URID_Map* m = NULL;
 	for (int i = 0; features[i]; ++i)
 	{
-		if (strcmp(features[i]->URI, LV2_URID__map) == 0)
-		{
-			m = (LV2_URID_Map*) features[i]->data;
-		}
+		if (strcmp(features[i]->URI, LV2_URID__map) == 0) m = (LV2_URID_Map*) features[i]->data;
 	}
-	if (!m)
-	{
-		fprintf(stderr, "BSlicer.lv2#GUI: Host does not support urid:map.\n");
-		return;
-	}
+	if (!m) throw std::invalid_argument ("Host does not support urid:map");
 
 	//Map URIS
 	map = m;
@@ -605,16 +653,9 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 BSlicer_GUI::~BSlicer_GUI()
 {
 	send_record_off ();
-
-	//Destroy also mainMonitors cairo data
-	cairo_pattern_destroy (pat2);
-	cairo_pattern_destroy (pat1);
-	cairo_destroy (cr2);
-	cairo_destroy (cr1);
-	cairo_surface_destroy (surface);
+	destroy_mainMonitor ();
+	destroy_Stepshape ();
 }
-
-
 
 void BSlicer_GUI::portEvent(uint32_t port_index, uint32_t buffer_size, uint32_t format, const void* buffer)
 {
@@ -643,7 +684,7 @@ void BSlicer_GUI::portEvent(uint32_t port_index, uint32_t buffer_size, uint32_t 
 						}
 					}
 				}
-				else fprintf(stderr, "BSlicer.lv2#GUI: Corrupt audio message\n");
+				else std::cerr << "BSlicer.lv2#GUI: Corrupt audio message." << std::endl;
 			}
 		}
 	}
@@ -694,7 +735,7 @@ LV2UI_Handle instantiate (const LV2UI_Descriptor *descriptor, const char *plugin
 
 	if (strcmp(plugin_uri, BSLICER_URI) != 0)
 	{
-		fprintf(stderr, "BSlicer.lv2#GUI: GUI does not support plugin with URI %s\n", plugin_uri);
+		std::cerr << "BSlicer.lv2#GUI: GUI does not support plugin with URI " << plugin_uri << std::endl;
 		return NULL;
 	}
 
@@ -706,11 +747,11 @@ LV2UI_Handle instantiate (const LV2UI_Descriptor *descriptor, const char *plugin
 	if (parentWindow == 0) std::cerr << "BSlicer.lv2#GUI: No parent window.\n";
 
 	// New instance
-	BSlicer_GUI* ui = new BSlicer_GUI (bundle_path, features, parentWindow);
-
-	if (!ui)
+	BSlicer_GUI* ui;
+	try {ui = new BSlicer_GUI (bundle_path, features, parentWindow);}
+	catch (std::exception& exc)
 	{
-		fprintf(stderr, "BSlicer.lv2#GUI: Instantiation failed.\n");
+		std::cerr << "BSlicer.lv2#GUI: Instantiation failed. " << exc.what () << std::endl;
 		return NULL;
 	}
 
