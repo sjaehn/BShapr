@@ -9,15 +9,6 @@ The result will be a step sequencer-like effect.
 
 ![screenshot](https://raw.githubusercontent.com/sjaehn/bmusic-bslicer/master/Screenshot.png "Screenshot from B.Slicer")
 
-Dependencies
-------------
-The development packages of
-* x11
-* cairo
-* lv2
-
-are required for building BSlicer. For Mac or Windows versions, the makefile needs to be adapted (not tested).
-
 Installation
 ------------
 a) Download and unpack the most recent release binaries from
