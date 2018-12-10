@@ -21,6 +21,8 @@
 #ifndef BSLICER_H_
 #define BSLICER_H_
 
+#define MODFL(x) (x - floorf (x))
+
 #include <cmath>
 #include <array>
 #include <lv2/lv2plug.in/ns/lv2core/lv2.h>
@@ -71,7 +73,7 @@ private:
 	float* audioOutput2;
 
 	// Controllers
-	float* stepsize;
+	float* sequencesperbar;
 	float* nrSteps;
 	float* attack;
 	float* release;

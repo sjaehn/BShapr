@@ -27,7 +27,7 @@
 BSlicer::BSlicer (double samplerate, const LV2_Feature* const* features) :
 	map(NULL), controlPort1(NULL), controlPort2(NULL),  notifyPort(NULL),
 	audioInput1(NULL), audioInput2(NULL), audioOutput1(NULL), audioOutput2(NULL),
-	nrSteps(NULL), attack(NULL), release (NULL), stepsize (NULL),
+	nrSteps(NULL), attack(NULL), release (NULL), sequencesperbar (NULL),
 	rate(samplerate), bpm(120.0f), speed(1), position(0), refFrame(0), beatUnit (4), beatsPerBar (4),
 	prevStep(NULL), actStep(NULL), nextStep(NULL),
 	record_on(true), monitorpos(-1)
@@ -88,8 +88,8 @@ void BSlicer::connect_port(uint32_t port, void *data)
 	case Release:
 		release = (float*) data;
 		break;
-	case Stepsize:
-		stepsize = (float*) data;
+	case SequencesPerBar:
+		sequencesperbar = (float*) data;
 		break;
 	case NrSteps:
 		nrSteps = (float*) data;
@@ -130,7 +130,6 @@ void BSlicer::run (uint32_t n_samples)
 
 	const LV2_Atom_Sequence* in = controlPort1;
 	uint32_t last_t =0;
-	float bbeatnr;
 
 	// Process audio data
 	for (const LV2_Atom_Event* ev1 = lv2_atom_sequence_begin(&in->body);
@@ -164,9 +163,9 @@ void BSlicer::run (uint32_t n_samples)
 			// Beat position changed (during playing) ?
 			if (oBbeat && (oBbeat->type == uris.atom_Float))
 			{
-				// Get position within a step (0..1)
-				bbeatnr = ((LV2_Atom_Float*)oBbeat)->body * *stepsize / beatsPerBar;
-				position = bbeatnr - floorf(bbeatnr);
+				// Get position within a sequence (0..1)
+				float barsequencepos = ((LV2_Atom_Float*)oBbeat)->body * *sequencesperbar / beatsPerBar; // Position within a bar (0..sequencesperbar)
+				position = MODFL (barsequencepos);			// Position within a sequence
 				refFrame = ev1->time.frames;				// Reference frame
 			}
 		}
@@ -176,12 +175,10 @@ void BSlicer::run (uint32_t n_samples)
 	}
 	if (last_t < n_samples) play(last_t, n_samples);		// Play remaining samples
 
-	// Bugfix: update position in case of no new barBeat submitted on next call
-	float relpos = (n_samples - refFrame) / (rate / (bpm / 60)) * *stepsize / beatsPerBar;	// Position relative to reference frame
-	float pos = position + (relpos - floorf(relpos));
+	// Update position in case of no new barBeat submitted on next call
+	double relpos = (n_samples - refFrame) * speed / (rate / (bpm / 60)) * *sequencesperbar / beatsPerBar;	// Position relative to reference frame
+	position = MODFL (position + relpos);
 	refFrame = 0;
-	if (pos < 1) position = pos;
-	else position = pos - 1;
 
 	if (record_on) notifyGUI();						// Send collected data to GUI
 
@@ -249,10 +246,9 @@ void BSlicer::play(uint32_t start, uint32_t end)
 
 	for (uint32_t i = start; i < end; ++i)
 	{
-		// Calculate position within the loop
-		relpos = (i - refFrame) / (rate / (bpm / 60)) * *stepsize / beatsPerBar;	// Position relative to reference frame
-		pos = position + (relpos - floorf(relpos));
-		if (pos >= 1) pos = pos - 1; 										// Back to the begin (0) if pos exceeded 1
+		// Interpolate position within the loop
+		relpos = (i - refFrame) * speed / (rate / (bpm / 60)) * *sequencesperbar / beatsPerBar;	// Position relative to reference frame
+		pos = MODFL (position + relpos);
 		iStepf = (pos * steps);
 		iStep = (uint32_t)iStepf;											// Calculate step number
 		iStepFrac = iStepf - iStep;											// Calculate fraction of active step

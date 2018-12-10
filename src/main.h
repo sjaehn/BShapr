@@ -28,18 +28,18 @@
 #define BSLICER_GUI_URI "https://www.jahnichen.de/plugins/lv2/BSlicer#gui"
 
 typedef enum {
-	Control_1	= 0,
-	Control_2	= 1,
-	Notify		= 2,
-	AudioIn_1	= 3,
-	AudioIn_2	= 4,
-	AudioOut_1	= 5,
-	AudioOut_2	= 6,
-	Attack		= 7,
-	Release		= 8,
-	Stepsize	= 9,
-	NrSteps		= 10,
-	Step_		= 11
+	Control_1		= 0,
+	Control_2		= 1,
+	Notify			= 2,
+	AudioIn_1		= 3,
+	AudioIn_2		= 4,
+	AudioOut_1		= 5,
+	AudioOut_2		= 6,
+	Attack			= 7,
+	Release			= 8,
+	SequencesPerBar	= 9,
+	NrSteps			= 10,
+	Step_			= 11
 } BSlicerPortIndex;
 
 typedef struct

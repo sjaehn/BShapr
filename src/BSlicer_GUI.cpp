@@ -78,7 +78,7 @@ private:
 	BWidgets::Widget sContainer;
 	BWidgets::Label attackLabel;
 	BWidgets::Label releaseLabel;
-	BWidgets::Label stepsizeLabel;
+	BWidgets::Label sequencesperbarLabel;
 	BWidgets::DrawingSurface stepshapeDisplay;
 	BWidgets::Label nrStepsLabel;
 	BWidgets::Label monitorLabel;
@@ -88,7 +88,7 @@ private:
 	BWidgets::DisplayHSlider nrStepsControl;
 	BWidgets::DisplayDial attackControl;
 	BWidgets::DisplayDial releaseControl;
-	BWidgets::DisplayHSlider stepsizeControl;
+	BWidgets::DisplayHSlider sequencesperbarControl;
 	BWidgets::Label stepshapeLabel;
 	BWidgets::Label sequencemonitorLabel;
 	std::array<BWidgets::DisplayVSlider, MAXSTEPS> stepControl;
@@ -114,7 +114,7 @@ private:
 	float attack;
 	float release;
 	float nrSteps;
-	float stepsize;
+	float sequencesperbar;
 	std::array<float, MAXSTEPS> step;
 
 	LV2_Atom_Forge forge;
@@ -161,13 +161,7 @@ private:
 		 {"switch",			{{"uses", STYLEPTR (&defaultStyles)},
 							 {"fgcolors", STYLEPTR (&fgColors)},
 							 {"bgcolors", STYLEPTR (&bgColors)}}},
-		{"Monitor", 		{{"uses", STYLEPTR (&labelStyles)}}},
-		{"Attack", 			{{"uses", STYLEPTR (&labelStyles)}}},
-		{"Release", 		{{"uses", STYLEPTR (&labelStyles)}}},
-		{"Sequence size (1/x)", {{"uses", STYLEPTR (&labelStyles)}}},
-		{"Step shape", 		{{"uses", STYLEPTR (&labelStyles)}}},
-		{"Sequence monitor",{{"uses", STYLEPTR (&labelStyles)}}},
-		{"Number of steps", {{"uses", STYLEPTR (&labelStyles)}}}
+		{"label",	 		{{"uses", STYLEPTR (&labelStyles)}}}
 	});
 };
 
@@ -268,10 +262,10 @@ void BSlicer_GUI::valueChangedCallback (BEvents::Event* event)
 			}
 
 			// Step size changed
-			if (widget == &ui->stepsizeControl)
+			if (widget == &ui->sequencesperbarControl)
 			{
-				ui->stepsize = (float) widget->getValue ();
-				ui->write_function(ui->controller, Stepsize, sizeof(ui->stepsize), 0, &ui->stepsize);
+				ui->sequencesperbar = (float) widget->getValue ();
+				ui->write_function(ui->controller, SequencesPerBar, sizeof(ui->sequencesperbar), 0, &ui->sequencesperbar);
 				return;
 			}
 
@@ -544,26 +538,26 @@ void BSlicer_GUI::redrawMainMonitor ()
 
 BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *features, PuglNativeWindow parentWindow) :
 	Window (800, 560, "B.Slicer", parentWindow),
-	scale (DB_CO(0.0)), attack (0.2), release (0.2), nrSteps (16.0), stepsize (4.0), step (),
+	scale (DB_CO(0.0)), attack (0.2), release (0.2), nrSteps (16.0), sequencesperbar (4.0), step (),
 	pluginPath (bundle_path ? std::string (bundle_path) : std::string ("")), controller (NULL), write_function (NULL), map (NULL),
 	surface (NULL), cr1 (NULL), cr2 (NULL), pat1 (NULL), pat2 (NULL), pat4 (NULL),
 
 	mContainer (0, 0, 800, 560, "main"),
 	monitorSwitch (690, 25, 40, 16, "switch", 0.0),
 	monitorDisplay (260, 70, 480, 240, "monitor"),
-	monitorLabel (680, 45, 60, 20, "Monitor"),
+	monitorLabel (680, 45, 60, 20, "label", "Monitor"),
 	scaleControl (760, 80, 14, 230, "slider", 0.0, SCALEMIN, SCALEMAX, 0.1),
 	stepshapeDisplay (30, 320, 180, 140, "monitor"),
 	attackControl (40, 465, 50, 60, "dial", 0.2, 0.0, 1.0, 0.01, "%1.2f"),
-	attackLabel (20, 520, 90, 20, "Attack"),
+	attackLabel (20, 520, 90, 20, "label", "Attack"),
 	releaseControl (150, 465, 50, 60, "dial", 0.2, 0.0, 1.0, -0.01, "%1.2f"),
-	releaseLabel (130, 520, 90, 20, "Release"),
-	stepsizeControl (260, 492, 120, 28, "slider", 1.0, 1.0, 8.0, 1.0, "%1.0f"),
-	stepsizeLabel (260, 520, 120, 20, "Sequence size (1/x)"),
+	releaseLabel (130, 520, 90, 20, "label", "Release"),
+	sequencesperbarControl (260, 492, 120, 28, "slider", 1.0, 1.0, 8.0, 1.0, "%1.0f"),
+	sequencesperbarLabel (260, 520, 120, 20, "label", "Sequences per bar"),
 	nrStepsControl (400, 492, 380, 28, "slider", 1.0, 1.0, MAXSTEPS, 1.0, "%2.0f"),
-	nrStepsLabel (400, 520, 380, 20, "Number of steps"),
-	stepshapeLabel (33, 323, 80, 20, "Step shape"),
-	sequencemonitorLabel (263, 73, 120, 20, "Sequence monitor"),
+	nrStepsLabel (400, 520, 380, 20, "label", "Number of steps"),
+	stepshapeLabel (33, 323, 80, 20, "label", "Step shape"),
+	sequencemonitorLabel (263, 73, 120, 20, "label", "Sequence monitor"),
 	sContainer (260, 330, 480, 130, "widget")
 
 {
@@ -591,7 +585,7 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 	scaleControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlicer_GUI::valueChangedCallback);
 	attackControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlicer_GUI::valueChangedCallback);
 	releaseControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlicer_GUI::valueChangedCallback);
-	stepsizeControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlicer_GUI::valueChangedCallback);
+	sequencesperbarControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlicer_GUI::valueChangedCallback);
 	nrStepsControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlicer_GUI::valueChangedCallback);
 
 	// Configure widgets
@@ -606,8 +600,8 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 	attackLabel.applyTheme (theme);
 	releaseControl.applyTheme (theme);
 	releaseLabel.applyTheme (theme);
-	stepsizeControl.applyTheme (theme);
-	stepsizeLabel.applyTheme (theme);
+	sequencesperbarControl.applyTheme (theme);
+	sequencesperbarLabel.applyTheme (theme);
 	nrStepsControl.applyTheme (theme);
 	nrStepsLabel.applyTheme (theme);
 	stepshapeLabel.applyTheme (theme);
@@ -625,8 +619,8 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 	mContainer.add (attackLabel);
 	mContainer.add (releaseControl);
 	mContainer.add (releaseLabel);
-	mContainer.add (stepsizeControl);
-	mContainer.add (stepsizeLabel);
+	mContainer.add (sequencesperbarControl);
+	mContainer.add (sequencesperbarLabel);
 	mContainer.add (nrStepsControl);
 	mContainer.add (nrStepsLabel);
 	mContainer.add (stepshapeLabel);
@@ -702,9 +696,9 @@ void BSlicer_GUI::portEvent(uint32_t port_index, uint32_t buffer_size, uint32_t 
 			release = *pval;
 			releaseControl.setValue (*pval);
 			break;
-		case Stepsize:
-			stepsize = *pval;
-			stepsizeControl.setValue (*pval);
+		case SequencesPerBar:
+			sequencesperbar = *pval;
+			sequencesperbarControl.setValue (*pval);
 			break;
 		case NrSteps:
 			if (nrSteps != *pval)
