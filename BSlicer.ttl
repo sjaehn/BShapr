@@ -17,9 +17,9 @@
 		ui:optionalFeature ui:noUserResize .
 
 <https://www.jahnichen.de/plugins/lv2/BSlicer>
-        a lv2:Plugin ;
+        a lv2:Plugin, lv2:DynamicsPlugin ;
         doap:name "B.Slicer" ;
-        doap:description "Beat Slicer / Step Sequencer Effect" ;
+        rdfs:comment "LV2 audio effect plugin. This plugin slices stereo audio input signals with a length up to 1 bar into up to 16 pieces. As result it may produce a step sequencer-like effect." ;
   		doap:maintainer [ foaf:name "Sven Jähnichen" ] ;
         doap:license <http://opensource.org/licenses/isc> ;
         lv2:project <http://lv2plug.in/ns/lv2> ;
@@ -88,8 +88,8 @@
         ] , [
                 a lv2:InputPort , lv2:ControlPort ;
                 lv2:index 9 ;
-                lv2:symbol "stepsize" ;
-                lv2:name "Stepsize" ;
+                lv2:symbol "sequences_per_bar" ;
+                lv2:name "Sequences per bar" ;
                 lv2:portProperty lv2:integer ;
                 lv2:default 4.0 ;
                 lv2:minimum 1.0 ;
