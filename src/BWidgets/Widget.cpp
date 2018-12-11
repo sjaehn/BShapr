@@ -105,7 +105,7 @@ void Widget::hide ()
 {
 	bool wasVisible = isVisible ();
 	visible = false;
-	if (wasVisible) postRedisplay ();
+	if (wasVisible && parent_) parent_->postRedisplay ();
 }
 
 void Widget::add (Widget& child)
@@ -190,21 +190,9 @@ void Widget::moveTo (const double x, const double y)
 {
 	if ((x_ != x) || (y_ != y))
 	{
-		if (isVisible ())
-		{
-			bool vis = visible;
-			visible = false;
-			postRedisplay ();
-			x_ = x;
-			y_ = y;
-			visible = vis;
-			postRedisplay ();
-		}
-		else
-		{
-			x_ = x;
-			y_ = y;
-		}
+		x_ = x;
+		y_ = y;
+		if (isVisible () && parent_) parent_->postRedisplay ();
 	}
 }
 
@@ -272,24 +260,11 @@ void Widget::setWidth (const double width)
 {
 	if (width_ != width)
 	{
-		if (isVisible ())
-		{
-			bool vis = visible;
-			visible = false;
-			postRedisplay ();
-			width_ = width;
-			visible = vis;
-			cairo_surface_destroy (widgetSurface);	// destroy old surface first
-			widgetSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width_, height_);
-			update ();
-		}
-		else
-		{
-			width_ =  width;
-			cairo_surface_destroy (widgetSurface);	// destroy old surface first
-			widgetSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width_, height_);
-			draw (0, 0, width_, height_);
-		}
+		width_ =  width;
+		cairo_surface_destroy (widgetSurface);	// destroy old surface first
+		widgetSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width_, height_);
+		draw (0, 0, width_, height_);
+		if (isVisible () && parent_) parent_->postRedisplay ();
 	}
 }
 
@@ -299,24 +274,11 @@ void Widget::setHeight (const double height)
 {
 	if (height_ != height)
 	{
-		if (isVisible ())
-		{
-			bool vis = visible;
-			visible = false;
-			postRedisplay ();
-			height_ = height;
-			visible = vis;
-			cairo_surface_destroy (widgetSurface);	// destroy old surface first
-			widgetSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width_, height_);
-			update ();
-		}
-		else
-		{
-			height_ = height;
-			cairo_surface_destroy (widgetSurface);	// destroy old surface first
-			widgetSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width_, height_);
-			draw (0, 0, width_, height_);
-		}
+		height_ = height;
+		cairo_surface_destroy (widgetSurface);	// destroy old surface first
+		widgetSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width_, height_);
+		draw (0, 0, width_, height_);
+		if (isVisible () && parent_) parent_->postRedisplay ();
 	}
 }
 
