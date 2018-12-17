@@ -38,7 +38,8 @@ to run it stand-alone and connect it to the JACK system.
 
 What's new
 -----------
-B.Slicer is now directly build on pugl and thus X11 (in case of Linux). Thus, it will now also works with GTK3-based hosts.
+* Compatibility with negative speed (reverse playing)
+* .ttl files updated
 
 Usage
 -----
