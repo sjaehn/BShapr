@@ -25,7 +25,6 @@
 #define BWIDGETS_DEFAULT_POPUPLISTBOX_HEIGHTH (BWIDGETS_DEFAULT_LISTBOX_HEIGHTH + BWIDGETS_DEFAULT_ITEMBOX_HEIGHT)
 #define BWIDGETS_DEFAULT_POPUPLISTBOX_BUTTON_WIDTH BWIDGETS_DEFAULT_ITEMBOX_HEIGHT
 #define BWIDGETS_DEFAULT_POPUPLISTBOX_BUTTON_HEIGHT BWIDGETS_DEFAULT_ITEMBOX_HEIGHT
-#define BWIDGETS_DEFAULT_POPUPLISTBOX_ITEMBOX_NAME "/itembox"
 #define BWIDGETS_DEFAULT_POPUPLISTBOX_BUTTON_NAME "/button"
 #define BWIDGETS_DEFAULT_POPUPLISTBOX_LISTBOX_NAME "/listbox"
 
@@ -37,22 +36,31 @@ namespace BWidgets
  * Class BWidgets::PopupListBox
  *
  * Widget for selection of one item (string) out of a vector of strings.
- * It is a composite value widget consisting of a BWidgets::ItemBox , a
- * BWidgets::ListBox and a BWidgets::DownButton. The BWidgets::ItemBox shows
- * the result of the BWidgets::ListBox. The BWidgets::ListBox pops up on
- * pressing on either the BWidgets::ItemBox or BWidgets::DownButton and
+ * It is a composite value widget consisting of a the widget itself (a
+ * BWidgets::ItemBox) , a BWidgets::ListBox and a BWidgets::DownButton. The
+ * widget shows the result of the BWidgets::ListBox. The BWidgets::ListBox pops
+ * up on pressing on either the widget itself or BWidgets::DownButton and
  * minimizes again after selection of an item or on pressing on either the
- * BWidgets::ItemBox or BWidgets::DownButton again. The value of
- * this widget reflects the number the item selected starting with 1.0. On
- * change, a value changed event is emitted and this widget.
+ * widegt or BWidgets::DownButton again. The value of
+ * this widget reflects the value the item selected. On
+ * change, a value changed event is emitted.
  */
-class PopupListBox : public ValueWidget
+class PopupListBox : public ItemBox
 {
 public:
 	PopupListBox ();
-	PopupListBox (const double x, const double y, const double itemWidth, const double itemHeight,
-				  const double width, const double height,
-				  const std::string& name, std::vector<std::string> strings = {}, double preselection = 0.0);
+	PopupListBox (const double x, const double y, const double width, const double height,
+				  const double listWidth, const double listHeight,
+				  const std::string& name, std::vector<std::string> strings = {}, double preselection = UNSELECTED);
+	PopupListBox (const double x, const double y, const double width, const double height,
+				  const double listXOffset, const double listYOffset, const double listWidth, const double listHeight,
+				  const std::string& name, std::vector<std::string> strings = {}, double preselection = UNSELECTED);
+	PopupListBox (const double x, const double y, const double width, const double height,
+				  const double listWidth, const double listHeight,
+				  const std::string& name, std::vector<BItems::Item> items = {}, double preselection = UNSELECTED);
+	PopupListBox (const double x, const double y, const double width, const double height,
+				  const double listXOffset, const double listYOffset, const double listWidth, const double listHeight,
+				  const std::string& name, std::vector<BItems::Item> items = {}, double preselection = UNSELECTED);
 
 	/**
 	 * Creates a new (orphan) choice box and copies the properties from a
@@ -76,19 +84,7 @@ public:
 	 * internally stored list of items.
 	 * @return Pointer to a string vector
 	 */
-	std::vector<std::string>* getItemList ();
-
-	/**
-	 * Gets the text of the active item.
-	 * @return Text string of the active item
-	 */
-	std::string getActiveItem () const;
-
-	/**
-	 * Gets (a pointer to) the internal BWidgets::ItemBox
-	 * @return Pointer to the internal BWidgets::ItemBox
-	 */
-	ItemBox* getItemBox ();
+	std::vector<BItems::Item>* getItemList ();
 
 	/**
 	 * Gets (a pointer to) the internal BWidgets::ListBox
@@ -120,16 +116,23 @@ public:
 	 */
 	virtual void update () override;
 
+	/**
+	 * Method to handle a click on this widget via a
+	 * BEvents::EventType::BUTTON_PRESS_EVENT.
+	 */
+	virtual void onButtonPressed (BEvents::PointerEvent* event);
+
 protected:
 	static void handleValueChanged (BEvents::Event* event);
-	static void handleButtonClicked (BEvents::Event* event);
+	static void handleDownButtonClicked (BEvents::Event* event);
 
-	ItemBox itemBox;
 	DownButton downButton;
 	ListBox listBox;
 
-	double itemBoxWidth;
-	double itemBoxHeight;
+	double listBoxXOffset;
+	double listBoxYOffset;
+	double listBoxWidth;
+	double listBoxHeight;
 
 };
 

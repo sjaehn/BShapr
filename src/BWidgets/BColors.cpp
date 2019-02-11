@@ -99,6 +99,12 @@ void Color::applyBrightness (const double brightness)
 ColorSet::ColorSet () : ColorSet ({grey, lightgrey, darkgrey}) {};
 ColorSet::ColorSet (const std::vector<Color> vectorOfColors) : colors (vectorOfColors) {};
 
+bool ColorSet::operator== (const ColorSet& that) const {return (colors == that.colors);}
+
+bool ColorSet::operator!= (const ColorSet& that) const {return (colors != that.colors);}
+
+int ColorSet::compare (const ColorSet& that) const {return (colors == that.colors ? 0 : 1);}
+
 void ColorSet::addColor (const State state, const Color& color)
 {
 	// Filling undefined vector elements with Color invisible

@@ -19,11 +19,11 @@
 
 namespace BWidgets
 {
-ItemBox::ItemBox () : ItemBox (0.0, 0.0, 0.0, 0.0, "itembox", "") {}
+ItemBox::ItemBox () : ItemBox (0.0, 0.0, 0.0, 0.0, "itembox", {UNSELECTED, ""}) {}
 
-ItemBox::ItemBox (const double x, const double y, const double width, const double height, const std::string& name, const std::string& text) :
-		Widget (x, y, width, height, name),
-		itemLabel (0, 0, 0, 0, name + BWIDGETS_DEFAULT_ITEMBOX_ITEM_NAME, text)
+ItemBox::ItemBox (const double x, const double y, const double width, const double height, const std::string& name, const BItems::Item& item) :
+		ValueWidget (x, y, width, height, name, item.value),
+		itemLabel (0, 0, 0, 0, name + BWIDGETS_DEFAULT_ITEMBOX_ITEM_NAME, item.string)
 
 {
 	itemLabel.getBorder () -> setPadding (BWIDGETS_DEFAULT_ITEMBOX_ITEM_PADDING);
@@ -37,7 +37,7 @@ ItemBox::ItemBox (const double x, const double y, const double width, const doub
 	add (itemLabel);
 }
 
-ItemBox::ItemBox (const ItemBox& that) : Widget (that), itemLabel (that.itemLabel)
+ItemBox::ItemBox (const ItemBox& that) : ValueWidget (that), itemLabel (that.itemLabel)
 {
 	add (itemLabel);
 }
@@ -51,9 +51,16 @@ ItemBox& ItemBox::operator= (const ItemBox& that)
 	Widget::operator= (that);
 	return *this;
 }
-void ItemBox::setText (const std::string& text) {itemLabel.setText (text);}
 
-std::string ItemBox::getText () const {return itemLabel.getText ();}
+void ItemBox::setItem (const BItems::Item& item)
+{
+	setValue (item.value);
+	itemLabel.setText (item.string);
+}
+
+void ItemBox::setItemText (const std::string& text) {itemLabel.setText (text);}
+
+BItems::Item ItemBox::getItem () const {return {getValue (), itemLabel.getText ()};}
 
 void ItemBox::setTextColors (const BColors::ColorSet& colorset) {itemLabel.setTextColors (colorset);}
 

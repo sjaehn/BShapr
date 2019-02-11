@@ -1,5 +1,5 @@
-/* BValues.cpp
- * Copyright (C) 2018  Sven Jähnichen
+/* HSwitch.hpp
+ * Copyright (C) 2018, 2019  Sven Jähnichen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,24 +15,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#include "BValues.hpp"
+#ifndef BWIDGETS_BITEMS_HPP_
+#define BWIDGETS_BITEMS_HPP_
 
-namespace BValues {
+#include <string>
 
-std::string toBString (const double value)
+namespace BItems
 {
-	std::ostringstream os;
-	os << value;
-	std::string str = os.str();
-	return str;
-}
 
-std::string toBString (const std::string& format, const double value)
+typedef struct
 {
-	char c[64];
-	snprintf (c, 64, format.c_str (), value);
-	std::string str = c;
-	return c;
-}
+	double value;
+	std::string string;
+} Item;
 
 }
+
+#endif /* BWIDGETS_BITEMS_HPP_ */

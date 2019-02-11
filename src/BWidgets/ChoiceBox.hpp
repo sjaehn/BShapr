@@ -18,6 +18,7 @@
 #ifndef BWIDGETS_CHOICEBOX_HPP_
 #define BWIDGETS_CHOICEBOX_HPP_
 
+#include "BItems.hpp"
 #include "ValueWidget.hpp"
 #include "Label.hpp"
 #include "UpButton.hpp"
@@ -34,6 +35,9 @@
 #define BWIDGETS_DEFAULT_CHOICEBOX_ITEM_PADDING 4.0
 #define BWIDGETS_DEFAULT_CHOICEBOX_PADDING (BWIDGETS_DEFAULT_MENU_PADDING - BWIDGETS_DEFAULT_CHOICEBOX_ITEM_PADDING)
 
+#ifndef UNSELECTED
+#define UNSELECTED -HUGE_VAL
+#endif
 
 namespace BWidgets
 {
@@ -53,7 +57,9 @@ class ChoiceBox : public ValueWidget
 public:
 	ChoiceBox ();
 	ChoiceBox (const double x, const double y, const double width, const double height,
-				const std::string& name, std::vector<std::string> strings = {}, double preselection = 0.0);
+				const std::string& name, std::vector<std::string> strings = {}, double preselection = UNSELECTED);
+	ChoiceBox (const double x, const double y, const double width, const double height,
+				const std::string& name, std::vector<BItems::Item> items = {}, double preselection = UNSELECTED);
 
 	/**
 	 * Creates a new (orphan) choice box and copies the properties from a
@@ -77,13 +83,40 @@ public:
 	 * internally stored list of items.
 	 * @return Pointer to a string vector
 	 */
-	std::vector<std::string>* getItemList ();
+	std::vector<BItems::Item>* getItemList ();
 
 	/**
-	 * Gets the text of the active item.
-	 * @return Text string of the active item
+	 * Gets an item of the internally stored list of items.
+	 * @param value Value of the item.
+	 * @return Active item
 	 */
-	std::string getActiveItem () const;
+	BItems::Item getItem (const double value) const;
+
+	/**
+	 * Gets the active item.
+	 * @return Active item
+	 */
+	BItems::Item getActiveItem () const;
+
+	/**
+	 * Adds a new item or new items to the end of the internally stored list of
+	 * items.
+	 * @param newBItems::Item	A single new item to add.
+	 * @param newBItems::Items	A vector of new items to add.
+	 */
+	void addItem (const BItems::Item& newItem);
+	void addItem (const std::vector<BItems::Item>& newItems);
+
+	/**
+	 * Creates a new item from a text string or new items from a vector of text
+	 * strings and appends it or them to the end of the internally stored list
+	 * of items. The value of the added item will be set to the next full
+	 * number following to the value of the last item before.
+	 * @param newBItems::ItemText	Text string of a single new item to add.
+	 * @param newBItems::ItemTexts	A vector of text strings of new items to add.
+	 */
+	void addItemText (const std::string& newItemText);
+	void addItemText (const std::vector<std::string>& newItemTexts);
 
 	/**
 	 * Sets the BColors::ColorSet for this widget
@@ -126,17 +159,18 @@ public:
 	virtual void setValue (const double val) override;
 
 	/**
-	 * Gets the top line of the shown list. In this case (BWidgets::ChoiceBox)
-	 * it returns the widgets value.
+	 * Gets the number of top line of the shown list. In this case
+	 * (BWidgets::ChoiceBox) it returns the number (not the value!) of the
+	 * active item.
 	 * @param return Top line of the list (starting with 1.0)
 	 */
-	virtual double getTop () const;
+	virtual int getTop () const;
 
 	/**
 	 * Gets the bottom line of the shown list.
 	 * @param return Bottom line of the list (starting with 1.0)
 	 */
-	double getBottom ();
+	int getBottom ();
 
 	/**
 	 * Calls a redraw of the widget and calls postRedisplay () if the the
@@ -150,7 +184,7 @@ protected:
 	void deleteLabels ();
 	void validateLabels ();
 	virtual void updateLabels ();
-	virtual double getLines ();
+	virtual int getLines ();
 	static void handleButtonClicked (BEvents::Event* event);
 	static void handleLabelClicked (BEvents::Event* event);
 
@@ -160,8 +194,10 @@ protected:
 	BStyles::Fill itemBackground;
 	UpButton upButton;
 	DownButton downButton;
-	std::vector<std::string> items;
+	std::vector<BItems::Item> items;
 	std::vector<Label*> labels;
+
+	int activeNr;
 };
 
 }

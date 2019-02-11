@@ -18,7 +18,10 @@
 #ifndef BWIDGETS_ITEMBOX_HPP_
 #define BWIDGETS_ITEMBOX_HPP_
 
+#include "BItems.hpp"
 #include "Label.hpp"
+#include "ValueWidget.hpp"
+#include <cmath>
 
 #define BWIDGETS_DEFAULT_ITEMBOX_WIDTH 100.0
 #define BWIDGETS_DEFAULT_ITEMBOX_HEIGHT 20.0
@@ -27,6 +30,9 @@
 #define BWIDGETS_DEFAULT_ITEMBOX_ITEM_PADDING 4.0
 #define BWIDGETS_DEFAULT_ITEMBOX_PADDING (BWIDGETS_DEFAULT_MENU_PADDING - BWIDGETS_DEFAULT_ITEMBOX_ITEM_PADDING)
 
+#ifndef UNSELECTED
+#define UNSELECTED -HUGE_VAL
+#endif
 
 namespace BWidgets
 {
@@ -34,13 +40,13 @@ namespace BWidgets
 /**
  * Class BWidgets::ItemBox
  *
- * Single line text box widget.
+ * Single line text box widget displaying the text string of a BItems::Item.
  */
-class ItemBox : public Widget
+class ItemBox : public ValueWidget
 {
 public:
 	ItemBox ();
-	ItemBox (const double x, const double y, const double width, const double height, const std::string& name, const std::string& text);
+	ItemBox (const double x, const double y, const double width, const double height, const std::string& name, const BItems::Item& item);
 
 	/**
 	 * Creates a new (orphan) item box and copies the properties from a
@@ -60,20 +66,26 @@ public:
 	ItemBox& operator= (const ItemBox& that);
 
 	/**
-	 * Sets the text of the item.
-	 * @param text Text string of the item
+	 * Sets the item of this widget.
+	 * @param item Item.
 	 */
-	void setText (const std::string& text);
+	void setItem (const BItems::Item& item);
 
 	/**
-	 * Gets the text of the item.
-	 * @return Text string of the item
+	 * Sets only the text of the item.
+	 * @param text Text string
 	 */
-	std::string getText () const;
+	void setItemText (const std::string& text);
 
 	/**
-	 * Gets (a pointer to) the internal BWidgets::Label of the item.
-	 * @return BWidgets::Label of the item
+	 * Gets the item of the widget.
+	 * @return Item.
+	 */
+	BItems::Item getItem () const;
+
+	/**
+	 * Gets (a pointer to) the internal BWidgets::Label of the widget.
+	 * @return BWidgets::Label of the widget
 	 */
 	Label* getLabel ();
 

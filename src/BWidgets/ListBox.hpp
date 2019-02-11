@@ -40,7 +40,9 @@ class ListBox : public ChoiceBox
 public:
 	ListBox ();
 	ListBox (const double x, const double y, const double width, const double height,
-				const std::string& name, std::vector<std::string> items = {}, double preselection = 0.0);
+				const std::string& name, std::vector<std::string> strings = {}, double preselection = UNSELECTED);
+	ListBox (const double x, const double y, const double width, const double height,
+				const std::string& name, std::vector<BItems::Item> items = {}, double preselection = UNSELECTED);
 
 	/**
 	 * Creates a new (orphan) choice box and copies the properties from a
@@ -63,20 +65,20 @@ public:
 	 * Sets the top line of the shown list.
 	 * @param top Top Line of the list (starting with 1.0)
 	 */
-	void setTop (const double top);
+	void setTop (const int top);
 
 	/**
 	 * Gets the top line of the shown list.
 	 * @param return Top Line of the list (starting with 1.0)
 	 */
-	virtual double getTop () const override;
+	virtual int getTop () const override;
 
 protected:
 	static void handleButtonClicked (BEvents::Event* event);
 	virtual void updateLabels () override;
-	virtual double getLines () override;
+	virtual int getLines () override;
 
-	double listTop;
+	int listTop;
 };
 
 }

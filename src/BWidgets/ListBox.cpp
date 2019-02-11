@@ -19,15 +19,23 @@
 
 namespace BWidgets
 {
-ListBox::ListBox () : ListBox (0.0, 0.0, 0.0, 0.0, "choicebox", {""}, 1.0) {}
+ListBox::ListBox () : ListBox (0.0, 0.0, 0.0, 0.0, "listbox", std::vector<BItems::Item> {}, UNSELECTED) {}
 
 ListBox::ListBox (const double x, const double y, const double width, const double height, const std::string& name,
-					  std::vector<std::string> items, double preselection) :
-		ChoiceBox (x, y, width, height, name, items, preselection)
-
+					  std::vector<std::string> strings, double preselection) :
+		ListBox (x, y, width, height, name, std::vector<BItems::Item> {}, preselection)
 {
-	if (items.empty ()) listTop = 0.0;
-	else listTop = 1.0;
+	addItemText (strings);
+	if ((preselection >= 1.0) && (preselection <= strings.size ())) activeNr = preselection;
+	if (!items.empty()) listTop = 1;
+}
+
+ListBox::ListBox (const double x, const double y, const double width, const double height, const std::string& name,
+					  std::vector<BItems::Item> items, double preselection) :
+		ChoiceBox (x, y, width, height, name, items, preselection)
+{
+	if (items.empty ()) listTop = 0;
+	else listTop = 1;
 
 	upButton.setCallbackFunction (BEvents::EventType::BUTTON_PRESS_EVENT, ListBox::handleButtonClicked);
 	downButton.setCallbackFunction (BEvents::EventType::BUTTON_PRESS_EVENT, ListBox::handleButtonClicked);
@@ -41,32 +49,31 @@ ListBox& ListBox::operator= (const ListBox& that)
 {
 	listTop = that.listTop;
 
-	Widget::operator= (that);
+	ChoiceBox::operator= (that);
 	return *this;
 }
 
-void ListBox::setTop (const double top)
+void ListBox::setTop (const int top)
 {
 	double oldtop = listTop;
 
-	if (items.empty ()) listTop = 0.0;
+	if (items.empty ()) listTop = 0;
 
 	else
 	{
 		size_t size = items.size ();
-		int topint = int (top + 0.5);
-		if (topint <= 0) listTop = 1.0;
-		else if (topint <= size) listTop = topint;
+		if (top <= 0) listTop = 1;
+		else if (top <= size) listTop = top;
 		else listTop = size;
 
-		double lines = getLines ();
-		if ((getBottom () > size) && (size - lines > 1)) listTop = size - lines + 1;
+		int lines = getLines ();
+		if ((getBottom () > size) && (size - lines >= 1)) listTop = size - lines + 1;
 	}
 
 	if (oldtop != listTop) update ();
 }
 
-double ListBox::getTop () const {return listTop;}
+int ListBox::getTop () const {return listTop;}
 
 void ListBox::handleButtonClicked (BEvents::Event* event)
 {
@@ -96,7 +103,7 @@ void ListBox::updateLabels ()
 	double height = getEffectiveHeight ();
 	double labelHeight = (height >= 2 * BWIDGETS_DEFAULT_CHOICEBOX_BUTTON_HEIGHT ? height - 2 * BWIDGETS_DEFAULT_CHOICEBOX_BUTTON_HEIGHT : 0);
 	double upButtonHeight = (height >= BWIDGETS_DEFAULT_CHOICEBOX_BUTTON_HEIGHT ? BWIDGETS_DEFAULT_CHOICEBOX_BUTTON_HEIGHT : height);
-	double lines = floor (labelHeight / BWIDGETS_DEFAULT_CHOICEBOX_LABEL_HEIGHT) + 1;
+	int lines = (labelHeight / BWIDGETS_DEFAULT_CHOICEBOX_LABEL_HEIGHT) + 1;
 
 	for (int i = 0; i < labels.size (); ++i)
 	{
@@ -108,7 +115,7 @@ void ListBox::updateLabels ()
 			if (i + 1 == (int) (getBottom () + 0.5)) labels[i]->setHeight (labelHeight - (lines - 1) * BWIDGETS_DEFAULT_CHOICEBOX_LABEL_HEIGHT);
 			else labels[i]->setHeight (BWIDGETS_DEFAULT_CHOICEBOX_LABEL_HEIGHT);
 
-			if (i + 1 == (int) (getValue () + 0.5)) labels[i]->setState (BColors::ACTIVE);
+			if (i + 1 == activeNr) labels[i]->setState (BColors::ACTIVE);
 			else labels[i]->setState (BColors::NORMAL);
 
 			labels[i]->show ();
@@ -121,11 +128,11 @@ void ListBox::updateLabels ()
 	}
 }
 
-double ListBox::getLines ()
+int ListBox::getLines ()
 {
 	double height = getEffectiveHeight ();
 	double labelHeight = (height >= 2 * BWIDGETS_DEFAULT_CHOICEBOX_BUTTON_HEIGHT ? height - 2 * BWIDGETS_DEFAULT_CHOICEBOX_BUTTON_HEIGHT : 0);
-	double lines = floor (labelHeight / BWIDGETS_DEFAULT_CHOICEBOX_LABEL_HEIGHT) + 1;
+	int lines = (labelHeight / BWIDGETS_DEFAULT_CHOICEBOX_LABEL_HEIGHT) + 1;
 	return lines;
 }
 

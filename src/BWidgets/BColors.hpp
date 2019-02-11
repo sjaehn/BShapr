@@ -22,7 +22,11 @@
 #include <vector>
 #include <iostream>
 
+#ifndef LIMIT
 #define LIMIT(val, min, max) (val < min ? min : (val < max ? val : max))
+#endif /* LIMIT */
+
+#define CAIRO_RGBA(col) col.getRed(), col.getGreen(), col.getBlue(), col.getAlpha()
 
 namespace BColors
 {
@@ -153,6 +157,18 @@ class ColorSet
 public:
 	ColorSet ();
 	ColorSet (const std::vector<Color> vectorOfColors);
+
+	bool operator== (const ColorSet& that) const;
+	bool operator!= (const ColorSet& that) const;
+
+	/**
+	 * Compares the colorset of this object with the color of the given object by
+	 * comparison of all colors of this set.
+	 * @param that Colorset to compare with
+	 * @return 0, if both sets (content and order) are equal
+	 * 		   1, if the two sets (content and order) are not equal
+	 */
+	int compare (const ColorSet& that) const;
 
 	/**
 	 * Adds (or overwrites) a BColors::Color to the ColorSet

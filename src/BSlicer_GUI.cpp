@@ -28,8 +28,16 @@
 #include <lv2/lv2plug.in/ns/ext/atom/atom.h>
 #include <lv2/lv2plug.in/ns/ext/atom/forge.h>
 #include <lv2/lv2plug.in/ns/ext/time/time.h>
-#include "BWidgets/BWidgets.hpp"
-#include "looparray.hpp"
+#include "BWidgets/Widget.hpp"
+#include "BWidgets/Window.hpp"
+#include "BWidgets/FocusWidget.hpp"
+#include "BWidgets/Label.hpp"
+#include "BWidgets/DrawingSurface.hpp"
+#include "BWidgets/HSwitch.hpp"
+#include "BWidgets/VSlider.hpp"
+#include "BWidgets/DisplayVSlider.hpp"
+#include "BWidgets/DisplayHSlider.hpp"
+#include "BWidgets/DisplayDial.hpp"
 
 #include "main.h"
 
@@ -573,6 +581,8 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 	for (int i = 0; i < MAXSTEPS; ++i)
 	{
 		stepControl[i] = BWidgets::DisplayVSlider ((i + 0.5) * 480 / MAXSTEPS - 10, 0, 28, 130, "slider", 1.0, 0.0, 1.0, 0.01, "%1.2f");
+		stepControl[i].setHardChangeable (false);
+		stepControl[i].setScrollable (true);
 		stepControl[i].rename ("slider");
 		stepControl[i].setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlicer_GUI::valueChangedCallback);
 		stepControl[i].applyTheme (theme, "slider");
@@ -595,14 +605,21 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 	monitorDisplay.applyTheme (theme);
 	monitorLabel.applyTheme (theme);
 	scaleControl.applyTheme (theme);
+	scaleControl.setScrollable (true);
 	stepshapeDisplay.applyTheme (theme);
 	attackControl.applyTheme (theme);
+	attackControl.setScrollable (true);
+	attackControl.setHardChangeable (false);
 	attackLabel.applyTheme (theme);
 	releaseControl.applyTheme (theme);
+	releaseControl.setScrollable (true);
+	releaseControl.setHardChangeable (false);
 	releaseLabel.applyTheme (theme);
 	sequencesperbarControl.applyTheme (theme);
+	sequencesperbarControl.setScrollable (true);
 	sequencesperbarLabel.applyTheme (theme);
 	nrStepsControl.applyTheme (theme);
+	nrStepsControl.setScrollable (true);
 	nrStepsLabel.applyTheme (theme);
 	stepshapeLabel.applyTheme (theme);
 	sequencemonitorLabel.applyTheme (theme);
