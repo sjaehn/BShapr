@@ -73,7 +73,7 @@
                 lv2:symbol "attack" ;
                 lv2:name "Attack" ;
                 lv2:default 0.2 ;
-                lv2:minimum 0.0 ;
+                lv2:minimum 0.01 ;
                 lv2:maximum 1.0 ;
         ] , [
                 a lv2:InputPort , lv2:ControlPort ;
@@ -81,7 +81,7 @@
                 lv2:symbol "release" ;
                 lv2:name "Release" ;
                 lv2:default 0.2 ;
-                lv2:minimum 0.0 ;
+                lv2:minimum 0.01 ;
                 lv2:maximum 1.0 ;
         ] , [
                 a lv2:InputPort , lv2:ControlPort ;

@@ -31,15 +31,19 @@ typedef enum {
 	Control_1		= 0,
 	Control_2		= 1,
 	Notify			= 2,
+	AudioPorts		= 3,
 	AudioIn_1		= 3,
 	AudioIn_2		= 4,
 	AudioOut_1		= 5,
 	AudioOut_2		= 6,
+	NrAudioPorts	= 4,
+	Controllers		= 7,
 	Attack			= 7,
 	Release			= 8,
 	SequencesPerBar	= 9,
 	NrSteps			= 10,
-	Step_			= 11
+	Step_			= 11,
+	NrControllers	= 20
 } BSlicerPortIndex;
 
 typedef struct

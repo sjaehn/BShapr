@@ -24,10 +24,12 @@
 #include <string>
 #include <exception>
 
+#define LIM(g , min, max) ((g) > (max) ? (max) : ((g) < (min) ? (min) : (g)))
+
 BSlicer::BSlicer (double samplerate, const LV2_Feature* const* features) :
 	map(NULL), controlPort1(NULL), controlPort2(NULL),  notifyPort(NULL),
 	audioInput1(NULL), audioInput2(NULL), audioOutput1(NULL), audioOutput2(NULL),
-	nrSteps(NULL), attack(NULL), release (NULL), sequencesperbar (NULL),
+	nrSteps(16), attack(0.2), release (0.2), sequencesperbar (4),
 	rate(samplerate), bpm(120.0f), speed(1), position(0), refFrame(0), beatUnit (4), beatsPerBar (4),
 	prevStep(NULL), actStep(NULL), nextStep(NULL),
 	record_on(true), monitorpos(-1)
@@ -82,42 +84,39 @@ void BSlicer::connect_port(uint32_t port, void *data)
 	case AudioOut_2:
 		audioOutput2 = (float*) data;
 		break;
-	case Attack:
-		attack = (float*) data;
-		break;
-	case Release:
-		release = (float*) data;
-		break;
-	case SequencesPerBar:
-		sequencesperbar = (float*) data;
-		break;
-	case NrSteps:
-		nrSteps = (float*) data;
-		break;
 	default:
-		if ((port >= Step_) && (port < Step_ + MAXSTEPS))
-		{
-			step[port-Step_] = (float*) data;
-		}
+		if ((port >= Controllers) && (port < Controllers + NrControllers)) controllers[port - Controllers] = (float*) data;
 	}
 }
 
 void BSlicer::run (uint32_t n_samples)
 {
-	// Process GUI data
-	if (controlPort2)
+
+	// Check ports
+	if ((!controlPort1) || (!controlPort2) || (!notifyPort) || (!audioInput1) || (!audioInput2) || (!audioOutput1) || (!audioOutput2)) return;
+	for (int i = 0; i < NrControllers; ++i)
 	{
-		const LV2_Atom_Event* ev2 = lv2_atom_sequence_begin(&(controlPort2)->body);
-		while (!lv2_atom_sequence_is_end (&controlPort2->body, controlPort2->atom.size, ev2))
+		if (!controllers[i]) return;
+	}
+
+	// Update controller values
+	attack = LIM (*(controllers[Attack - Controllers]), 0.01, 1.0);
+	release = LIM (*(controllers[Release - Controllers]), 0.01, 1.0);
+	sequencesperbar = LIM (round (*(controllers[SequencesPerBar - Controllers])), 1, 8);
+	nrSteps = LIM (round(*(controllers[NrSteps - Controllers])), 1, 16);
+	for (int i = 0; i < MAXSTEPS; ++i) step[i] = LIM (*(controllers[i + Step_ - Controllers]), 0.0, 1.0);
+
+	// Process GUI data
+	const LV2_Atom_Event* ev2 = lv2_atom_sequence_begin(&(controlPort2)->body);
+	while (!lv2_atom_sequence_is_end (&controlPort2->body, controlPort2->atom.size, ev2))
+	{
+		if (lv2_atom_forge_is_object_type(&forge, ev2->body.type))
 		{
-			if (lv2_atom_forge_is_object_type(&forge, ev2->body.type))
-			{
-				const LV2_Atom_Object* obj2 = (const LV2_Atom_Object*)&ev2->body;
-				if (obj2->body.otype == uris.ui_on) record_on = true;
-				else if (obj2->body.otype == uris.ui_off) record_on = false;
-			}
-			ev2 = lv2_atom_sequence_next(ev2);
+			const LV2_Atom_Object* obj2 = (const LV2_Atom_Object*)&ev2->body;
+			if (obj2->body.otype == uris.ui_on) record_on = true;
+			else if (obj2->body.otype == uris.ui_off) record_on = false;
 		}
+		ev2 = lv2_atom_sequence_next(ev2);
 	}
 
 	// Prepare forge buffer and initialize atom sequence
@@ -164,7 +163,7 @@ void BSlicer::run (uint32_t n_samples)
 			if (oBbeat && (oBbeat->type == uris.atom_Float))
 			{
 				// Get position within a sequence (0..1)
-				float barsequencepos = ((LV2_Atom_Float*)oBbeat)->body * *sequencesperbar / beatsPerBar; // Position within a bar (0..sequencesperbar)
+				float barsequencepos = ((LV2_Atom_Float*)oBbeat)->body * sequencesperbar / beatsPerBar; // Position within a bar (0..sequencesperbar)
 				position = MODFL (barsequencepos);			// Position within a sequence
 				refFrame = ev1->time.frames;				// Reference frame
 			}
@@ -176,7 +175,7 @@ void BSlicer::run (uint32_t n_samples)
 	if (last_t < n_samples) play(last_t, n_samples);		// Play remaining samples
 
 	// Update position in case of no new barBeat submitted on next call
-	double relpos = (n_samples - refFrame) * speed / (rate / (bpm / 60)) * *sequencesperbar / beatsPerBar;	// Position relative to reference frame
+	double relpos = (n_samples - refFrame) * speed / (rate / (bpm / 60)) * sequencesperbar / beatsPerBar;	// Position relative to reference frame
 	position = MODFL (position + relpos);
 	refFrame = 0;
 
@@ -233,7 +232,7 @@ void BSlicer::notifyGUI()
 void BSlicer::play(uint32_t start, uint32_t end)
 {
 	float vol, relpos, pos, iStepf, iStepFrac, effect1, effect2;
-	uint32_t steps = (uint32_t) *nrSteps;
+	uint32_t steps = (uint32_t) nrSteps;
 	uint32_t iStep;
 
 	//Silence if halted or bpm == 0
@@ -247,32 +246,32 @@ void BSlicer::play(uint32_t start, uint32_t end)
 	for (uint32_t i = start; i < end; ++i)
 	{
 		// Interpolate position within the loop
-		relpos = (i - refFrame) * speed / (rate / (bpm / 60)) * *sequencesperbar / beatsPerBar;	// Position relative to reference frame
+		relpos = (i - refFrame) * speed / (rate / (bpm / 60)) * sequencesperbar / beatsPerBar;	// Position relative to reference frame
 		pos = MODFL (position + relpos);
 		iStepf = (pos * steps);
 		iStep = (uint32_t)iStepf;											// Calculate step number
 		iStepFrac = iStepf - iStep;											// Calculate fraction of active step
 
 		// Move to the next step?
-		if (actStep != step[iStep])
+		if (actStep != &(step[iStep]))
 		{
 			prevStep = actStep;
-			actStep = step[iStep];
-			if (iStep < (steps-1)) nextStep = step[iStep+1];
-			else nextStep = step[0];
+			actStep = &(step[iStep]);
+			if (iStep < (steps-1)) nextStep = &(step[iStep+1]);
+			else nextStep = &(step[0]);
 		}
 		if (!prevStep) prevStep = actStep;									// prevStep not initialized (= on Start)?
 
 		// Calculate effect (vol) for the position
 		vol = *actStep;
-		if (iStepFrac < *attack)									// On attack
+		if (iStepFrac < attack)									// On attack
 		{
-			if (*prevStep < *actStep) vol = *prevStep + (iStepFrac / *attack) * (*actStep - *prevStep);
+			if (*prevStep < *actStep) vol = *prevStep + (iStepFrac / attack) * (*actStep - *prevStep);
 
 		}
-		if (iStepFrac > (1 - *release))									// On release
+		if (iStepFrac > (1 - release))									// On release
 		{
-			if (*nextStep < *actStep) vol = vol - ((iStepFrac - (1 - *release)) / *release) * (*actStep - *nextStep);
+			if (*nextStep < *actStep) vol = vol - ((iStepFrac - (1 - release)) / release) * (*actStep - *nextStep);
 		}
 
 		// Apply effect on input

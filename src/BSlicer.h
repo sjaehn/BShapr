@@ -73,11 +73,12 @@ private:
 	float* audioOutput2;
 
 	// Controllers
-	float* sequencesperbar;
-	float* nrSteps;
-	float* attack;
-	float* release;
-	float* step[MAXSTEPS];
+	float* controllers[NrControllers];
+	float sequencesperbar;
+	float nrSteps;
+	float attack;
+	float release;
+	float step[MAXSTEPS];
 
 	// Atom port
 	BSlicerURIs uris;
