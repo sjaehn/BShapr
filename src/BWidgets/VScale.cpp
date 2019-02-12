@@ -154,9 +154,10 @@ void VScale::onButtonPressed (BEvents::PointerEvent* event)
 	}
 }
 
+void VScale::onButtonReleased (BEvents::PointerEvent* event) {softValue = 0.0;}
+
 void VScale::onPointerDragged (BEvents::PointerEvent* event) {onButtonPressed (event);}
 
-// TODO Try out direction, steps
 void VScale::onWheelScrolled (BEvents::WheelEvent* event)
 {
 	double min = getMin ();
@@ -164,10 +165,8 @@ void VScale::onWheelScrolled (BEvents::WheelEvent* event)
 
 	if (min != max)
 	{
-		double deltaFrac = event->getDeltaY () / scaleHeight;
-		if (getStep () < 0) deltaFrac = -deltaFrac;
-		softValue += deltaFrac * (max - min);
-		setValue (getValue() + softValue);
+		double step = (getStep () != 0 ? getStep () : (max - min) / scaleHeight);
+		setValue (getValue() + event->getDeltaY () * step);
 	}
 }
 

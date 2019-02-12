@@ -220,9 +220,10 @@ void Dial::onButtonPressed (BEvents::PointerEvent* event)
 	}
 }
 
+void Dial::onButtonReleased (BEvents::PointerEvent* event) {softValue = 0.0;}
+
 void Dial::onPointerDragged (BEvents::PointerEvent* event) {onButtonPressed (event);}
 
-// TODO Try out direction, steps
 void Dial::onWheelScrolled (BEvents::WheelEvent* event)
 {
 	double min = getMin ();
@@ -230,10 +231,8 @@ void Dial::onWheelScrolled (BEvents::WheelEvent* event)
 
 	if ((min != max) && (dialRadius >= 1))
 	{
-		double deltaFrac = event->getDeltaY () / (dialRadius * 1.5 * PI);
-		if (getStep () < 0) deltaFrac = -deltaFrac;
-		softValue += deltaFrac * (max - min);
-		setValue (getValue() + softValue);
+		double step = (getStep () != 0 ? getStep () : (max - min) / (dialRadius * 1.5 * PI));
+		setValue (getValue() + event->getDeltaY () * step);
 	}
 }
 

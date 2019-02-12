@@ -153,9 +153,10 @@ void HScale::onButtonPressed (BEvents::PointerEvent* event)
 	}
 }
 
+void HScale::onButtonReleased (BEvents::PointerEvent* event) {softValue = 0.0;}
+
 void HScale::onPointerDragged (BEvents::PointerEvent* event) {onButtonPressed (event);}
 
-// TODO Try out direction, steps
 void HScale::onWheelScrolled (BEvents::WheelEvent* event)
 {
 	double min = getMin ();
@@ -163,12 +164,11 @@ void HScale::onWheelScrolled (BEvents::WheelEvent* event)
 
 	if (min != max)
 	{
-		double deltaFrac = event->getDeltaY () / scaleWidth;
-		if (getStep () < 0) deltaFrac = -deltaFrac;
-		softValue += deltaFrac * (max - min);
-		setValue (getValue() + softValue);
+		double step = (getStep () != 0 ? getStep () : (max - min) / scaleWidth);
+		setValue (getValue() + event->getDeltaY () * step);
 	}
 }
+
 void HScale::updateCoords ()
 {
 	scaleX0 = getXOffset ();

@@ -100,6 +100,12 @@ public:
 	virtual void onButtonPressed (BEvents::PointerEvent* event) override;
 
 	/**
+	 * Handles the BEvents::EventType::BUTTON_RELEASE_EVENT to turn the dial.
+	 * @param event Pointer event
+	 */
+	virtual void onButtonReleased (BEvents::PointerEvent* event) override;
+
+	/**
 	 * Handles the BEvents::POINTER_DRAG_EVENT to turn
 	 * the dial.
 	 * @param event Pointer to a pointer event emitted by the same widget.
