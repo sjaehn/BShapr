@@ -1,7 +1,7 @@
 # B.Slizzr
-Repository: BSlizzr
+formerly known as B.Slicer
 
-Description: LV2 audio effect plugin. This plugin slices stereo audio input signals with a length up to 1 bar into up to 16 pieces. Each slice can be levelled up or down. The result can be a step sequencer-like effect.
+Description: LV2 audio effect plugin for sequenced slicing of stereo audio input signals. Each slice can be levelled up or down to get a step sequencer-like effect.
 
 ![screenshot](https://raw.githubusercontent.com/sjaehn/bmusic-bslicer/master/Screenshot.png "Screenshot from B.Slizzr")
 
@@ -36,8 +36,9 @@ to run it stand-alone and connect it to the JACK system.
 
 What's new
 -----------
-* Compatibility with negative speed (reverse playing)
-* .ttl files updated
+* Crazy name
+* Monitor also displays negative amplitude
+* Bugfixes
 
 Usage
 -----
