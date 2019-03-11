@@ -3,12 +3,12 @@ Repository: BSlizzr
 
 Description: LV2 audio effect plugin. This plugin slices stereo audio input signals with a length up to 1 bar into up to 16 pieces. Each slice can be levelled up or down. The result can be a step sequencer-like effect.
 
-![screenshot](https://raw.githubusercontent.com/sjaehn/bmusic-bslicer/master/Screenshot.png "Screenshot from B.Slicer")
+![screenshot](https://raw.githubusercontent.com/sjaehn/bmusic-bslicer/master/Screenshot.png "Screenshot from B.Slizzr")
 
 Installation
 ------------
 a) Download and unpack the most recent release binaries from
-https://github.com/sjaehn/bmusic-bslicer/releases to your lv2 directory (e.g., /usr/lib/lv2/).
+https://github.com/sjaehn/BSlizzr/releases to your lv2 directory (e.g., /usr/lib/lv2/).
 
 b) Build your own binaries in the following three steps.
 

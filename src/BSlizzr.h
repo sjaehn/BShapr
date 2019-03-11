@@ -37,8 +37,10 @@ typedef struct
 {
 	int count;
 	bool ready;
-	double input;
-	double output;
+	double inputMin;
+	double inputMax;
+	double outputMin;
+	double outputMax;
 } BSlizzrMonitor_t;
 
 BSlizzrMonitor_t defaultMonitorData = {0, false, 0.0, 0.0};
@@ -81,7 +83,7 @@ private:
 	float step[MAXSTEPS];
 
 	// Atom port
-	BSlicerURIs uris;
+	BSlizzrURIs uris;
 
 	LV2_Atom_Sequence* controlPort1;
 	LV2_Atom_Sequence* controlPort2;
@@ -92,7 +94,7 @@ private:
 
 	bool record_on;
 	int monitorpos;
-	std::array<BSlicerNotifications, NOTIFYBUFFERSIZE> notifications;
+	std::array<BSlizzrNotifications, NOTIFYBUFFERSIZE> notifications;
 	std::array<BSlizzrMonitor_t, MONITORBUFFERSIZE> monitor;
 
 	void play(uint32_t start, uint32_t end);

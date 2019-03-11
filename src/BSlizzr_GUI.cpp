@@ -78,7 +78,7 @@ private:
 	void redrawStepshape ();
 	bool init_mainMonitor ();
 	void destroy_mainMonitor ();
-	void add_monitor_data (BSlicerNotifications* notifications, uint32_t notificationsCount, uint32_t& end);
+	void add_monitor_data (BSlizzrNotifications* notifications, uint32_t notificationsCount, uint32_t& end);
 	void redrawMainMonitor ();
 
 
@@ -104,15 +104,19 @@ private:
 	cairo_surface_t* surface;
 	cairo_t* cr1;
 	cairo_t* cr2;
+	cairo_t* cr3;
+	cairo_t* cr4;
 	cairo_pattern_t* pat1;
 	cairo_pattern_t* pat2;
+	cairo_pattern_t* pat3;
 	cairo_pattern_t* pat4;
+	cairo_pattern_t* pat5;
 
 	struct 	{
 		bool record_on;
 		uint32_t width;
 		uint32_t height;
-		std::array<BSlicerNotifications, MONITORBUFFERSIZE> data;
+		std::array<BSlizzrNotifications, MONITORBUFFERSIZE> data;
 		uint32_t horizonPos;
 	} mainMonitor;
 
@@ -126,7 +130,7 @@ private:
 	std::array<float, MAXSTEPS> step;
 
 	LV2_Atom_Forge forge;
-	BSlicerURIs uris;
+	BSlizzrURIs uris;
 	LV2_URID_Map* map;
 
 
@@ -306,15 +310,15 @@ bool BSlicer_GUI::init_Stepshape ()
 {
 	double width = stepshapeDisplay.getEffectiveWidth ();
 	double height = stepshapeDisplay.getEffectiveHeight ();
-	pat4 = cairo_pattern_create_linear (0, 0, 0, height);
+	pat5 = cairo_pattern_create_linear (0, 0, 0, height);
 
-	return (pat4 && (cairo_pattern_status (pat4) == CAIRO_STATUS_SUCCESS));
+	return (pat5 && (cairo_pattern_status (pat5) == CAIRO_STATUS_SUCCESS));
 }
 
 void BSlicer_GUI::destroy_Stepshape ()
 {
 	//Destroy also mainMonitors cairo data
-	if (pat4 && (cairo_pattern_status (pat4) == CAIRO_STATUS_SUCCESS)) cairo_pattern_destroy (pat4);
+	if (pat5 && (cairo_pattern_status (pat5) == CAIRO_STATUS_SUCCESS)) cairo_pattern_destroy (pat5);
 }
 
 void BSlicer_GUI::redrawStepshape ()
@@ -368,9 +372,9 @@ void BSlicer_GUI::redrawStepshape ()
 
 	cairo_stroke_preserve (cr);
 
-	cairo_pattern_add_color_stop_rgba (pat4, 0.1, CAIRO_INK1, 1);
-	cairo_pattern_add_color_stop_rgba (pat4, 0.9, CAIRO_INK1, 0);
-	cairo_set_source (cr, pat4);
+	cairo_pattern_add_color_stop_rgba (pat5, 0.1, CAIRO_INK1, 1);
+	cairo_pattern_add_color_stop_rgba (pat5, 0.9, CAIRO_INK1, 0);
+	cairo_set_source (cr, pat5);
 	cairo_line_to(cr, 0, 0.9 * height);
 	cairo_set_line_width (cr, 0);
 	cairo_fill (cr);
@@ -395,31 +399,47 @@ bool BSlicer_GUI::init_mainMonitor ()
 	surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width, height);
 	cr1 = cairo_create (surface);
 	cr2 = cairo_create (surface);
+	cr3 = cairo_create (surface);
+	cr4 = cairo_create (surface);
 	pat1 = cairo_pattern_create_linear (0, 0, 0, height);
 	cairo_pattern_add_color_stop_rgba (pat1, 0.1, CAIRO_INK1, 1);
-	cairo_pattern_add_color_stop_rgba (pat1, 0.9, CAIRO_INK1, 0);
+	cairo_pattern_add_color_stop_rgba (pat1, 0.6, CAIRO_INK1, 0);
 	pat2 = cairo_pattern_create_linear (0, 0, 0, height);
 	cairo_pattern_add_color_stop_rgba (pat2, 0.1, CAIRO_INK2, 1);
-	cairo_pattern_add_color_stop_rgba (pat2, 0.9, CAIRO_INK2, 0);
+	cairo_pattern_add_color_stop_rgba (pat2, 0.6, CAIRO_INK2, 0);
+	pat3 = cairo_pattern_create_linear (0, height, 0, 0);
+	cairo_pattern_add_color_stop_rgba (pat3, 0.1, CAIRO_INK1, 1);
+	cairo_pattern_add_color_stop_rgba (pat3, 0.6, CAIRO_INK1, 0);
+	pat4 = cairo_pattern_create_linear (0, height, 0, 0);
+	cairo_pattern_add_color_stop_rgba (pat4, 0.1, CAIRO_INK2, 1);
+	cairo_pattern_add_color_stop_rgba (pat4, 0.6, CAIRO_INK2, 0);
 
-	return (pat2 && (cairo_pattern_status (pat2) == CAIRO_STATUS_SUCCESS) &&
+	return (pat4 && (cairo_pattern_status (pat4) == CAIRO_STATUS_SUCCESS) &&
+			pat3 && (cairo_pattern_status (pat3) == CAIRO_STATUS_SUCCESS) &&
+			pat2 && (cairo_pattern_status (pat2) == CAIRO_STATUS_SUCCESS) &&
 			pat1 && (cairo_pattern_status (pat1) == CAIRO_STATUS_SUCCESS) &&
+			cr4 && (cairo_status (cr4) == CAIRO_STATUS_SUCCESS) &&
+			cr3 && (cairo_status (cr3) == CAIRO_STATUS_SUCCESS)&&
 			cr2 && (cairo_status (cr2) == CAIRO_STATUS_SUCCESS) &&
-			cr1 && (cairo_status (cr1) == CAIRO_STATUS_SUCCESS)&&
+			cr1 && (cairo_status (cr1) == CAIRO_STATUS_SUCCESS) &&
 			surface && (cairo_surface_status (surface) == CAIRO_STATUS_SUCCESS));
 }
 
 void BSlicer_GUI::destroy_mainMonitor ()
 {
 	//Destroy also mainMonitors cairo data
+	if (pat4 && (cairo_pattern_status (pat4) == CAIRO_STATUS_SUCCESS)) cairo_pattern_destroy (pat4);
+	if (pat3 && (cairo_pattern_status (pat3) == CAIRO_STATUS_SUCCESS)) cairo_pattern_destroy (pat3);
 	if (pat2 && (cairo_pattern_status (pat2) == CAIRO_STATUS_SUCCESS)) cairo_pattern_destroy (pat2);
 	if (pat1 && (cairo_pattern_status (pat1) == CAIRO_STATUS_SUCCESS)) cairo_pattern_destroy (pat1);
+	if (cr4 && (cairo_status (cr4) == CAIRO_STATUS_SUCCESS)) cairo_destroy (cr4);
+	if (cr3 && (cairo_status (cr3) == CAIRO_STATUS_SUCCESS)) cairo_destroy (cr3);
 	if (cr2 && (cairo_status (cr2) == CAIRO_STATUS_SUCCESS)) cairo_destroy (cr2);
 	if (cr1 && (cairo_status (cr1) == CAIRO_STATUS_SUCCESS)) cairo_destroy (cr1);
 	if (surface && (cairo_surface_status (surface) == CAIRO_STATUS_SUCCESS)) cairo_surface_destroy (surface);
 }
 
-void BSlicer_GUI::add_monitor_data (BSlicerNotifications* notifications, uint32_t notificationsCount, uint32_t& end)
+void BSlicer_GUI::add_monitor_data (BSlizzrNotifications* notifications, uint32_t notificationsCount, uint32_t& end)
 {
 	for (int i = 0; i < notificationsCount; ++i)
 	{
@@ -427,8 +447,10 @@ void BSlicer_GUI::add_monitor_data (BSlicerNotifications* notifications, uint32_
 		if (monitorpos >= MONITORBUFFERSIZE) monitorpos = MONITORBUFFERSIZE;
 		if (monitorpos < 0) monitorpos = 0;
 
-		mainMonitor.data[monitorpos].input = notifications[i].input;
-		mainMonitor.data[monitorpos].output = notifications[i].output;
+		mainMonitor.data[monitorpos].inputMin = notifications[i].inputMin;
+		mainMonitor.data[monitorpos].inputMax = notifications[i].inputMax;
+		mainMonitor.data[monitorpos].outputMin = notifications[i].outputMin;
+		mainMonitor.data[monitorpos].outputMax = notifications[i].outputMax;
 		mainMonitor.horizonPos = monitorpos;
 	}
 }
@@ -450,6 +472,8 @@ void BSlicer_GUI::redrawMainMonitor ()
 	cairo_set_line_width (cr, 1);
 	cairo_move_to (cr, 0, 0.1 * height);
 	cairo_line_to (cr, width, 0.1 * height);
+	cairo_move_to (cr, 0, 0.5 * height);
+	cairo_line_to (cr, width, 0.5 * height);
 	cairo_move_to (cr, 0, 0.9 * height);
 	cairo_line_to (cr, width, 0.9 * height);
 
@@ -466,31 +490,41 @@ void BSlicer_GUI::redrawMainMonitor ()
 	{
 		cairo_surface_clear (surface);
 
-		// Draw input (cr) and output (cr2) curves
-		cairo_move_to (cr1, 0, height * (0.9  - (0.8 * LIM ((mainMonitor.data[0].input / scale), 1.0f))));
-		cairo_move_to (cr2, 0, height * (0.9  - (0.8 * LIM ((mainMonitor.data[0].output / scale), 1.0f))));
+		// Draw input (cr, cr3) and output (cr2, cr4) curves
+		cairo_move_to (cr1, 0, height * (0.5  - (0.4 * LIM ((mainMonitor.data[0].inputMax / scale), 1.0f))));
+		cairo_move_to (cr2, 0, height * (0.5  - (0.4 * LIM ((mainMonitor.data[0].outputMax / scale), 1.0f))));
+		cairo_move_to (cr3, 0, height * (0.5  + (0.4 * LIM (-(mainMonitor.data[0].inputMin / scale), 1.0f))));
+		cairo_move_to (cr4, 0, height * (0.5  + (0.4 * LIM (-(mainMonitor.data[0].outputMin / scale), 1.0f))));
 
 		for (int i = 0; i < MONITORBUFFERSIZE; ++i)
 		{
 			double pos = ((double) i) / (MONITORBUFFERSIZE - 1.0f);
-			cairo_line_to (cr1, pos * width, height * (0.9  - (0.8 * LIM ((mainMonitor.data[i].input / scale), 1.0f))));
-			cairo_line_to (cr2, pos * width, height * (0.9  - (0.8 * LIM ((mainMonitor.data[i].output / scale), 1.0f))));
+			cairo_line_to (cr1, pos * width, height * (0.5  - (0.4 * LIM ((mainMonitor.data[i].inputMax / scale), 1.0f))));
+			cairo_line_to (cr2, pos * width, height * (0.5  - (0.4 * LIM ((mainMonitor.data[i].outputMax / scale), 1.0f))));
+			cairo_line_to (cr3, pos * width, height * (0.5  + (0.4 * LIM (-(mainMonitor.data[i].inputMin / scale), 1.0f))));
+			cairo_line_to (cr4, pos * width, height * (0.5  + (0.4 * LIM (-(mainMonitor.data[i].outputMin / scale), 1.0f))));
 		}
 
-		// Visualize input (cr) and output (cr2) curves
+		// Visualize input (cr, cr3) and output (cr2, cr4) curves
 		cairo_set_source_rgba (cr1, CAIRO_INK1, 1.0);
 		cairo_set_line_width (cr1, 3);
 		cairo_set_source_rgba (cr2, CAIRO_INK2, 1.0);
 		cairo_set_line_width (cr2, 3);
 		cairo_stroke_preserve (cr1);
 		cairo_stroke_preserve (cr2);
+		cairo_set_source_rgba (cr3, CAIRO_INK1, 1.0);
+		cairo_set_line_width (cr3, 3);
+		cairo_set_source_rgba (cr4, CAIRO_INK2, 1.0);
+		cairo_set_line_width (cr4, 3);
+		cairo_stroke_preserve (cr3);
+		cairo_stroke_preserve (cr4);
 
-		// Visualize input (cr) and output (cr2) areas under the curves
-		cairo_line_to (cr1, width, height * 0.9);
-		cairo_line_to (cr1, 0, height * 0.9);
+		// Visualize input (cr, cr3) and output (cr2, cr4) areas under the curves
+		cairo_line_to (cr1, width, height * 0.5);
+		cairo_line_to (cr1, 0, height * 0.5);
 		cairo_close_path (cr1);
-		cairo_line_to (cr2, width, height * 0.9);
-		cairo_line_to (cr2, 0, height * 0.9);
+		cairo_line_to (cr2, width, height * 0.5);
+		cairo_line_to (cr2, 0, height * 0.5);
 		cairo_close_path (cr2);
 		cairo_set_source (cr1, pat1);
 		cairo_set_line_width (cr1, 0);
@@ -498,33 +532,45 @@ void BSlicer_GUI::redrawMainMonitor ()
 		cairo_set_line_width (cr2, 0);
 		cairo_fill (cr1);
 		cairo_fill (cr2);
+		cairo_line_to (cr3, width, height * 0.5);
+		cairo_line_to (cr3, 0, height * 0.5);
+		cairo_close_path (cr3);
+		cairo_line_to (cr4, width, height * 0.5);
+		cairo_line_to (cr4, 0, height * 0.5);
+		cairo_close_path (cr4);
+		cairo_set_source (cr3, pat3);
+		cairo_set_line_width (cr3, 0);
+		cairo_set_source (cr4, pat4);
+		cairo_set_line_width (cr4, 0);
+		cairo_fill (cr3);
+		cairo_fill (cr4);
 
 		// Draw fade out
 		double horizon = ((double) mainMonitor.horizonPos) / (MONITORBUFFERSIZE - 1.0f);
-		cairo_pattern_t* pat3 = cairo_pattern_create_linear (horizon * width, 0, horizon * width + 63, 0);
-		if (cairo_pattern_status (pat3) == CAIRO_STATUS_SUCCESS)
+		cairo_pattern_t* pat6 = cairo_pattern_create_linear (horizon * width, 0, horizon * width + 63, 0);
+		if (cairo_pattern_status (pat6) == CAIRO_STATUS_SUCCESS)
 		{
-			cairo_pattern_add_color_stop_rgba (pat3, 0.0, CAIRO_BG_COLOR);
-			cairo_pattern_add_color_stop_rgba (pat3, 1.0, CAIRO_TRANSPARENT);
+			cairo_pattern_add_color_stop_rgba (pat6, 0.0, CAIRO_BG_COLOR);
+			cairo_pattern_add_color_stop_rgba (pat6, 1.0, CAIRO_TRANSPARENT);
 			cairo_set_line_width (cr1, 0.0);
-			cairo_set_source (cr1, pat3);
+			cairo_set_source (cr1, pat6);
 			cairo_rectangle (cr1, horizon * width, 0, 63, height);
 			cairo_fill (cr1);
-			cairo_pattern_destroy (pat3);
+			cairo_pattern_destroy (pat6);
 		}
 
 		if (horizon * width > width - 63)
 		{
-			cairo_pattern_t* pat3 = cairo_pattern_create_linear ((horizon - 1) * width, 0, (horizon - 1) * width + 63, 0);
-			if (cairo_pattern_status (pat3) == CAIRO_STATUS_SUCCESS)
+			cairo_pattern_t* pat6 = cairo_pattern_create_linear ((horizon - 1) * width, 0, (horizon - 1) * width + 63, 0);
+			if (cairo_pattern_status (pat6) == CAIRO_STATUS_SUCCESS)
 			{
-				cairo_pattern_add_color_stop_rgba (pat3, 0.0, CAIRO_BG_COLOR);
-				cairo_pattern_add_color_stop_rgba (pat3, 1.0, CAIRO_TRANSPARENT);
+				cairo_pattern_add_color_stop_rgba (pat6, 0.0, CAIRO_BG_COLOR);
+				cairo_pattern_add_color_stop_rgba (pat6, 1.0, CAIRO_TRANSPARENT);
 				cairo_set_line_width (cr1, 0.0);
-				cairo_set_source (cr1, pat3);
+				cairo_set_source (cr1, pat6);
 				cairo_rectangle (cr1, (horizon - 1) * width, 0, 63, height);
 				cairo_fill (cr1);
-				cairo_pattern_destroy (pat3);
+				cairo_pattern_destroy (pat6);
 			}
 		}
 
@@ -548,7 +594,7 @@ BSlicer_GUI::BSlicer_GUI (const char *bundle_path, const LV2_Feature *const *fea
 	Window (800, 560, "B.Slicer", parentWindow),
 	scale (DB_CO(0.0)), attack (0.2), release (0.2), nrSteps (16.0), sequencesperbar (4.0), step (),
 	pluginPath (bundle_path ? std::string (bundle_path) : std::string ("")), controller (NULL), write_function (NULL), map (NULL),
-	surface (NULL), cr1 (NULL), cr2 (NULL), pat1 (NULL), pat2 (NULL), pat4 (NULL),
+	surface (NULL), cr1 (NULL), cr2 (NULL), cr3 (NULL), cr4 (NULL), pat1 (NULL), pat2 (NULL), pat3 (NULL), pat4 (NULL), pat5 (NULL),
 
 	mContainer (0, 0, 800, 560, "main"),
 	monitorSwitch (690, 25, 40, 16, "switch", 0.0),
@@ -686,8 +732,8 @@ void BSlicer_GUI::portEvent(uint32_t port_index, uint32_t buffer_size, uint32_t 
 					const LV2_Atom_Vector* vec = (const LV2_Atom_Vector*) data;
 					if (vec->body.child_type == uris.atom_Float)
 					{
-						uint32_t notificationsCount = (uint32_t) ((data->size - sizeof(LV2_Atom_Vector_Body)) / sizeof (BSlicerNotifications));
-						BSlicerNotifications* notifications = (BSlicerNotifications*) (&vec->body + 1);
+						uint32_t notificationsCount = (uint32_t) ((data->size - sizeof(LV2_Atom_Vector_Body)) / sizeof (BSlizzrNotifications));
+						BSlizzrNotifications* notifications = (BSlizzrNotifications*) (&vec->body + 1);
 						if (notificationsCount > 0)
 						{
 							add_monitor_data (notifications, notificationsCount, mainMonitor.horizonPos);
@@ -744,7 +790,7 @@ LV2UI_Handle instantiate (const LV2UI_Descriptor *descriptor, const char *plugin
 	PuglNativeWindow parentWindow = 0;
 	LV2UI_Resize* resize = NULL;
 
-	if (strcmp(plugin_uri, BSLICER_URI) != 0)
+	if (strcmp(plugin_uri, BSLIZZR_URI) != 0)
 	{
 		std::cerr << "BSlicer.lv2#GUI: GUI does not support plugin with URI " << plugin_uri << std::endl;
 		return NULL;
@@ -804,7 +850,7 @@ static const void* extensionData(const char* uri)
 }
 
 const LV2UI_Descriptor guiDescriptor = {
-		BSLICER_GUI_URI,
+		BSLIZZR_GUI_URI,
 		instantiate,
 		cleanup,
 		portEvent,

@@ -10,7 +10,7 @@ all: $(BUNDLE)
 
 BSlizzr.so: ./src/BSlizzr.cpp
 	mkdir -p $(BUNDLE)
-	$(CC) $< -o $(BUNDLE)/$@ -std=c++11 -shared- fvisibility=hidden -fPIC -DPIC `pkg-config --cflags --libs lv2`
+	$(CC) $< -o $(BUNDLE)/$@ -std=c++11 -shared -fvisibility=hidden -fPIC -DPIC `pkg-config --cflags --libs lv2`
 	
 BSlizzr_GUI.so: ./src/BSlizzr_GUI.cpp
 	mkdir -p $(BUNDLE)	

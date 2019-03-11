@@ -198,29 +198,35 @@ void BSlizzr::notifyGUI()
 				{
 					int count = monitor[i].count;
 					notifications[notificationsCount].position = i;
-					notifications[notificationsCount].input = monitor[i].input;
-					notifications[notificationsCount].output = monitor[i].output;
+					notifications[notificationsCount].inputMin = monitor[i].inputMin;
+					notifications[notificationsCount].inputMax = monitor[i].inputMax;
+					notifications[notificationsCount].outputMin = monitor[i].outputMin;
+					notifications[notificationsCount].outputMax = monitor[i].outputMax;
 					notificationsCount++;
 				}
 
 				// Reset monitor data
 				monitor[i].ready = false;
-				monitor[i].input = 0.0;
-				monitor[i].output = 0.0;
+				monitor[i].inputMin = 0.0;
+				monitor[i].inputMax = 0.0;
+				monitor[i].outputMin = 0.0;
+				monitor[i].outputMax = 0.0;
 			}
 		}
 
 		// And build one closing notification block for submission of current position (horizon)
 		notifications[notificationsCount].position = monitorpos;
-		notifications[notificationsCount].input = monitor[monitorpos].input;
-		notifications[notificationsCount].output = monitor[monitorpos].output;
+		notifications[notificationsCount].inputMin = monitor[monitorpos].inputMin;
+		notifications[notificationsCount].inputMax = monitor[monitorpos].inputMax;
+		notifications[notificationsCount].outputMin = monitor[monitorpos].outputMin;
+		notifications[notificationsCount].outputMax = monitor[monitorpos].outputMax;
 
 		// Send notifications
 		LV2_Atom_Forge_Frame frame;
 		lv2_atom_forge_frame_time(&forge, 0);
 		lv2_atom_forge_object(&forge, &frame, 0, uris.notify_event);
 		lv2_atom_forge_key(&forge, uris.notify_key);
-		lv2_atom_forge_vector(&forge, sizeof(float), uris.atom_Float, (uint32_t) (3 * notificationsCount), &notifications);
+		lv2_atom_forge_vector(&forge, sizeof(float), uris.atom_Float, (uint32_t) (5 * notificationsCount), &notifications);
 		lv2_atom_forge_pop(&forge, &frame);
 
 		// Close off sequence
@@ -294,10 +300,14 @@ void BSlizzr::play(uint32_t start, uint32_t end)
 			}
 
 			// Get max input and output values for a block
-			if (fabs(effect1) > monitor[monitorpos].output) monitor[monitorpos].output = fabs(effect1);
-			if (fabs(effect2) > monitor[monitorpos].output) monitor[monitorpos].output = fabs(effect2);
-			if (fabs(audioInput1[i]) > monitor[monitorpos].input) monitor[monitorpos].input = fabs(audioInput1[i]);
-			if (fabs(audioInput2[i]) > monitor[monitorpos].input) monitor[monitorpos].input = fabs(audioInput2[i]);
+			if (effect1 < monitor[monitorpos].outputMin) monitor[monitorpos].outputMin = effect1;
+			if (effect1 > monitor[monitorpos].outputMax) monitor[monitorpos].outputMax = effect1;
+			if (effect2 < monitor[monitorpos].outputMin) monitor[monitorpos].outputMin = effect2;
+			if (effect2 > monitor[monitorpos].outputMax) monitor[monitorpos].outputMax = effect2;
+			if (audioInput1[i] < monitor[monitorpos].inputMin) monitor[monitorpos].inputMin = audioInput1[i];
+			if (audioInput1[i] > monitor[monitorpos].inputMax) monitor[monitorpos].inputMax = audioInput1[i];
+			if (audioInput2[i] < monitor[monitorpos].inputMin) monitor[monitorpos].inputMin = audioInput2[i];
+			if (audioInput2[i] > monitor[monitorpos].inputMax) monitor[monitorpos].inputMax = audioInput2[i];
 
 			monitor[monitorpos].ready = false;
 		}
@@ -355,7 +365,7 @@ void cleanup (LV2_Handle instance)
 
 const LV2_Descriptor descriptor =
 {
-		BSLICER_URI,
+		BSLIZZR_URI,
 		instantiate,
 		connect_port,
 		NULL, //activate,
