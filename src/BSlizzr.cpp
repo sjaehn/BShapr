@@ -18,7 +18,7 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "BSlicer.h"
+#include "BSlizzr.h"
 
 #include <cstdio>
 #include <string>
@@ -26,7 +26,7 @@
 
 #define LIM(g , min, max) ((g) > (max) ? (max) : ((g) < (min) ? (min) : (g)))
 
-BSlicer::BSlicer (double samplerate, const LV2_Feature* const* features) :
+BSlizzr::BSlizzr (double samplerate, const LV2_Feature* const* features) :
 	map(NULL), controlPort1(NULL), controlPort2(NULL),  notifyPort(NULL),
 	audioInput1(NULL), audioInput2(NULL), audioOutput1(NULL), audioOutput2(NULL),
 	nrSteps(16), attack(0.2), release (0.2), sequencesperbar (4),
@@ -58,9 +58,9 @@ BSlicer::BSlicer (double samplerate, const LV2_Feature* const* features) :
 
 }
 
-BSlicer::~BSlicer () {}
+BSlizzr::~BSlizzr () {}
 
-void BSlicer::connect_port(uint32_t port, void *data)
+void BSlizzr::connect_port(uint32_t port, void *data)
 {
 	switch (port) {
 	case Control_1:
@@ -89,7 +89,7 @@ void BSlicer::connect_port(uint32_t port, void *data)
 	}
 }
 
-void BSlicer::run (uint32_t n_samples)
+void BSlizzr::run (uint32_t n_samples)
 {
 
 	// Check ports
@@ -183,7 +183,7 @@ void BSlicer::run (uint32_t n_samples)
 
 }
 
-void BSlicer::notifyGUI()
+void BSlizzr::notifyGUI()
 {
 	if (record_on)
 	{
@@ -229,7 +229,7 @@ void BSlicer::notifyGUI()
 	}
 }
 
-void BSlicer::play(uint32_t start, uint32_t end)
+void BSlizzr::play(uint32_t start, uint32_t end)
 {
 	float vol, relpos, pos, iStepf, iStepFrac, effect1, effect2;
 	uint32_t steps = (uint32_t) nrSteps;
@@ -311,8 +311,8 @@ void BSlicer::play(uint32_t start, uint32_t end)
 LV2_Handle instantiate (const LV2_Descriptor* descriptor, double samplerate, const char* bundle_path, const LV2_Feature* const* features)
 {
 	// New instance
-	BSlicer* instance;
-	try {instance = new BSlicer(samplerate, features);}
+	BSlizzr* instance;
+	try {instance = new BSlizzr(samplerate, features);}
 	catch (std::exception& exc)
 	{
 		fprintf (stderr, "BSlicer.lv2: Plugin instantiation failed. %s\n", exc.what ());
@@ -337,19 +337,19 @@ LV2_Handle instantiate (const LV2_Descriptor* descriptor, double samplerate, con
 
 void connect_port (LV2_Handle instance, uint32_t port, void *data)
 {
-	BSlicer* inst = (BSlicer*) instance;
+	BSlizzr* inst = (BSlizzr*) instance;
 	inst->connect_port (port, data);
 }
 
 void run (LV2_Handle instance, uint32_t n_samples)
 {
-	BSlicer* inst = (BSlicer*) instance;
+	BSlizzr* inst = (BSlizzr*) instance;
 	inst->run (n_samples);
 }
 
 void cleanup (LV2_Handle instance)
 {
-	BSlicer* inst = (BSlicer*) instance;
+	BSlizzr* inst = (BSlizzr*) instance;
 	delete inst;
 }
 

@@ -18,8 +18,8 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef BSLICER_H_
-#define BSLICER_H_
+#ifndef BSLIZZR_H_
+#define BSLIZZR_H_
 
 #define MODFL(x) (x - floorf (x))
 
@@ -39,15 +39,15 @@ typedef struct
 	bool ready;
 	double input;
 	double output;
-} BSlicerMonitor_t;
+} BSlizzrMonitor_t;
 
-BSlicerMonitor_t defaultMonitorData = {0, false, 0.0, 0.0};
+BSlizzrMonitor_t defaultMonitorData = {0, false, 0.0, 0.0};
 
-class BSlicer
+class BSlizzr
 {
 public:
-	BSlicer (double samplerate, const LV2_Feature* const* features);
-	~BSlicer();
+	BSlizzr (double samplerate, const LV2_Feature* const* features);
+	~BSlizzr();
 
 	void connect_port (uint32_t port, void *data);
 	void run (uint32_t n_samples);
@@ -93,11 +93,11 @@ private:
 	bool record_on;
 	int monitorpos;
 	std::array<BSlicerNotifications, NOTIFYBUFFERSIZE> notifications;
-	std::array<BSlicerMonitor_t, MONITORBUFFERSIZE> monitor;
+	std::array<BSlizzrMonitor_t, MONITORBUFFERSIZE> monitor;
 
 	void play(uint32_t start, uint32_t end);
 	void notifyGUI();
 
 };
 
-#endif /* BSLICER_H_ */
+#endif /* BSLIZZR_H_ */

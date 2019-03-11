@@ -1,7 +1,5 @@
-# B.Slicer
-Repository: BSlicer
-
-Version: 1.0-pre1
+# B.Slizzr
+Repository: BSlizzr
 
 Description: LV2 audio effect plugin. This plugin slices stereo audio input signals with a length up to 1 bar into up to 16 pieces. Each slice can be levelled up or down. The result can be a step sequencer-like effect.
 
@@ -28,11 +26,11 @@ For installation into an alternative directory (e.g., /usr/local/lib/lv2), modif
 
 Running
 -------
-After the installation Ardour, Carla, and any other LV2 host should automatically detect B.Slicer.
+After the installation Ardour, Carla, and any other LV2 host should automatically detect B.Slizzr.
 
 If jalv is installed, you can also call it
 ```
-jalv.gtk https://www.jahnichen.de/plugins/lv2/BSlicer
+jalv.gtk https://www.jahnichen.de/plugins/lv2/BSlizzr
 ```
 to run it stand-alone and connect it to the JACK system.
 

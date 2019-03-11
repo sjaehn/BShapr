@@ -27,8 +27,8 @@
 
 #define BWIDGETS_DEFAULT_CHOICEBOX_WIDTH 100.0
 #define BWIDGETS_DEFAULT_CHOICEBOX_HEIGHTH 40.0
-#define BWIDGETS_DEFAULT_CHOICEBOX_BUTTON_HEIGHT 10.0
-#define BWIDGETS_DEFAULT_CHOICEBOX_LABEL_HEIGHT 20.0
+#define BWIDGETS_DEFAULT_CHOICEBOX_BUTTON_HEIGHT 9.0
+#define BWIDGETS_DEFAULT_CHOICEBOX_LINE_HEIGHT 1.6666
 
 #define BWIDGETS_DEFAULT_CHOICEBOX_BUTTON_NAME "/button"
 #define BWIDGETS_DEFAULT_CHOICEBOX_ITEM_NAME "/item"
@@ -167,6 +167,12 @@ public:
 	virtual int getTop () const;
 
 	/**
+	 * Gets the number (NOT the value!) of the active line of the shown list.
+	 * @param return Active line of the list (starting with 1.0)
+	 */
+	virtual int getActive () const;
+
+	/**
 	 * Gets the bottom line of the shown list.
 	 * @param return Bottom line of the list (starting with 1.0)
 	 */
@@ -179,6 +185,13 @@ public:
 	 * changed.
 	 */
 	virtual void update () override;
+
+	/**
+	 * Handles the BEvents::WHEEL_SCROLL_EVENT to scroll through the items.
+	 * Changes the widgets value.
+	 * @param event Pointer to a wheel event emitted by the same widget.
+	 */
+	virtual void onWheelScrolled (BEvents::WheelEvent* event) override;
 
 protected:
 	void deleteLabels ();

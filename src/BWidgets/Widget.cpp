@@ -33,6 +33,11 @@ Widget::Widget(const double x, const double y, const double width, const double 
 		main_ (nullptr), parent_ (nullptr), children_ (), border_ (BWIDGETS_DEFAULT_BORDER), background_ (BWIDGETS_DEFAULT_BACKGROUND),
 		name_ (name), widgetState (BWIDGETS_DEFAULT_STATE)
 {
+	mergeable.fill (false);
+	mergeable[BEvents::EXPOSE_EVENT] = true;
+	mergeable[BEvents::POINTER_MOTION_EVENT] = true;
+	mergeable[BEvents::POINTER_DRAG_EVENT] = true;
+	mergeable[BEvents::WHEEL_SCROLL_EVENT] = true;
 	cbfunction.fill (Widget::defaultCallback);
 	cbfunction[BEvents::EventType::POINTER_DRAG_EVENT] = Widget::dragAndDropCallback;
 	cbfunction[BEvents::EventType::FOCUS_IN_EVENT] = Widget::focusInCallback;
@@ -44,7 +49,7 @@ Widget::Widget(const double x, const double y, const double width, const double 
 Widget::Widget (const Widget& that) :
 		extensionData (that.extensionData), x_ (that.x_), y_ (that.y_), width_ (that.width_), height_ (that.height_),
 		visible (that.visible), clickable (that.clickable), draggable (that.draggable), scrollable (that.scrollable),
-		focusable (that.focusable), focusWidget (nullptr),
+		focusable (that.focusable), focusWidget (nullptr), mergeable (that.mergeable),
 		main_ (nullptr), parent_ (nullptr), children_ (), border_ (that.border_), background_ (that.background_), name_ (that.name_),
 		cbfunction (that.cbfunction), widgetState (that.widgetState)
 {
@@ -83,6 +88,7 @@ Widget& Widget::operator= (const Widget& that)
 	scrollable = that.scrollable;
 	focusable = that.focusable;
 	focusWidget = nullptr;
+	mergeable = that.mergeable;
 	border_ = that.border_;
 	background_ = that.background_;
 	cbfunction = that.cbfunction;
@@ -299,7 +305,7 @@ void Widget::setWidth (const double width)
 		width_ =  width;
 		cairo_surface_destroy (widgetSurface);	// destroy old surface first
 		widgetSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width_, height_);
-		draw (0, 0, width_, height_);
+		update ();
 		if (isVisible () && parent_) parent_->postRedisplay ();
 	}
 }
@@ -313,7 +319,7 @@ void Widget::setHeight (const double height)
 		height_ = height;
 		cairo_surface_destroy (widgetSurface);	// destroy old surface first
 		widgetSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width_, height_);
-		draw (0, 0, width_, height_);
+		update ();
 		if (isVisible () && parent_) parent_->postRedisplay ();
 	}
 }
@@ -339,7 +345,7 @@ void Widget::resize (const double width, const double height)
 		height_ = height;
 		cairo_surface_destroy (widgetSurface);	// destroy old surface first
 		widgetSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width_, height_);
-		draw (0, 0, width_, height_);
+		update ();
 		if (isVisible () && parent_) parent_->postRedisplay ();
 	}
 }
@@ -413,6 +419,10 @@ bool Widget::isScrollable () const {return scrollable;}
 void Widget::setFocusable (const bool status) {focusable = status;}
 
 bool Widget::isFocusable () const {return focusable;}
+
+void Widget::setMergeable (const BEvents::EventType eventType, const bool status) {mergeable[eventType] = status;}
+
+bool Widget::isMergeable (const BEvents::EventType eventType) const {return mergeable[eventType];}
 
 void Widget::update ()
 {
@@ -488,7 +498,7 @@ void Widget::dragAndDropCallback (BEvents::Event* event)
 {
 	if (event && event->getWidget())
 	{
-		Widget* w = (Widget*) (event->getWidget());
+		Widget* w = event->getWidget();
 		BEvents::PointerEvent* pev = (BEvents::PointerEvent*) event;
 
 		w->moveTo (w->x_ + pev->getDeltaX (), w->y_ + pev->getDeltaY ());
@@ -499,7 +509,7 @@ void Widget::focusInCallback (BEvents::Event* event)
 {
 	if (event && event->getWidget())
 	{
-		Widget* w = (Widget*) (event->getWidget());
+		Widget* w = event->getWidget();
 		BEvents::FocusEvent* focusEvent = (BEvents::FocusEvent*) event;
 		if (w->getMainWindow() && w->getFocusWidget())
 		{
@@ -510,7 +520,7 @@ void Widget::focusInCallback (BEvents::Event* event)
 			if (focusWidget->getParent()) focusWidget->getParent()->release (focusWidget);
 
 			main->add (*focusWidget);
-			focusWidget->moveTo (focusEvent->getX() + 2, focusEvent->getY() - focusWidget->getHeight() - 2);
+			focusWidget->moveTo (w->getOriginX () + focusEvent->getX() + 2, w->getOriginY () + focusEvent->getY() - focusWidget->getHeight() - 2);
 			focusWidget->show ();
 		}
 	}
@@ -520,7 +530,7 @@ void Widget::focusOutCallback (BEvents::Event* event)
 {
 	if (event && event->getWidget())
 	{
-		Widget* w = (Widget*) (event->getWidget());
+		Widget* w = event->getWidget();
 		BEvents::FocusEvent* focusEvent = (BEvents::FocusEvent*) event;
 		if (w->getFocusWidget() && w->getMainWindow())
 		{

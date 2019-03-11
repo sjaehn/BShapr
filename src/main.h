@@ -24,8 +24,8 @@
 #define NOTIFYBUFFERSIZE 64
 #define MONITORBUFFERSIZE 64
 #define MAXSTEPS 16
-#define BSLICER_URI "https://www.jahnichen.de/plugins/lv2/BSlicer"
-#define BSLICER_GUI_URI "https://www.jahnichen.de/plugins/lv2/BSlicer#gui"
+#define BSLICER_URI "https://www.jahnichen.de/plugins/lv2/BSlizzr"
+#define BSLICER_GUI_URI "https://www.jahnichen.de/plugins/lv2/BSlizzr#gui"
 
 typedef enum {
 	Control_1		= 0,

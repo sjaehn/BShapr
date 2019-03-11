@@ -108,6 +108,10 @@ public:
 	 */
 	virtual void setValue (const double val) override;
 
+	virtual void moveListBox (const double xOffset, const double yOffset);
+
+	virtual void resizeListBox (const double width, const double height);
+
 	/**
 	 * Calls a redraw of the widget and calls postRedisplay () if the the
 	 * Widget is visible.
@@ -121,6 +125,14 @@ public:
 	 * BEvents::EventType::BUTTON_PRESS_EVENT.
 	 */
 	virtual void onButtonPressed (BEvents::PointerEvent* event);
+
+	/**
+	 * Handles the BEvents::WHEEL_SCROLL_EVENT to scroll through the items
+	 * in the ItemBox. Changes the widgets value. Scrolling in the ListBox
+	 * is NOT handled by this method.
+	 * @param event Pointer to a wheel event emitted by the same widget.
+	 */
+	virtual void onWheelScrolled (BEvents::WheelEvent* event) override;
 
 protected:
 	static void handleValueChanged (BEvents::Event* event);
