@@ -325,19 +325,19 @@ LV2_Handle instantiate (const LV2_Descriptor* descriptor, double samplerate, con
 	try {instance = new BSlizzr(samplerate, features);}
 	catch (std::exception& exc)
 	{
-		fprintf (stderr, "BSlicer.lv2: Plugin instantiation failed. %s\n", exc.what ());
+		fprintf (stderr, "BSlizzr.lv2: Plugin instantiation failed. %s\n", exc.what ());
 		return NULL;
 	}
 
 	if (!instance)
 	{
-		fprintf(stderr, "BSlicer.lv2: Plugin instantiation failed.\n");
+		fprintf(stderr, "BSlizzr.lv2: Plugin instantiation failed.\n");
 		return NULL;
 	}
 
 	if (!instance->map)
 	{
-		fprintf(stderr, "BSlicer.lv2: Host does not support urid:map.\n");
+		fprintf(stderr, "BSlizzr.lv2: Host does not support urid:map.\n");
 		delete (instance);
 		return NULL;
 	}

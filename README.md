@@ -37,12 +37,13 @@ to run it stand-alone and connect it to the JACK system.
 What's new
 -----------
 * Crazy name
+* Resizeable GUI
 * Monitor also displays negative amplitude
 * Bugfixes
 
 Usage
 -----
-The plugin slices a stereo input, amplifies or silences the individual slices and send the whole sequence to the output. Although this affects only the audio signal, it needs a playback running.
+The plugin slices a stereo input, amplifies or silences the individual slices and send the whole sequence to the output. Although this affects only the audio signal, it needs a playback running (to get information about beat / position).
 
 The interface is divided into three parts: step controls, monitor and step shape.
 
