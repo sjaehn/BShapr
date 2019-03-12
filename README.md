@@ -17,9 +17,11 @@ Step 1: Clone or download this repository.
 Step 2: Install the development packages for x11, cairo, and lv2 if not done yet.
 
 Step 3: Building and installing into the default lv2 directory (/usr/lib/lv2/) is easy. Simply call:
+
 ```
 sudo make install
 ```
+
 from the directory where you downloaded the repository files.
 
 For installation into an alternative directory (e.g., /usr/local/lib/lv2), modify line 2 in the makefile.
@@ -29,10 +31,14 @@ Running
 After the installation Ardour, Carla, and any other LV2 host should automatically detect B.Slizr.
 
 If jalv is installed, you can also call it
+
 ```
 jalv.gtk https://www.jahnichen.de/plugins/lv2/BSlizr
 ```
-to run it stand-alone and connect it to the JACK system.
+
+to run it stand-alone and connect it to the JACK system. 
+
+Note: If you use an older version (until v0.3) of this plugin, use the URI https://www.jahnichen.de/plugins/lv2/BSlicer instead. 
 
 What's new
 -----------
