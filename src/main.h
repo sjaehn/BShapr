@@ -24,8 +24,8 @@
 #define NOTIFYBUFFERSIZE 64
 #define MONITORBUFFERSIZE 64
 #define MAXSTEPS 16
-#define BSLIZZR_URI "https://www.jahnichen.de/plugins/lv2/BSlizzr"
-#define BSLIZZR_GUI_URI "https://www.jahnichen.de/plugins/lv2/BSlizzr#gui"
+#define BSLIZR_URI "https://www.jahnichen.de/plugins/lv2/BSlizr"
+#define BSLIZR_GUI_URI "https://www.jahnichen.de/plugins/lv2/BSlizr#gui"
 
 typedef enum {
 	Control_1		= 0,
@@ -44,7 +44,7 @@ typedef enum {
 	NrSteps			= 10,
 	Step_			= 11,
 	NrControllers	= 20
-} BSlizzrPortIndex;
+} BSlizrPortIndex;
 
 typedef struct
 {
@@ -64,7 +64,7 @@ typedef struct
 	LV2_URID ui_off;
 	LV2_URID notify_event;
 	LV2_URID notify_key;
-}  BSlizzrURIs;
+}  BSlizrURIs;
 
 typedef struct {
 	float position;
@@ -72,11 +72,11 @@ typedef struct {
 	float inputMax;
 	float outputMin;
 	float outputMax;
-} BSlizzrNotifications;
+} BSlizrNotifications;
 
-BSlizzrNotifications defaultNotification = {0, 0.0, 0.0};
+BSlizrNotifications defaultNotification = {0, 0.0, 0.0};
 
-void getURIs (LV2_URID_Map* m, BSlizzrURIs* uris)
+void getURIs (LV2_URID_Map* m, BSlizrURIs* uris)
 {
 	uris->atom_Float = m->map(m->handle, LV2_ATOM__Float);
 	uris->atom_Int = m->map(m->handle, LV2_ATOM__Int);
@@ -90,10 +90,10 @@ void getURIs (LV2_URID_Map* m, BSlizzrURIs* uris)
 	uris->time_beatUnit = m->map(m->handle, LV2_TIME__beatUnit);
 	uris->time_beatsPerBar = m->map(m->handle, LV2_TIME__beatsPerBar);
 	uris->time_speed = m->map(m->handle, LV2_TIME__speed);
-	uris->ui_on = m->map(m->handle, BSLIZZR_URI "#UIon");
-	uris->ui_off = m->map(m->handle, BSLIZZR_URI "#UIoff");
-	uris->notify_event = m->map(m->handle, BSLIZZR_URI "#NOTIFYev");
-	uris->notify_key = m->map(m->handle, BSLIZZR_URI "#NOTIFYkey");
+	uris->ui_on = m->map(m->handle, BSLIZR_URI "#UIon");
+	uris->ui_off = m->map(m->handle, BSLIZR_URI "#UIoff");
+	uris->notify_event = m->map(m->handle, BSLIZR_URI "#NOTIFYev");
+	uris->notify_key = m->map(m->handle, BSLIZR_URI "#NOTIFYkey");
 }
 
 #endif /* MAIN_H_ */

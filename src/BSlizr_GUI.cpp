@@ -59,11 +59,11 @@
 #define INT(g) (int) (g + 0.5)
 #define RESIZE(widget, x, y, w, h, sz) widget.moveTo ((x) * (sz), (y) * (sz)); widget.resize ((w) * (sz), (h) * (sz));
 
-class BSlizzr_GUI : public BWidgets::Window
+class BSlizr_GUI : public BWidgets::Window
 {
 public:
-	BSlizzr_GUI (const char *bundle_path, const LV2_Feature *const *features, PuglNativeWindow parentWindow);
-	~BSlizzr_GUI ();
+	BSlizr_GUI (const char *bundle_path, const LV2_Feature *const *features, PuglNativeWindow parentWindow);
+	~BSlizr_GUI ();
 	void portEvent (uint32_t port_index, uint32_t buffer_size, uint32_t format, const void *buffer);
 	void send_record_on ();
 	void send_record_off ();
@@ -83,7 +83,7 @@ private:
 	void redrawStepshape ();
 	bool init_mainMonitor ();
 	void destroy_mainMonitor ();
-	void add_monitor_data (BSlizzrNotifications* notifications, uint32_t notificationsCount, uint32_t& end);
+	void add_monitor_data (BSlizrNotifications* notifications, uint32_t notificationsCount, uint32_t& end);
 	void redrawMainMonitor ();
 
 
@@ -121,7 +121,7 @@ private:
 		bool record_on;
 		uint32_t width;
 		uint32_t height;
-		std::array<BSlizzrNotifications, MONITORBUFFERSIZE> data;
+		std::array<BSlizrNotifications, MONITORBUFFERSIZE> data;
 		uint32_t horizonPos;
 	} mainMonitor;
 
@@ -137,7 +137,7 @@ private:
 	std::array<float, MAXSTEPS> step;
 
 	LV2_Atom_Forge forge;
-	BSlizzrURIs uris;
+	BSlizrURIs uris;
 	LV2_URID_Map* map;
 
 
@@ -185,7 +185,7 @@ private:
 };
 
 
-BSlizzr_GUI::BSlizzr_GUI (const char *bundle_path, const LV2_Feature *const *features, PuglNativeWindow parentWindow) :
+BSlizr_GUI::BSlizr_GUI (const char *bundle_path, const LV2_Feature *const *features, PuglNativeWindow parentWindow) :
 	Window (800, 560, "B.Slizzr", parentWindow, true),
 	scale (DB_CO(0.0)), attack (0.2), release (0.2), nrSteps (16.0), sequencesperbar (4.0), step (), sz (1.0),
 	pluginPath (bundle_path ? std::string (bundle_path) : std::string ("")), controller (NULL), write_function (NULL), map (NULL),
@@ -213,7 +213,7 @@ BSlizzr_GUI::BSlizzr_GUI (const char *bundle_path, const LV2_Feature *const *fea
 {
 	if (!init_mainMonitor () || !init_Stepshape ())
 	{
-		std::cerr << "BSlizzr.lv2#GUI: Failed to init monitor." <<  std::endl;
+		std::cerr << "BSlizr.lv2#GUI: Failed to init monitor." <<  std::endl;
 		destroy_mainMonitor ();
 		destroy_Stepshape ();
 		throw std::bad_alloc ();
@@ -226,19 +226,19 @@ BSlizzr_GUI::BSlizzr_GUI (const char *bundle_path, const LV2_Feature *const *fea
 		stepControl[i].setHardChangeable (false);
 		stepControl[i].setScrollable (true);
 		stepControl[i].rename ("slider");
-		stepControl[i].setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlizzr_GUI::valueChangedCallback);
+		stepControl[i].setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlizr_GUI::valueChangedCallback);
 		stepControl[i].applyTheme (theme, "slider");
 		stepControl[i].getDisplayLabel ()->setState (BColors::ACTIVE);
 		sContainer.add (stepControl[i]);
 	}
 
 	// Set callbacks
-	monitorSwitch.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlizzr_GUI::valueChangedCallback);
-	scaleControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlizzr_GUI::valueChangedCallback);
-	attackControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlizzr_GUI::valueChangedCallback);
-	releaseControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlizzr_GUI::valueChangedCallback);
-	sequencesperbarControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlizzr_GUI::valueChangedCallback);
-	nrStepsControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlizzr_GUI::valueChangedCallback);
+	monitorSwitch.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlizr_GUI::valueChangedCallback);
+	scaleControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlizr_GUI::valueChangedCallback);
+	attackControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlizr_GUI::valueChangedCallback);
+	releaseControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlizr_GUI::valueChangedCallback);
+	sequencesperbarControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlizr_GUI::valueChangedCallback);
+	nrStepsControl.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BSlizr_GUI::valueChangedCallback);
 
 	// Configure widgets
 	bgImageSurface = cairo_image_surface_create_from_png ((pluginPath + BG_FILE).c_str());
@@ -287,14 +287,14 @@ BSlizzr_GUI::BSlizzr_GUI (const char *bundle_path, const LV2_Feature *const *fea
 	lv2_atom_forge_init (&forge,map);
 }
 
-BSlizzr_GUI::~BSlizzr_GUI()
+BSlizr_GUI::~BSlizr_GUI()
 {
 	send_record_off ();
 	destroy_mainMonitor ();
 	destroy_Stepshape ();
 }
 
-void BSlizzr_GUI::portEvent(uint32_t port_index, uint32_t buffer_size, uint32_t format, const void* buffer)
+void BSlizr_GUI::portEvent(uint32_t port_index, uint32_t buffer_size, uint32_t format, const void* buffer)
 {
 	// Notify port
 	if ((format == uris.atom_eventTransfer) && (port_index == Notify))
@@ -312,8 +312,8 @@ void BSlizzr_GUI::portEvent(uint32_t port_index, uint32_t buffer_size, uint32_t 
 					const LV2_Atom_Vector* vec = (const LV2_Atom_Vector*) data;
 					if (vec->body.child_type == uris.atom_Float)
 					{
-						uint32_t notificationsCount = (uint32_t) ((data->size - sizeof(LV2_Atom_Vector_Body)) / sizeof (BSlizzrNotifications));
-						BSlizzrNotifications* notifications = (BSlizzrNotifications*) (&vec->body + 1);
+						uint32_t notificationsCount = (uint32_t) ((data->size - sizeof(LV2_Atom_Vector_Body)) / sizeof (BSlizrNotifications));
+						BSlizrNotifications* notifications = (BSlizrNotifications*) (&vec->body + 1);
 						if (notificationsCount > 0)
 						{
 							add_monitor_data (notifications, notificationsCount, mainMonitor.horizonPos);
@@ -321,7 +321,7 @@ void BSlizzr_GUI::portEvent(uint32_t port_index, uint32_t buffer_size, uint32_t 
 						}
 					}
 				}
-				else std::cerr << "BSlizzr.lv2#GUI: Corrupt audio message." << std::endl;
+				else std::cerr << "BSlizr.lv2#GUI: Corrupt audio message." << std::endl;
 			}
 		}
 	}
@@ -363,7 +363,7 @@ void BSlizzr_GUI::portEvent(uint32_t port_index, uint32_t buffer_size, uint32_t 
 
 }
 
-void BSlizzr_GUI::resizeGUI()
+void BSlizr_GUI::resizeGUI()
 {
 	hide ();
 
@@ -413,7 +413,7 @@ void BSlizzr_GUI::resizeGUI()
 	show ();
 }
 
-void BSlizzr_GUI::applyTheme (BStyles::Theme& theme)
+void BSlizr_GUI::applyTheme (BStyles::Theme& theme)
 {
 	mContainer.applyTheme (theme);
 	monitorSwitch.applyTheme (theme);
@@ -439,7 +439,7 @@ void BSlizzr_GUI::applyTheme (BStyles::Theme& theme)
 	}
 }
 
-void BSlizzr_GUI::onConfigure (BEvents::ExposeEvent* event)
+void BSlizr_GUI::onConfigure (BEvents::ExposeEvent* event)
 {
 	Window::onConfigure (event);
 
@@ -447,7 +447,7 @@ void BSlizzr_GUI::onConfigure (BEvents::ExposeEvent* event)
 	resizeGUI ();
 }
 
-void BSlizzr_GUI::send_record_on ()
+void BSlizr_GUI::send_record_on ()
 {
 	uint8_t obj_buf[64];
 	lv2_atom_forge_set_buffer(&forge, obj_buf, sizeof(obj_buf));
@@ -459,7 +459,7 @@ void BSlizzr_GUI::send_record_on ()
 	monitorSwitch.setValue (1.0);
 }
 
-void BSlizzr_GUI::send_record_off ()
+void BSlizr_GUI::send_record_off ()
 {
 	uint8_t obj_buf[64];
 	lv2_atom_forge_set_buffer(&forge, obj_buf, sizeof(obj_buf));
@@ -471,7 +471,7 @@ void BSlizzr_GUI::send_record_off ()
 	monitorSwitch.setValue (0.0);
 }
 
-void BSlizzr_GUI::rearrange_step_controllers (float nrSteps_newf)
+void BSlizr_GUI::rearrange_step_controllers (float nrSteps_newf)
 {
 	int nrSteps_old = INT (nrSteps);
 	int nrSteps_new = INT (nrSteps_newf);
@@ -489,7 +489,7 @@ void BSlizzr_GUI::rearrange_step_controllers (float nrSteps_newf)
 	}
 }
 
-void BSlizzr_GUI::valueChangedCallback (BEvents::Event* event)
+void BSlizr_GUI::valueChangedCallback (BEvents::Event* event)
 {
 	if ((event) && (event->getWidget ()))
 	{
@@ -497,7 +497,7 @@ void BSlizzr_GUI::valueChangedCallback (BEvents::Event* event)
 
 		if (widget->getMainWindow ())
 		{
-			BSlizzr_GUI* ui = (BSlizzr_GUI*) widget->getMainWindow ();
+			BSlizr_GUI* ui = (BSlizr_GUI*) widget->getMainWindow ();
 
 			// monitor on/off changed
 			if (widget == &ui->monitorSwitch)
@@ -576,7 +576,7 @@ void BSlizzr_GUI::valueChangedCallback (BEvents::Event* event)
 	}
 }
 
-bool BSlizzr_GUI::init_Stepshape ()
+bool BSlizr_GUI::init_Stepshape ()
 {
 	double width = stepshapeDisplay.getEffectiveWidth ();
 	double height = stepshapeDisplay.getEffectiveHeight ();
@@ -585,13 +585,13 @@ bool BSlizzr_GUI::init_Stepshape ()
 	return (pat5 && (cairo_pattern_status (pat5) == CAIRO_STATUS_SUCCESS));
 }
 
-void BSlizzr_GUI::destroy_Stepshape ()
+void BSlizr_GUI::destroy_Stepshape ()
 {
 	//Destroy also mainMonitors cairo data
 	if (pat5 && (cairo_pattern_status (pat5) == CAIRO_STATUS_SUCCESS)) cairo_pattern_destroy (pat5);
 }
 
-void BSlizzr_GUI::redrawStepshape ()
+void BSlizr_GUI::redrawStepshape ()
 {
 	double width = stepshapeDisplay.getEffectiveWidth ();
 	double height = stepshapeDisplay.getEffectiveHeight ();
@@ -654,7 +654,7 @@ void BSlizzr_GUI::redrawStepshape ()
 	stepshapeDisplay.update ();
 }
 
-bool BSlizzr_GUI::init_mainMonitor ()
+bool BSlizr_GUI::init_mainMonitor ()
 {
 	//Initialize mainMonitor
 	mainMonitor.record_on = true;
@@ -695,7 +695,7 @@ bool BSlizzr_GUI::init_mainMonitor ()
 			surface && (cairo_surface_status (surface) == CAIRO_STATUS_SUCCESS));
 }
 
-void BSlizzr_GUI::destroy_mainMonitor ()
+void BSlizr_GUI::destroy_mainMonitor ()
 {
 	//Destroy also mainMonitors cairo data
 	if (pat4 && (cairo_pattern_status (pat4) == CAIRO_STATUS_SUCCESS)) cairo_pattern_destroy (pat4);
@@ -709,7 +709,7 @@ void BSlizzr_GUI::destroy_mainMonitor ()
 	if (surface && (cairo_surface_status (surface) == CAIRO_STATUS_SUCCESS)) cairo_surface_destroy (surface);
 }
 
-void BSlizzr_GUI::add_monitor_data (BSlizzrNotifications* notifications, uint32_t notificationsCount, uint32_t& end)
+void BSlizr_GUI::add_monitor_data (BSlizrNotifications* notifications, uint32_t notificationsCount, uint32_t& end)
 {
 	for (int i = 0; i < notificationsCount; ++i)
 	{
@@ -725,7 +725,7 @@ void BSlizzr_GUI::add_monitor_data (BSlizzrNotifications* notifications, uint32_
 	}
 }
 
-void BSlizzr_GUI::redrawMainMonitor ()
+void BSlizr_GUI::redrawMainMonitor ()
 {
 	double width = monitorDisplay.getEffectiveWidth ();
 	double height = monitorDisplay.getEffectiveHeight ();
@@ -867,9 +867,9 @@ LV2UI_Handle instantiate (const LV2UI_Descriptor *descriptor, const char *plugin
 	PuglNativeWindow parentWindow = 0;
 	LV2UI_Resize* resize = NULL;
 
-	if (strcmp(plugin_uri, BSLIZZR_URI) != 0)
+	if (strcmp(plugin_uri, BSLIZR_URI) != 0)
 	{
-		std::cerr << "BSlizzr.lv2#GUI: GUI does not support plugin with URI " << plugin_uri << std::endl;
+		std::cerr << "BSlizr.lv2#GUI: GUI does not support plugin with URI " << plugin_uri << std::endl;
 		return NULL;
 	}
 
@@ -878,14 +878,14 @@ LV2UI_Handle instantiate (const LV2UI_Descriptor *descriptor, const char *plugin
 		if (!strcmp(features[i]->URI, LV2_UI__parent)) parentWindow = (PuglNativeWindow) features[i]->data;
 		else if (!strcmp(features[i]->URI, LV2_UI__resize)) resize = (LV2UI_Resize*)features[i]->data;
 	}
-	if (parentWindow == 0) std::cerr << "BSlizzr.lv2#GUI: No parent window.\n";
+	if (parentWindow == 0) std::cerr << "BSlizr.lv2#GUI: No parent window.\n";
 
 	// New instance
-	BSlizzr_GUI* ui;
-	try {ui = new BSlizzr_GUI (bundle_path, features, parentWindow);}
+	BSlizr_GUI* ui;
+	try {ui = new BSlizr_GUI (bundle_path, features, parentWindow);}
 	catch (std::exception& exc)
 	{
-		std::cerr << "BSlizzr.lv2#GUI: Instantiation failed. " << exc.what () << std::endl;
+		std::cerr << "BSlizr.lv2#GUI: Instantiation failed. " << exc.what () << std::endl;
 		return NULL;
 	}
 
@@ -897,7 +897,7 @@ LV2UI_Handle instantiate (const LV2UI_Descriptor *descriptor, const char *plugin
 	int screenWidth  = getScreenWidth ();
 	int screenHeight = getScreenHeight ();
 	if ((screenWidth < 820) || (screenHeight < 600)) sz = 0.66;
-	std::cerr << "B.Slizzr_GUI.lv2 screen size " << screenWidth << " x " << screenHeight <<
+	std::cerr << "BSlizr_GUI.lv2 screen size " << screenWidth << " x " << screenHeight <<
 			". Set GUI size to " << 800 * sz << " x " << 560 * sz << ".\n";
 
 	if (resize) resize->ui_resize(resize->handle, 800, 560 );
@@ -909,20 +909,20 @@ LV2UI_Handle instantiate (const LV2UI_Descriptor *descriptor, const char *plugin
 
 void cleanup(LV2UI_Handle ui)
 {
-	BSlizzr_GUI* pluginGui = (BSlizzr_GUI*) ui;
+	BSlizr_GUI* pluginGui = (BSlizr_GUI*) ui;
 	delete pluginGui;
 }
 
 void portEvent(LV2UI_Handle ui, uint32_t port_index, uint32_t buffer_size,
 	uint32_t format, const void* buffer)
 {
-	BSlizzr_GUI* pluginGui = (BSlizzr_GUI*) ui;
+	BSlizr_GUI* pluginGui = (BSlizr_GUI*) ui;
 	pluginGui->portEvent(port_index, buffer_size, format, buffer);
 }
 
 static int callIdle (LV2UI_Handle ui)
 {
-	BSlizzr_GUI* pluginGui = (BSlizzr_GUI*) ui;
+	BSlizr_GUI* pluginGui = (BSlizr_GUI*) ui;
 	pluginGui->handleEvents ();
 	return 0;
 }
@@ -936,7 +936,7 @@ static const void* extensionData(const char* uri)
 }
 
 const LV2UI_Descriptor guiDescriptor = {
-		BSLIZZR_GUI_URI,
+		BSLIZR_GUI_URI,
 		instantiate,
 		cleanup,
 		portEvent,

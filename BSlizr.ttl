@@ -16,22 +16,22 @@
 #		foaf:mbox ;
 		foaf:homepage <https://github.com/sjaehn/> .
 		
-<https://www.jahnichen.de/plugins/lv2/BSlizzr#gui>
+<https://www.jahnichen.de/plugins/lv2/BSlizr#gui>
 		a ui:X11UI;
-		ui:binary <BSlizzr_GUI.so> ;
+		ui:binary <BSlizr_GUI.so> ;
 		lv2:extensionData ui:idleInterface ;
 		lv2:requiredFeature ui:idleInterface ;
 		ui:requiredFeature ui:makeResident .
 
-<https://www.jahnichen.de/plugins/lv2/BSlizzr>
+<https://www.jahnichen.de/plugins/lv2/BSlizr>
         a lv2:Plugin, lv2:DynamicsPlugin ;
-        doap:name "B.Slizzr" ;
+        doap:name "B.Slizr" ;
         rdfs:comment "LV2 audio effect plugin. This plugin slices stereo audio input signals with a length up to 1 bar into up to 16 pieces. As result it may produce a step sequencer-like effect." ;
   		doap:maintainer <http://www.jahnichen.de/sjaehn#me> ;
         lv2:optionalFeature lv2:hardRTCapable ;
-        lv2:binary <BSlizzr.so> ;
+        lv2:binary <BSlizr.so> ;
   		lv2:requiredFeature urid:map ;
-  		ui:ui <https://www.jahnichen.de/plugins/lv2/BSlizzr#gui> ;
+  		ui:ui <https://www.jahnichen.de/plugins/lv2/BSlizr#gui> ;
         lv2:port [
                 a lv2:InputPort , atom:AtomPort ;
                 atom:bufferType atom:Sequence ;

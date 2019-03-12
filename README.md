@@ -1,14 +1,14 @@
-# B.Slizzr
+# B.Slizr
 formerly known as B.Slicer
 
 Description: LV2 audio effect plugin for sequenced slicing of stereo audio input signals. Each slice can be levelled up or down to get a step sequencer-like effect.
 
-![screenshot](https://raw.githubusercontent.com/sjaehn/bmusic-bslicer/master/Screenshot.png "Screenshot from B.Slizzr")
+![screenshot](https://raw.githubusercontent.com/sjaehn/bmusic-bslicer/master/Screenshot.png "Screenshot from B.Slizr")
 
 Installation
 ------------
 a) Download and unpack the most recent release binaries from
-https://github.com/sjaehn/BSlizzr/releases to your lv2 directory (e.g., /usr/lib/lv2/).
+https://github.com/sjaehn/BSlizr/releases to your lv2 directory (e.g., /usr/lib/lv2/).
 
 b) Build your own binaries in the following three steps.
 
@@ -26,11 +26,11 @@ For installation into an alternative directory (e.g., /usr/local/lib/lv2), modif
 
 Running
 -------
-After the installation Ardour, Carla, and any other LV2 host should automatically detect B.Slizzr.
+After the installation Ardour, Carla, and any other LV2 host should automatically detect B.Slizr.
 
 If jalv is installed, you can also call it
 ```
-jalv.gtk https://www.jahnichen.de/plugins/lv2/BSlizzr
+jalv.gtk https://www.jahnichen.de/plugins/lv2/BSlizr
 ```
 to run it stand-alone and connect it to the JACK system.
 

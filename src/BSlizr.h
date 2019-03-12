@@ -18,8 +18,8 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef BSLIZZR_H_
-#define BSLIZZR_H_
+#ifndef BSLIZR_H_
+#define BSLIZR_H_
 
 #define MODFL(x) (x - floorf (x))
 
@@ -41,15 +41,15 @@ typedef struct
 	double inputMax;
 	double outputMin;
 	double outputMax;
-} BSlizzrMonitor_t;
+} BSlizrMonitor_t;
 
-BSlizzrMonitor_t defaultMonitorData = {0, false, 0.0, 0.0};
+BSlizrMonitor_t defaultMonitorData = {0, false, 0.0, 0.0};
 
-class BSlizzr
+class BSlizr
 {
 public:
-	BSlizzr (double samplerate, const LV2_Feature* const* features);
-	~BSlizzr();
+	BSlizr (double samplerate, const LV2_Feature* const* features);
+	~BSlizr();
 
 	void connect_port (uint32_t port, void *data);
 	void run (uint32_t n_samples);
@@ -83,7 +83,7 @@ private:
 	float step[MAXSTEPS];
 
 	// Atom port
-	BSlizzrURIs uris;
+	BSlizrURIs uris;
 
 	LV2_Atom_Sequence* controlPort1;
 	LV2_Atom_Sequence* controlPort2;
@@ -94,12 +94,12 @@ private:
 
 	bool record_on;
 	int monitorpos;
-	std::array<BSlizzrNotifications, NOTIFYBUFFERSIZE> notifications;
-	std::array<BSlizzrMonitor_t, MONITORBUFFERSIZE> monitor;
+	std::array<BSlizrNotifications, NOTIFYBUFFERSIZE> notifications;
+	std::array<BSlizrMonitor_t, MONITORBUFFERSIZE> monitor;
 
 	void play(uint32_t start, uint32_t end);
 	void notifyGUI();
 
 };
 
-#endif /* BSLIZZR_H_ */
+#endif /* BSLIZR_H_ */

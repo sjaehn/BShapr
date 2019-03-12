@@ -18,7 +18,7 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "BSlizzr.h"
+#include "BSlizr.h"
 
 #include <cstdio>
 #include <string>
@@ -26,7 +26,7 @@
 
 #define LIM(g , min, max) ((g) > (max) ? (max) : ((g) < (min) ? (min) : (g)))
 
-BSlizzr::BSlizzr (double samplerate, const LV2_Feature* const* features) :
+BSlizr::BSlizr (double samplerate, const LV2_Feature* const* features) :
 	map(NULL), controlPort1(NULL), controlPort2(NULL),  notifyPort(NULL),
 	audioInput1(NULL), audioInput2(NULL), audioOutput1(NULL), audioOutput2(NULL),
 	nrSteps(16), attack(0.2), release (0.2), sequencesperbar (4),
@@ -58,9 +58,9 @@ BSlizzr::BSlizzr (double samplerate, const LV2_Feature* const* features) :
 
 }
 
-BSlizzr::~BSlizzr () {}
+BSlizr::~BSlizr () {}
 
-void BSlizzr::connect_port(uint32_t port, void *data)
+void BSlizr::connect_port(uint32_t port, void *data)
 {
 	switch (port) {
 	case Control_1:
@@ -89,7 +89,7 @@ void BSlizzr::connect_port(uint32_t port, void *data)
 	}
 }
 
-void BSlizzr::run (uint32_t n_samples)
+void BSlizr::run (uint32_t n_samples)
 {
 
 	// Check ports
@@ -183,7 +183,7 @@ void BSlizzr::run (uint32_t n_samples)
 
 }
 
-void BSlizzr::notifyGUI()
+void BSlizr::notifyGUI()
 {
 	if (record_on)
 	{
@@ -235,7 +235,7 @@ void BSlizzr::notifyGUI()
 	}
 }
 
-void BSlizzr::play(uint32_t start, uint32_t end)
+void BSlizr::play(uint32_t start, uint32_t end)
 {
 	float vol, relpos, pos, iStepf, iStepFrac, effect1, effect2;
 	uint32_t steps = (uint32_t) nrSteps;
@@ -321,23 +321,23 @@ void BSlizzr::play(uint32_t start, uint32_t end)
 LV2_Handle instantiate (const LV2_Descriptor* descriptor, double samplerate, const char* bundle_path, const LV2_Feature* const* features)
 {
 	// New instance
-	BSlizzr* instance;
-	try {instance = new BSlizzr(samplerate, features);}
+	BSlizr* instance;
+	try {instance = new BSlizr(samplerate, features);}
 	catch (std::exception& exc)
 	{
-		fprintf (stderr, "BSlizzr.lv2: Plugin instantiation failed. %s\n", exc.what ());
+		fprintf (stderr, "BSlizr.lv2: Plugin instantiation failed. %s\n", exc.what ());
 		return NULL;
 	}
 
 	if (!instance)
 	{
-		fprintf(stderr, "BSlizzr.lv2: Plugin instantiation failed.\n");
+		fprintf(stderr, "BSlizr.lv2: Plugin instantiation failed.\n");
 		return NULL;
 	}
 
 	if (!instance->map)
 	{
-		fprintf(stderr, "BSlizzr.lv2: Host does not support urid:map.\n");
+		fprintf(stderr, "BSlizr.lv2: Host does not support urid:map.\n");
 		delete (instance);
 		return NULL;
 	}
@@ -347,25 +347,25 @@ LV2_Handle instantiate (const LV2_Descriptor* descriptor, double samplerate, con
 
 void connect_port (LV2_Handle instance, uint32_t port, void *data)
 {
-	BSlizzr* inst = (BSlizzr*) instance;
+	BSlizr* inst = (BSlizr*) instance;
 	inst->connect_port (port, data);
 }
 
 void run (LV2_Handle instance, uint32_t n_samples)
 {
-	BSlizzr* inst = (BSlizzr*) instance;
+	BSlizr* inst = (BSlizr*) instance;
 	inst->run (n_samples);
 }
 
 void cleanup (LV2_Handle instance)
 {
-	BSlizzr* inst = (BSlizzr*) instance;
+	BSlizr* inst = (BSlizr*) instance;
 	delete inst;
 }
 
 const LV2_Descriptor descriptor =
 {
-		BSLIZZR_URI,
+		BSLIZR_URI,
 		instantiate,
 		connect_port,
 		NULL, //activate,
