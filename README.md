@@ -38,7 +38,10 @@ jalv.gtk https://www.jahnichen.de/plugins/lv2/BSlizr
 
 to run it stand-alone and connect it to the JACK system. 
 
-Note: If you use an older version (until v0.3) of this plugin, use the URI https://www.jahnichen.de/plugins/lv2/BSlicer instead. 
+Notes: 
+
+* **Jack transport is required to get information about beat / position**
+* If you use an older version (until v0.3) of this plugin, use the URI https://www.jahnichen.de/plugins/lv2/BSlicer instead. 
 
 What's new
 -----------
@@ -49,7 +52,7 @@ What's new
 
 Usage
 -----
-The plugin slices a stereo input, amplifies or silences the individual slices and send the whole sequence to the output. Although this affects only the audio signal, it needs a playback running (to get information about beat / position).
+The plugin slices a stereo input, amplifies or silences the individual slices and send the whole sequence to the output. Although this affects only the audio signal, it needs a playback running (Jack transport).
 
 The interface is divided into three parts: step controls, monitor and step shape.
 
