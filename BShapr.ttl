@@ -24,7 +24,7 @@
 		ui:requiredFeature ui:makeResident .
 
 <https://www.jahnichen.de/plugins/lv2/BShapr>
-        a lv2:Plugin, lv2:DynamicsPlugin ;
+        a lv2:Plugin, lv2:EnvelopePlugin ;
         doap:name "B.Shapr" ;
         rdfs:comment "Beat and LFO shaping plugin." ;
   		doap:maintainer <http://www.jahnichen.de/sjaehn#me> ;
