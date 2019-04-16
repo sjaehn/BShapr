@@ -1,7 +1,7 @@
-/* B.Slicer
+/* B.Shapr
  * Step Sequencer Effect Plugin
  *
- * Copyright (C) 2018 by Sven Jähnichen
+ * Copyright (C) 2019 by Sven Jähnichen
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,10 +18,8 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef BSLIZR_H_
-#define BSLIZR_H_
-
-#define MODFL(x) (x - floorf (x))
+#ifndef BSHAPR_H_
+#define BSHAPR_H_
 
 #include <cmath>
 #include <array>
@@ -31,7 +29,13 @@
 #include <lv2/lv2plug.in/ns/ext/atom/forge.h>
 #include <lv2/lv2plug.in/ns/ext/urid/urid.h>
 #include <lv2/lv2plug.in/ns/ext/time/time.h>
-#include "main.h"
+#include "StaticArrayList.hpp"
+#include "definitions.h"
+#include "ports.h"
+#include "urids.h"
+#include "Point.hpp"
+#include "Node.hpp"
+#include "Shape.hpp"
 
 typedef struct
 {
@@ -41,15 +45,15 @@ typedef struct
 	double inputMax;
 	double outputMin;
 	double outputMax;
-} BSlizrMonitor_t;
+} BShaprMonitor_t;
 
-BSlizrMonitor_t defaultMonitorData = {0, false, 0.0, 0.0};
+BShaprMonitor_t defaultMonitorData = {0, false, 0.0, 0.0};
 
-class BSlizr
+class BShapr
 {
 public:
-	BSlizr (double samplerate, const LV2_Feature* const* features);
-	~BSlizr();
+	BShapr (double samplerate, const LV2_Feature* const* features);
+	~BShapr();
 
 	void connect_port (uint32_t port, void *data);
 	void run (uint32_t n_samples);
@@ -57,16 +61,22 @@ public:
 	LV2_URID_Map* map;
 
 private:
+	void play(uint32_t start, uint32_t end);
+	void notifyMonitorToGui();
+	void notifyShapeToGui (int shapeNr);
+	double getPositionFromBeats (double beats);
+	double getPositionFromFrames (uint64_t frames);
+
 	double rate;
 	float bpm;
 	float speed;
-	float position;
+	uint64_t bar;
+	float barBeat;
 	float beatsPerBar;
 	uint32_t beatUnit;
-	uint32_t refFrame;
-	float* prevStep;
-	float* actStep;
-	float* nextStep;
+
+	double position;
+	uint64_t refFrame;
 
 	// Audio buffers
 	float* audioInput1;
@@ -75,31 +85,32 @@ private:
 	float* audioOutput2;
 
 	// Controllers
-	float* controllers[NrControllers];
-	float sequencesperbar;
-	float nrSteps;
-	float attack;
-	float release;
-	float step[MAXSTEPS];
+	float* new_controllers[NR_CONTROLLERS];
+	float controllers [NR_CONTROLLERS];
+
+	// Nodes and Maps
+	Shape<MAXNODES> shapes[MAXSHAPES];
 
 	// Atom port
-	BSlizrURIs uris;
+	BShaprURIDs urids;
 
-	LV2_Atom_Sequence* controlPort1;
-	LV2_Atom_Sequence* controlPort2;
+	LV2_Atom_Sequence* controlPort;
 	LV2_Atom_Sequence* notifyPort;
 
 	LV2_Atom_Forge forge;
 	LV2_Atom_Forge_Frame notify_frame;
 
-	bool record_on;
-	int monitorpos;
-	std::array<BSlizrNotifications, NOTIFYBUFFERSIZE> notifications;
-	std::array<BSlizrMonitor_t, MONITORBUFFERSIZE> monitor;
+	// Data buffers
+	float nodeBuffer[7];
+	float shapeBuffer[MAXNODES * 7];
 
-	void play(uint32_t start, uint32_t end);
-	void notifyGUI();
+	// Internals
+	bool ui_on;
+	int monitorpos;
+	std::array<BShaprNotifications, NOTIFYBUFFERSIZE> notifications;
+	std::array<BShaprMonitor_t, MONITORBUFFERSIZE> monitor;
+	bool scheduleNotifyShapes[MAXSHAPES];
 
 };
 
-#endif /* BSLIZR_H_ */
+#endif /* BSHAPR_H_ */
