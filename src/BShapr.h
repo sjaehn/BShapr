@@ -62,8 +62,9 @@ public:
 
 private:
 	void play(uint32_t start, uint32_t end);
-	void notifyMonitorToGui();
+	void notifyMonitorToGui ();
 	void notifyShapeToGui (int shapeNr);
+	void notifyMessageToGui ();
 	double getPositionFromBeats (double beats);
 	double getPositionFromFrames (uint64_t frames);
 
@@ -106,10 +107,12 @@ private:
 
 	// Internals
 	bool ui_on;
+	char message[256];
 	int monitorpos;
 	std::array<BShaprNotifications, NOTIFYBUFFERSIZE> notifications;
 	std::array<BShaprMonitor_t, MONITORBUFFERSIZE> monitor;
 	bool scheduleNotifyShapes[MAXSHAPES];
+	bool scheduleNotifyMessage;
 
 };
 

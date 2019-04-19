@@ -96,6 +96,7 @@ private:
 
 	// Widgets
 	BWidgets::ImageIcon mContainer;
+	BWidgets::Label messageLabel;
 	ValueSelect baseValueSelect;
 	BWidgets::PopupListBox baseListBox;
 	BWidgets::DrawingSurface monitorSurface;
@@ -150,7 +151,7 @@ private:
 
 	// Definition of styles
 	BColors::ColorSet fgColors = {{{1.0, 0.0, 1.0, 1.0}, {1.0, 0.5, 1.0, 1.0}, {0.25, 0.0, 0.25, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
-	BColors::ColorSet txColors = {{{0.0, 1.0, 0.4, 1.0}, {1.0, 1.0, 1.0, 1.0}, {0.0, 0.5, 0.0, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
+	BColors::ColorSet txColors = {{{1.0, 1.0, 1.0, 1.0}, {1.0, 1.0, 1.0, 1.0}, {0.2, 0.2, 0.2, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
 	BColors::ColorSet bgColors = {{{0.15, 0.15, 0.15, 1.0}, {0.3, 0.3, 0.3, 1.0}, {0.05, 0.05, 0.05, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
 	BColors::ColorSet lbColors = {{{0, 0, 0, 1.0}, {0, 0, 0, 1.0}, {0, 0, 0, 1.0}, {0, 0, 0, 0.0}}};
 	BColors::ColorSet clickColors = {{{0, 0, 0, 1.0}, {1, 1, 1, 1.0}, {0, 0, 0, 1.0}, {0, 0, 0, 0.0}}};
@@ -167,7 +168,7 @@ private:
 	BStyles::StyleSet labelStyles = {"labels", 	  {{"background", STYLEPTR (&BStyles::noFill)},
 												   {"border", STYLEPTR (&BStyles::noBorder)},
 												   {"textcolors", STYLEPTR (&txColors)},
-												   {"font", STYLEPTR (&defaultFont)}}};
+												   {"font", STYLEPTR (&lfLabelFont)}}};
 
 	BStyles::Theme theme = BStyles::Theme ({
 		defaultStyles,

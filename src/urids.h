@@ -36,6 +36,7 @@ typedef struct
 	LV2_URID atom_Blank;
 	LV2_URID atom_eventTransfer;
 	LV2_URID atom_Vector;
+	LV2_URID atom_String;
 	LV2_URID time_Position;
 	LV2_URID time_barBeat;
 	LV2_URID time_bar;
@@ -54,6 +55,8 @@ typedef struct
 	LV2_URID notify_nodeData;
 	LV2_URID notify_monitorEvent;
 	LV2_URID notify_monitor;
+	LV2_URID notify_messageEvent;
+	LV2_URID notify_message;
 }  BShaprURIDs;
 
 void mapURIDs (LV2_URID_Map* m, BShaprURIDs* uris)
@@ -65,6 +68,7 @@ void mapURIDs (LV2_URID_Map* m, BShaprURIDs* uris)
 	uris->atom_Blank = m->map(m->handle, LV2_ATOM__Blank);
 	uris->atom_eventTransfer = m->map(m->handle, LV2_ATOM__eventTransfer);
 	uris->atom_Vector = m->map(m->handle, LV2_ATOM__Vector);
+	uris->atom_String = m->map(m->handle, LV2_ATOM__String);
 	uris->time_Position = m->map(m->handle, LV2_TIME__Position);
 	uris->time_barBeat = m->map(m->handle, LV2_TIME__barBeat);
 	uris->time_bar = m->map(m->handle, LV2_TIME__bar);
@@ -83,6 +87,8 @@ void mapURIDs (LV2_URID_Map* m, BShaprURIDs* uris)
 	uris->notify_nodeData = m->map(m->handle, BSHAPR_URI "#NOTIFYnodeData");
 	uris->notify_monitorEvent = m->map(m->handle, BSHAPR_URI "#NOTIFYmonitorEvent");
 	uris->notify_monitor = m->map(m->handle, BSHAPR_URI "#NOTIFYmonitor");
+	uris->notify_messageEvent = m->map(m->handle, BSHAPR_URI "#NOTIFYmessageEvent");
+	uris->notify_message = m->map(m->handle, BSHAPR_URI "#NOTIFYmessage");
 }
 
 #endif /* URIDS_H_ */

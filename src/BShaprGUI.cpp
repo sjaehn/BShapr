@@ -28,6 +28,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	bgImageSurface (nullptr), activeShape (0),
 
 	mContainer (0, 0, 1200, 780, "widget"),
+	messageLabel (800, 45, 400, 20, "label", ""),
 	baseValueSelect (480, 280, 100, 20, "select", 1.0, 1.0, 16.0, 0.01),
 	baseListBox (620, 280, 100, 20, 100, 80, "menu", {{0, "Seconds"}, {1, "Beats"}, {2, "Bars"}}),
 	monitorSurface (24, 94, 1152, 172, "monitor"),
@@ -142,6 +143,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].shapeContainer.add (shapeGui[i].outputAmpDial);
 		mContainer.add (shapeGui[i].shapeContainer);
 	}
+	mContainer.add (messageLabel);
 	mContainer.add (baseValueSelect);
 	mContainer.add (baseListBox);
 	add (mContainer);
@@ -198,7 +200,21 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 						}
 					}
 				}
-				else std::cerr << "BShaprr.lv2#GUI: Corrupt audio message." << std::endl;
+				else std::cerr << "BShapr.lv2#GUI: Corrupt audio message." << std::endl;
+			}
+
+			// Monitor notification
+			else if (obj->body.otype == urids.notify_messageEvent)
+			{
+				const LV2_Atom* data = NULL;
+				lv2_atom_object_get(obj, urids.notify_message, &data, 0);
+				if (data && (data->type == urids.atom_String))
+				{
+					const LV2_Atom_String* str = (LV2_Atom_String*)data;
+					char* msg = (char*) (str + 1);
+					messageLabel.setText (std::string (msg));
+				}
+
 			}
 
 			// Single node notification
@@ -298,6 +314,7 @@ void BShaprGUI::resizeGUI()
 
 	// Resize widgets
 	RESIZE (mContainer, 0, 0, 1200, 780, sz);
+	RESIZE (messageLabel, 800, 45, 400, 20, sz);
 	RESIZE (baseValueSelect, 480, 280, 100, 20, sz);
 	RESIZE (baseListBox, 620, 280, 100, 20, sz);
 	baseListBox.resizeListBox (100 * sz, 80 * sz);
@@ -341,6 +358,7 @@ void BShaprGUI::resizeGUI()
 void BShaprGUI::applyChildThemes ()
 {
 	mContainer.applyTheme (theme);
+	messageLabel.applyTheme (theme);
 	baseValueSelect.applyTheme (theme);
 	baseListBox.applyTheme (theme);
 	monitorSurface.applyTheme (theme);

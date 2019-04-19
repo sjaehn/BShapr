@@ -31,7 +31,7 @@ BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 	map(NULL), controlPort(NULL), notifyPort(NULL),
 	audioInput1(NULL), audioInput2(NULL), audioOutput1(NULL), audioOutput2(NULL),
 	rate(samplerate), bpm(120.0f), speed(1), bar (0), barBeat (0), position(0), refFrame(0), beatUnit (4), beatsPerBar (4),
-	ui_on(true), monitorpos(-1)
+	ui_on(true), monitorpos(-1), message (), scheduleNotifyMessage (false)
 
 {
 	notifications.fill (defaultNotification);
@@ -239,7 +239,27 @@ void BShapr::run (uint32_t n_samples)
 										  NULL);
 
 				// BPM changed?
-				if (oBpm && (oBpm->type == urids.atom_Float)) bpm = ((LV2_Atom_Float*)oBpm)->body;
+				if (oBpm && (oBpm->type == urids.atom_Float))
+				{
+					float nbpm = ((LV2_Atom_Float*)oBpm)->body;
+
+					if (nbpm != bpm)
+					{
+						bpm = nbpm;
+
+						if (nbpm < 1.0)
+						{
+							strcpy (message, "Msg: Jack transport off or halted. Plugin halted.");
+							scheduleNotifyMessage = true;
+						}
+
+						else
+						{
+							strcpy (message, "");
+							scheduleNotifyMessage = true;
+						}
+					}
+				}
 
 				// Beats per bar changed?
 				if (oBpb && (oBpb->type == urids.atom_Float) && (((LV2_Atom_Float*)oBpb)->body > 0)) beatsPerBar = ((LV2_Atom_Float*)oBpb)->body;
@@ -248,7 +268,27 @@ void BShapr::run (uint32_t n_samples)
 				if (oBu && (oBu->type == urids.atom_Int) && (((LV2_Atom_Int*)oBu)->body > 0)) beatUnit = ((LV2_Atom_Int*)oBu)->body;
 
 				// Speed changed?
-				if (oSpeed && (oSpeed->type == urids.atom_Float)) speed = ((LV2_Atom_Float*)oSpeed)->body;
+				if (oSpeed && (oSpeed->type == urids.atom_Float))
+				{
+					float nspeed = ((LV2_Atom_Float*)oSpeed)->body;
+
+					if (nspeed != speed)
+					{
+						speed = nspeed;
+
+						if (nspeed == 0)
+						{
+							strcpy (message, "Msg: Jack transport off or halted. Plugin halted.");
+							scheduleNotifyMessage = true;
+						}
+
+						else
+						{
+							strcpy (message, "");
+							scheduleNotifyMessage = true;
+						}
+					}
+				}
 
 				// Bar position changed
 				if (oBar && (oBar->type == urids.atom_Long) && (bar != ((LV2_Atom_Long*)oBar)->body))
@@ -290,6 +330,7 @@ void BShapr::run (uint32_t n_samples)
 	{
 		notifyMonitorToGui();
 		for (int i = 0; i < MAXSHAPES; ++i) if (scheduleNotifyShapes[i]) notifyShapeToGui (i);
+		if (scheduleNotifyMessage) notifyMessageToGui ();
 	}
 	lv2_atom_forge_pop(&forge, &notify_frame);
 }
@@ -368,7 +409,19 @@ void BShapr::notifyShapeToGui (int shapeNr)
 	lv2_atom_forge_pop(&forge, &frame);
 
 	scheduleNotifyShapes[shapeNr] = false;
+}
 
+void BShapr::notifyMessageToGui()
+{
+	// Send notifications
+	LV2_Atom_Forge_Frame frame;
+	lv2_atom_forge_frame_time(&forge, 0);
+	lv2_atom_forge_object(&forge, &frame, 0, urids.notify_messageEvent);
+	lv2_atom_forge_key(&forge, urids.notify_message);
+	lv2_atom_forge_string(&forge, message, strlen (message));
+	lv2_atom_forge_pop(&forge, &frame);
+
+	scheduleNotifyMessage = false;
 }
 
 void BShapr::play(uint32_t start, uint32_t end)
