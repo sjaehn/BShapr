@@ -324,8 +324,8 @@ void BShaprGUI::resizeGUI()
 		shapeGui[i].toolSelect.resizeSelection (36 * sz, 36 * sz);
 		RESIZE (shapeGui[i].shapeLabelIcon, 1000, 280, 160, 20, sz);
 		RESIZE (shapeGui[i].outputSelect, 60, 340, 100, 40, sz);
-		shapeGui[i].outputSelect.resizeSelection (100 * sz, 30 * sz);
-		RESIZE (shapeGui[i].inputAmpDial, 1000, 334, 50, 56, sz);
+		shapeGui[i].outputSelect.resizeSelection (100 * sz, 40 * sz);
+		RESIZE (shapeGui[i].outputAmpDial, 1000, 334, 50, 56, sz);
 	}
 
 	// Update monitor, const std::string& name
