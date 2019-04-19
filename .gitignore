@@ -1,5 +1,6 @@
 /.cproject
 /.project
 /.settings/language.settings.xml
-/BSlizr.lv2/**
+/BShapr.lv2/**
 /.tracecompass/**
+/.settings/**

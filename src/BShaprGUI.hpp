@@ -108,7 +108,8 @@ private:
 		BWidgets::ImageIcon tabIcon;
 		std::vector<BWidgets::ImageIcon> inputShapeLabelIcons;
 		SelectWidget inputSelect;
-		BWidgets::DisplayDial inputParamDial;
+		BWidgets::DisplayDial inputAmpDial;
+		BWidgets::DisplayDial outputAmpDial;
 		BWidgets::PopupListBox targetListBox;
 		ShapeWidget shapeWidget;
 		SelectWidget toolSelect;

@@ -305,7 +305,6 @@ void BShapr::notifyMonitorToGui()
 			// Copy data monitor -> notifications
 			if (notificationsCount < NOTIFYBUFFERSIZE - 1)
 			{
-				int count = monitor[i].count;
 				notifications[notificationsCount].position = i;
 				notifications[notificationsCount].inputMin = monitor[i].inputMin;
 				notifications[notificationsCount].inputMax = monitor[i].inputMax;
@@ -401,26 +400,29 @@ void BShapr::play(uint32_t start, uint32_t end)
 				// Connect to shaper input
 				switch (int (controllers[SHAPERS + sh * SH_SIZE + SH_INPUT]))
 				{
-					case BShaprInputIndex::AUDIO_IN:	input1 = audioInput1[i];
-														input2 = audioInput2[i];
-														break;
+					case BShaprInputIndex::AUDIO_IN:
+						input1 = audioInput1[i] * controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_AMP];
+						input2 = audioInput2[i] * controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_AMP];
+						break;
 
-					case BShaprInputIndex::CONSTANT:	input1 = controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_PARAM];
-														input2 = controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_PARAM];
-														break;
+					case BShaprInputIndex::CONSTANT:
+						input1 = controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_AMP];
+						input2 = controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_AMP];
+						break;
 
-					default:	if ((controllers[SHAPERS + sh * SH_SIZE + SH_INPUT] >= BShaprInputIndex::OUTPUT) &&
+					default:
+						if ((controllers[SHAPERS + sh * SH_SIZE + SH_INPUT] >= BShaprInputIndex::OUTPUT) &&
 									(controllers[SHAPERS + sh * SH_SIZE + SH_INPUT] < BShaprInputIndex::OUTPUT + MAXSHAPES))
-								{
-									int inputSh = controllers[SHAPERS + sh * SH_SIZE + SH_INPUT] - BShaprInputIndex::OUTPUT;
-									input1 = output1[inputSh];
-									input2 = output2[inputSh];
-								}
-								else
-								{
-									input1 = 0;
-									input2 = 0;
-								}
+						{
+							int inputSh = controllers[SHAPERS + sh * SH_SIZE + SH_INPUT] - BShaprInputIndex::OUTPUT;
+							input1 = output1[inputSh] * controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_AMP];
+							input2 = output2[inputSh] * controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_AMP];
+						}
+						else
+						{
+							input1 = 0;
+							input2 = 0;
+						}
 				}
 
 				// Get shaper value for the actual position
@@ -429,22 +431,41 @@ void BShapr::play(uint32_t start, uint32_t end)
 				// Apply shaper on target
 				switch (int (controllers[SHAPERS + sh * SH_SIZE + SH_TARGET]))
 				{
-					case BShaprTargetIndex::LEVEL:	output1[sh] = input1 * iFactor;
-													output2[sh] = input2 * iFactor;
-													break;
+					case BShaprTargetIndex::LEVEL:
+						output1[sh] = input1 * LIM (iFactor, 0, 2);
+						output2[sh] = input2 * LIM (iFactor, 0, 2);
+						break;
 
-					// TODO PAN, WIDTH, DELAY, PITCH
+					case BShaprTargetIndex::PAN:
+						{
+							float f = LIM (iFactor, -1, 1);
+							if (f < 0)
+							{
+								output1[sh] = input1 + (0 - f) * input2;
+								output2[sh] = (f + 1) * input2;
+							}
 
-					default:	output1[sh] = 0;
-								output2[sh] = 0;
+							else
+							{
+								output1[sh] = (1 - f) * input1;
+								output2[sh] = input2 + f * input1;
+							}
+						}
+						break;
+
+					// TODO WIDTH, DELAY, PITCH
+
+					default:
+						output1[sh] = 0;
+						output2[sh] = 0;
 
 				}
 
 				// Store in output
 				if (controllers[SHAPERS + sh * SH_SIZE + SH_OUTPUT] == BShaprOutputIndex::AUDIO_OUT)
 				{
-					audioOutput1[i] += output1[sh];
-					audioOutput2[i] += output2[sh];
+					audioOutput1[i] += output1[sh] * controllers[SHAPERS + sh * SH_SIZE + SH_OUTPUT_AMP];
+					audioOutput2[i] += output2[sh] * controllers[SHAPERS + sh * SH_SIZE + SH_OUTPUT_AMP];
 				}
 			}
 		}

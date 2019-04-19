@@ -31,7 +31,7 @@
 typedef enum
 {
 	DELETE	= 0,
-	ADD		= 1,
+	ADD			= 1,
 	CHANGE	= 2
 } NodeOperationType;
 

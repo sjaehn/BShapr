@@ -23,37 +23,38 @@
 
 typedef enum
 {
-	CONTROL			= 0,
-	NOTIFY			= 1,
+	CONTROL				= 0,
+	NOTIFY				= 1,
 	AUDIO_IN_1		= 2,
 	AUDIO_IN_2		= 3,
 	AUDIO_OUT_1		= 4,
 	AUDIO_OUT_2		= 5,
 
 	CONTROLLERS		= 6,
-	BASE			= 0,
+	BASE					= 0,
 	BASE_VALUE		= 1,
 
-	SHAPERS			= 2,
-	SH_INPUT		= 0,
-	SH_INPUT_PARAM	= 1,
-	SH_TARGET		= 2,
-	SH_OUTPUT		= 3,
-	SH_SIZE			= 4,
+	SHAPERS					= 2,
+	SH_INPUT				= 0,
+	SH_INPUT_AMP		= 1,
+	SH_TARGET				= 2,
+	SH_OUTPUT				= 3,
+	SH_OUTPUT_AMP		= 4,
+	SH_SIZE					= 5,
 
-	NR_CONTROLLERS	= 18
+	NR_CONTROLLERS	= 22
 } BShaprPortIndex;
 
 typedef enum
 {
 	SECONDS	= 0,
-	BEATS	= 1,
-	BARS	= 2
+	BEATS		= 1,
+	BARS		= 2
 } BShaprBaseIndex;
 
 typedef enum
 {
-	OFF			= 0,
+	OFF				= 0,
 	AUDIO_IN	= 1,
 	CONSTANT	= 2,
 	OUTPUT		= 3
