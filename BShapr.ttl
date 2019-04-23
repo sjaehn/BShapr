@@ -77,7 +77,7 @@
 						lv2:scalePoint [ rdfs:label "Seconds"; rdf:value 0 ] ;
 						lv2:scalePoint [ rdfs:label "Beats"; rdf:value 1 ] ;
 						lv2:scalePoint [ rdfs:label "Bars"; rdf:value 2 ] ;
-            lv2:default 1 ;
+            lv2:default 2 ;
             lv2:minimum 0 ;
             lv2:maximum 2 ;
     ] , [

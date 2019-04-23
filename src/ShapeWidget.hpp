@@ -46,6 +46,7 @@ public:
 	ShapeWidget& operator= (const ShapeWidget& that);
 
 	void setTool (const ToolType tool);
+	void setScaleParameters (double anchorYPos, double anchorValue, double ratio);
 	virtual void onButtonPressed (BEvents::PointerEvent* event) override;
 	virtual void onButtonReleased (BEvents::PointerEvent* event) override;
 	virtual void onPointerDragged (BEvents::PointerEvent* event) override;
@@ -65,6 +66,7 @@ protected:
 	BColors::ColorSet fgColors;
 	BColors::ColorSet syColors;
 	BColors::ColorSet bgColors;
+	BStyles::Font lbfont;
 
 	virtual void drawLineOnMap (Point p1, Point p2) override;
 	virtual void draw (const double x, const double y, const double width, const double height) override;

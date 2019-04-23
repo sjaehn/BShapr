@@ -60,6 +60,20 @@
 
 #define RESIZE(widget, x, y, w, h, sz) widget.moveTo ((x) * (sz), (y) * (sz)); widget.resize ((w) * (sz), (h) * (sz));
 
+typedef struct
+{
+	double anchorYPos;
+	double anchorValue;
+	double ratio;
+} ScaleParameters;
+
+const ScaleParameters scaleParameters[MAXEFFECTS] = {{0, -0.05, 1.1}, {0, -1.1, 2.2}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}};
+const Node defaultEndNodes[MAXEFFECTS] = {{NodeType::END_NODE, {0, 1}, {0, 0}, {0, 0}},
+																					{NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}},
+																					{NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}},
+																					{NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}},
+																					{NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}}};
+
 class BShaprGUI : public BWidgets::Window
 {
 public:
@@ -187,6 +201,7 @@ private:
 							 {"border", STYLEPTR (&BStyles::noBorder)},
 							 {"fgcolors", STYLEPTR (&BColors::whites)},
 							 {"symbolcolors", STYLEPTR (&fgColors)},
+							 {"font", STYLEPTR (&lfLabelFont)},
 							 {"bgcolors", STYLEPTR (&bgColors)}}},
 		{"dial", 			{{"uses", STYLEPTR (&defaultStyles)},
 							 {"fgcolors", STYLEPTR (&fgColors)},

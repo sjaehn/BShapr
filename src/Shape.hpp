@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <cstdio>
+#include <cstdint>
 #include <cmath>
 #include "Point.hpp"
 #include "Node.hpp"
@@ -23,6 +24,8 @@ public:
 
 	void clearShape ();
 	void setDefaultShape ();
+	void setDefaultShape (const Node& endNode);
+	bool isDefault ();
 	size_t size ();
 	Node getNode (size_t nr);
 	size_t findNode (Node& node);
@@ -45,14 +48,15 @@ protected:
 
 	StaticArrayList<Node, sz> nodes;
 	double map[MAPRES];
+	Node defaultEndNode;
 };
 
-template<size_t sz> Shape<sz>::Shape () : nodes ()
+template<size_t sz> Shape<sz>::Shape () : nodes (), defaultEndNode ()
 {
 	for (size_t i = 0; i < MAPRES; ++i) map[i] = 0;
 }
 
-template<size_t sz> Shape<sz>::Shape (StaticArrayList<Node, sz> nodes) : nodes (nodes)
+template<size_t sz> Shape<sz>::Shape (StaticArrayList<Node, sz> nodes) : nodes (nodes), defaultEndNode ()
 {
 	for (size_t i = 0; i < MAPRES; ++i) map[i] = 0;
 }
@@ -77,8 +81,24 @@ template<size_t sz> void Shape<sz>::clearShape ()
 template<size_t sz> void Shape<sz>::setDefaultShape ()
 {
 	clearShape ();
-	nodes.push_back ({NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}});
+	defaultEndNode = {NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}};
+	nodes.push_back (defaultEndNode);
 	nodes.push_back ({NodeType::END_NODE, {1, 0}, {0, 0}, {0, 0}});
+	renderBezier (nodes[0], nodes[1]);
+}
+
+template<size_t sz> void Shape<sz>::setDefaultShape (const Node& endNode)
+{
+	clearShape ();
+	defaultEndNode = {NodeType::END_NODE, {0, endNode.point.y}, {0, 0}, {0, 0}};
+	nodes.push_back (defaultEndNode);
+	nodes.push_back ({NodeType::END_NODE, {1, endNode.point.y}, {0, 0}, {0, 0}});
+	renderBezier (nodes[0], nodes[1]);
+}
+
+template<size_t sz>bool Shape<sz>::isDefault ()
+{
+	return ((nodes.size == 2) && (nodes[0] == defaultEndNode));
 }
 
 template<size_t sz>size_t Shape<sz>::size () {return nodes.size;}
@@ -156,7 +176,6 @@ template<size_t sz> bool Shape<sz>::insertNode (Node& node)
 template<size_t sz> bool Shape<sz>::changeNode (size_t pos, Node& node)
 {
 	if (pos >= nodes.size) return false;
-
 	nodes[pos] = node;
 
 	// Validate node and its neighbors

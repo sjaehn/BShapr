@@ -25,6 +25,7 @@
 #define MONITORBUFFERSIZE 256
 #define MAXNODES 64
 #define MAXSHAPES 4
+#define MAXEFFECTS 5
 #define BSHAPR_URI "https://www.jahnichen.de/plugins/lv2/BShapr"
 #define BSHAPR_GUI_URI "https://www.jahnichen.de/plugins/lv2/BShapr#gui"
 

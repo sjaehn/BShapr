@@ -54,7 +54,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].targetListBox = BWidgets::PopupListBox (120, 280, 100, 20, 0, -120, 100, 120, "menu",
 															{{0, "Level"}, {1, "Balance"}, {2, "Effect 3"}, {3, "Effect 4"}, {4, "Effect 5"}});
 		shapeGui[i].shapeWidget = ShapeWidget (4, 94, 1152, 172, "shape");
-		shapeGui[i].toolSelect = SelectWidget (477, 272, 196, 36, "tool", 36, 36, 5, 0);
+		shapeGui[i].toolSelect = SelectWidget (477, 272, 196, 36, "tool", 36, 36, 5, 1);
 		shapeGui[i].shapeLabelIcon = BWidgets::ImageIcon (1000, 280, 160, 20, "widget", pluginPath + "Shape" + std::to_string (i + 1) + ".png");
 		shapeGui[i].outputSelect = SelectWidget (60, 340, 100, 40, "tool", 100, 40, 1, 1);
 		shapeGui[i].outputAmpDial = BWidgets::DisplayDial (1000, 334, 50, 56, "dial", 1.0, 0.0, 1.0, 0, "%1.3f");
@@ -115,6 +115,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	{
 		for (int j = 0; j < shapeGui[i].inputShapeLabelIcons.size(); ++j) shapeGui[i].inputShapeLabelIcons[j].setClickable (false);
 		shapeGui[i].shapeWidget.setDefaultShape();
+		shapeGui[i].shapeWidget.setTool (ToolType::POINT_NODE_TOOL);
 		shapeGui[i].inputAmpDial.setScrollable (true);
 		shapeGui[i].inputAmpDial.setHardChangeable (false);
 		//shapeGui[i].inputAmpDial.hide ();
@@ -500,39 +501,55 @@ void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 				ui->controllers[widgetNr] = value;
 				ui->write_function(ui->controller, CONTROLLERS + widgetNr, sizeof(float), 0, &ui->controllers[widgetNr]);
 
-				// Input
-				if ((widgetNr - SHAPERS) % SH_SIZE == SH_INPUT)
+				if (widgetNr >= SHAPERS)
 				{
-					int sh = (widgetNr - SHAPERS) / SH_SIZE;
-
-					// Input: Constant => show level dial (range -1..1)
-					if (value == BShaprInputIndex::CONSTANT)
+					// Target
+					if ((widgetNr - SHAPERS) % SH_SIZE == SH_TARGET)
 					{
-						ui->shapeGui[sh].inputAmpDial.setMin (-1);
-						ui->shapeGui[sh].inputAmpDial.setMax (1);
-						ui->shapeGui[sh].inputAmpDial.show();
+						int sh = (widgetNr - SHAPERS) / SH_SIZE;
+						int nr = value;
+						if (ui->shapeGui[sh].shapeWidget.isDefault ())
+						{
+							ui->shapeGui[sh].shapeWidget.setDefaultShape (defaultEndNodes[nr]);
+						}
+
+						ui->shapeGui[sh].shapeWidget.setScaleParameters (scaleParameters[nr].anchorYPos, scaleParameters[nr].anchorValue, scaleParameters[nr].ratio);
 					}
 
-					// Input: AUDIO or ShapeX => show level dial (range 0..1)
-					else if (value != BShaprInputIndex::OFF)
+					// Input
+					if ((widgetNr - SHAPERS) % SH_SIZE == SH_INPUT)
 					{
-						ui->shapeGui[sh].inputAmpDial.setMin (0);
-						ui->shapeGui[sh].inputAmpDial.setMax (1);
-						ui->shapeGui[sh].inputAmpDial.show();
+						int sh = (widgetNr - SHAPERS) / SH_SIZE;
+
+						// Input: Constant => show level dial (range -1..1)
+						if (value == BShaprInputIndex::CONSTANT)
+						{
+							ui->shapeGui[sh].inputAmpDial.setMin (-1);
+							ui->shapeGui[sh].inputAmpDial.setMax (1);
+							ui->shapeGui[sh].inputAmpDial.show();
+						}
+
+						// Input: AUDIO or ShapeX => show level dial (range 0..1)
+						else if (value != BShaprInputIndex::OFF)
+						{
+							ui->shapeGui[sh].inputAmpDial.setMin (0);
+							ui->shapeGui[sh].inputAmpDial.setMax (1);
+							ui->shapeGui[sh].inputAmpDial.show();
+						}
+
+						// Input: OFF => hide dial
+						else ui->shapeGui[sh].inputAmpDial.hide();
 					}
 
-					// Input: OFF => hide dial
-					else ui->shapeGui[sh].inputAmpDial.hide();
-				}
+					// Output
+					if ((widgetNr - SHAPERS) % SH_SIZE == SH_OUTPUT)
+					{
+						int sh = (widgetNr - SHAPERS) / SH_SIZE;
 
-				// Output
-				if ((widgetNr - SHAPERS) % SH_SIZE == SH_OUTPUT)
-				{
-					int sh = (widgetNr - SHAPERS) / SH_SIZE;
+						if (value != BShaprInputIndex::OFF) ui->shapeGui[sh].outputAmpDial.show ();
+						else ui->shapeGui[sh].outputAmpDial.hide();
 
-					if (value != BShaprInputIndex::OFF) ui->shapeGui[sh].outputAmpDial.show ();
-					else ui->shapeGui[sh].outputAmpDial.hide();
-
+					}
 				}
 			}
 		}

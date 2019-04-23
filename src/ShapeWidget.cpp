@@ -20,12 +20,14 @@
 
 #include "ShapeWidget.hpp"
 #include <cmath>
+#include <string>
 
 ShapeWidget::ShapeWidget () : ShapeWidget (0, 0, 0, 0, "") {}
 
 ShapeWidget::ShapeWidget (const double x, const double y, const double width, const double height, const std::string& name) :
 		ValueWidget (x, y, width, height, name, 0), Shape (), tool (NO_TOOL), scaleAnchorYPos (0), scaleAnchorValue (0), scaleRatio (1),
-		activeNode (-1), activeHandle (-1), selected (false), dragged (false), fgColors (BColors::reds), bgColors (BColors::darks)
+		activeNode (-1), activeHandle (-1), selected (false), dragged (false),
+		fgColors (BColors::reds), bgColors (BColors::darks), lbfont (BWIDGETS_DEFAULT_FONT)
 {
 	setDraggable (true);
 	setScrollable (true);
@@ -52,6 +54,14 @@ ShapeWidget& ShapeWidget::operator= (const ShapeWidget& that)
 }
 
 void ShapeWidget::setTool (const ToolType tool) {this->tool = tool;}
+
+void ShapeWidget::setScaleParameters (double anchorYPos, double anchorValue, double ratio)
+{
+	scaleAnchorYPos = anchorYPos;
+	scaleAnchorValue = anchorValue;
+	scaleRatio = ratio;
+	update ();
+}
 
 void ShapeWidget::onButtonPressed (BEvents::PointerEvent* event)
 {
@@ -175,6 +185,7 @@ void ShapeWidget::onButtonReleased (BEvents::PointerEvent* event)
 				}
 				break;
 			}
+			update ();
 		}
 
 		// Perform node actions
@@ -182,6 +193,7 @@ void ShapeWidget::onButtonReleased (BEvents::PointerEvent* event)
 		{
 			if ((activeNode >= 1) && (activeNode < nodes.size - 1)) deleteNode (activeNode);
 			activeNode = -1;
+			update ();
 		}
 	}
 }
@@ -253,8 +265,9 @@ void ShapeWidget::onPointerDragged (BEvents::PointerEvent* event)
 		else
 		{
 			scaleAnchorYPos += (-event->getDeltaY()) / h;
-			update ();
 		}
+
+		update ();
 	}
 }
 
@@ -293,7 +306,11 @@ void ShapeWidget::applyTheme (BStyles::Theme& theme, const std::string& name)
 	void* bgPtr = theme.getStyle(name, BWIDGETS_KEYWORD_BGCOLORS);
 	if (bgPtr) bgColors = *((BColors::ColorSet*) bgPtr);
 
-	if (fgPtr || bgPtr ||syPtr) update ();
+	// Font
+	void* fontPtr = theme.getStyle(name, BWIDGETS_KEYWORD_FONT);
+	if (fontPtr) lbfont = *((BStyles::Font*) fontPtr);
+
+	if (fgPtr || bgPtr || syPtr || fontPtr) update ();
 
 }
 
@@ -331,9 +348,23 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 
 		// Draw grid
 		double ygrid = pow (10, floor (log10 (scaleRatio)));
+		std::string nrformat = "%3." + (ygrid < 1 ? std::to_string ((int)(-log10 (ygrid))) : "0") + "f";
+		cairo_text_extents_t ext;
+		cairo_select_font_face (cr, lbfont.getFontFamily ().c_str (), lbfont.getFontSlant (), lbfont.getFontWeight ());
+		cairo_set_font_size (cr, lbfont.getFontSize ());
+
 		for (double yp = ceil (ymin / ygrid) * ygrid; yp <= ymax; yp += ygrid)
 		{
 			cairo_move_to (cr, x0, y0 + h - h * (yp - ymin) / (ymax - ymin));
+			cairo_line_to (cr, x0 + 0.02 * w, y0 + h - h * (yp - ymin) / (ymax - ymin));
+
+			std::string label = BValues::toBString (nrformat, yp);
+			cairo_text_extents (cr, label.c_str(), &ext);
+			cairo_move_to (cr, x0 + 0.025 * w - ext.x_bearing, y0 + h - h * (yp - ymin) / (ymax - ymin) - ext.height / 2 - ext.y_bearing);
+			cairo_set_source_rgba (cr, CAIRO_RGBA (gridColor));
+			cairo_show_text (cr, label.c_str ());
+
+			cairo_move_to (cr, x0 + 0.03 * w + ext.width, y0 + h - h * (yp - ymin) / (ymax - ymin));
 			cairo_line_to (cr, x0 + w, y0 + h - h * (yp - ymin) / (ymax - ymin));
 		}
 
