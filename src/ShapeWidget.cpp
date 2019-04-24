@@ -185,7 +185,6 @@ void ShapeWidget::onButtonReleased (BEvents::PointerEvent* event)
 				}
 				break;
 			}
-			update ();
 		}
 
 		// Perform node actions
@@ -265,9 +264,8 @@ void ShapeWidget::onPointerDragged (BEvents::PointerEvent* event)
 		else
 		{
 			scaleAnchorYPos += (-event->getDeltaY()) / h;
+			update ();
 		}
-
-		update ();
 	}
 }
 

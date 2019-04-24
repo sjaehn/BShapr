@@ -114,7 +114,6 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	for (int i = 0; i < MAXSHAPES; ++i)
 	{
 		for (int j = 0; j < shapeGui[i].inputShapeLabelIcons.size(); ++j) shapeGui[i].inputShapeLabelIcons[j].setClickable (false);
-		shapeGui[i].shapeWidget.setDefaultShape();
 		shapeGui[i].shapeWidget.setTool (ToolType::POINT_NODE_TOOL);
 		shapeGui[i].inputAmpDial.setScrollable (true);
 		shapeGui[i].inputAmpDial.setHardChangeable (false);
@@ -149,6 +148,8 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	mContainer.add (baseListBox);
 	add (mContainer);
 
+	// Post addition configurations
+	for (int i = 0; i < MAXSHAPES; ++i) shapeGui[i].shapeWidget.setDefaultShape();
 
 	//Scan host features for URID map
 	LV2_URID_Map* m = NULL;
