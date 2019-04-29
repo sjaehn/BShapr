@@ -61,6 +61,9 @@ public:
 	LV2_URID_Map* map;
 
 private:
+	void audioLevel (const float input1, const float input2, float* output1, float* output2, const float factor);
+	void stereoBalance (const float input1, const float input2, float* output1, float* output2, const float factor);
+	void stereoWidth (const float input1, const float input2, float* output1, float* output2, const float factor);
 	void play(uint32_t start, uint32_t end);
 	void notifyMonitorToGui ();
 	void notifyShapeToGui (int shapeNr);

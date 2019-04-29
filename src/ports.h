@@ -62,11 +62,11 @@ typedef enum
 
 typedef enum
 {
-	LEVEL	= 0,
-	PAN		= 1,
-	WIDTH	= 2,
-	DELAY	= 3,
-	PITCH	= 4
+	LEVEL		= 0,
+	BALANCE	= 1,
+	WIDTH		= 2,
+	EFFECT4	= 3,
+	EFFECT5	= 4
 } BShaprTargetIndex;
 
 typedef enum

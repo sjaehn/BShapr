@@ -424,6 +424,38 @@ void BShapr::notifyMessageToGui()
 	scheduleNotifyMessage = false;
 }
 
+void BShapr::audioLevel (const float input1, const float input2, float* output1, float* output2, const float factor)
+{
+	*output1 = input1 * LIM (factor, 0, 100);
+	*output2 = input2 * LIM (factor, 0, 100);
+}
+
+void BShapr::stereoBalance (const float input1, const float input2, float* output1, float* output2, const float factor)
+{
+	float f = LIM (factor, -1, 1);
+	if (f < 0)
+	{
+		*output1 = input1 + (0 - f) * input2;
+		*output2 = (f + 1) * input2;
+	}
+
+	else
+	{
+		*output1 = (1 - f) * input1;
+		*output2 = input2 + f * input1;
+	}
+}
+
+void BShapr::stereoWidth (const float input1, const float input2, float* output1, float* output2, const float factor)
+{
+	float f = LIM (factor, 0, 100);
+	float m = (input1 + input2) / 2;
+	float s = (input1 - input2) * f / 2;
+
+	*output1 = m + s;
+	*output2 = m - s;
+}
+
 void BShapr::play(uint32_t start, uint32_t end)
 {
 	// Clear audio output first
@@ -485,28 +517,16 @@ void BShapr::play(uint32_t start, uint32_t end)
 				switch (int (controllers[SHAPERS + sh * SH_SIZE + SH_TARGET]))
 				{
 					case BShaprTargetIndex::LEVEL:
-						output1[sh] = input1 * LIM (iFactor, 0, 2);
-						output2[sh] = input2 * LIM (iFactor, 0, 2);
+						audioLevel (input1, input2, &output1[sh], &output2[sh], iFactor);
 						break;
 
-					case BShaprTargetIndex::PAN:
-						{
-							float f = LIM (iFactor, -1, 1);
-							if (f < 0)
-							{
-								output1[sh] = input1 + (0 - f) * input2;
-								output2[sh] = (f + 1) * input2;
-							}
-
-							else
-							{
-								output1[sh] = (1 - f) * input1;
-								output2[sh] = input2 + f * input1;
-							}
-						}
+					case BShaprTargetIndex::BALANCE:
+						stereoBalance (input1, input2, &output1[sh], &output2[sh], iFactor);
 						break;
 
-					// TODO WIDTH, DELAY, PITCH
+					case BShaprTargetIndex::WIDTH:
+						stereoWidth (input1, input2, &output1[sh], &output2[sh], iFactor);
+						break;
 
 					default:
 						output1[sh] = 0;

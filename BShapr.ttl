@@ -119,7 +119,7 @@
             lv2:portProperty lv2:integer, lv2:enumeration ;
 						lv2:scalePoint [ rdfs:label "Level"; rdf:value 0 ] ;
 						lv2:scalePoint [ rdfs:label "Balance"; rdf:value 1 ] ;
-						lv2:scalePoint [ rdfs:label "Effect 3"; rdf:value 2 ] ;
+						lv2:scalePoint [ rdfs:label "Width"; rdf:value 2 ] ;
 						lv2:scalePoint [ rdfs:label "Effect 4"; rdf:value 3 ] ;
 						lv2:scalePoint [ rdfs:label "Effect 5"; rdf:value 4 ] ;
 						lv2:default 0 ;
@@ -175,7 +175,7 @@
             lv2:portProperty lv2:integer, lv2:enumeration ;
 						lv2:scalePoint [ rdfs:label "Level"; rdf:value 0 ] ;
 						lv2:scalePoint [ rdfs:label "Balance"; rdf:value 1 ] ;
-						lv2:scalePoint [ rdfs:label "Effect 3"; rdf:value 2 ] ;
+						lv2:scalePoint [ rdfs:label "Width"; rdf:value 2 ] ;
 						lv2:scalePoint [ rdfs:label "Effect 4"; rdf:value 3 ] ;
 						lv2:scalePoint [ rdfs:label "Effect 5"; rdf:value 4 ] ;
 						lv2:default 0 ;
@@ -232,7 +232,7 @@
             lv2:portProperty lv2:integer, lv2:enumeration ;
 						lv2:scalePoint [ rdfs:label "Level"; rdf:value 0 ] ;
 						lv2:scalePoint [ rdfs:label "Balance"; rdf:value 1 ] ;
-						lv2:scalePoint [ rdfs:label "Effect 3"; rdf:value 2 ] ;
+						lv2:scalePoint [ rdfs:label "Width"; rdf:value 2 ] ;
 						lv2:scalePoint [ rdfs:label "Effect 4"; rdf:value 3 ] ;
 						lv2:scalePoint [ rdfs:label "Effect 5"; rdf:value 4 ] ;
 						lv2:default 0 ;
@@ -289,7 +289,7 @@
             lv2:portProperty lv2:integer, lv2:enumeration ;
 						lv2:scalePoint [ rdfs:label "Level"; rdf:value 0 ] ;
 						lv2:scalePoint [ rdfs:label "Balance"; rdf:value 1 ] ;
-						lv2:scalePoint [ rdfs:label "Effect 3"; rdf:value 2 ] ;
+						lv2:scalePoint [ rdfs:label "Width"; rdf:value 2 ] ;
 						lv2:scalePoint [ rdfs:label "Effect 4"; rdf:value 3 ] ;
 						lv2:scalePoint [ rdfs:label "Effect 5"; rdf:value 4 ] ;
 						lv2:default 0 ;

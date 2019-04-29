@@ -67,10 +67,10 @@ typedef struct
 	double ratio;
 } ScaleParameters;
 
-const ScaleParameters scaleParameters[MAXEFFECTS] = {{0, -0.05, 1.1}, {0, -1.1, 2.2}, {0, 0, 1}, {0, 0, 1}, {0, 0, 1}};
+const ScaleParameters scaleParameters[MAXEFFECTS] = {{0, -0.05, 1.1}, {0, -1.1, 2.2}, {0, -0.1, 2.2}, {0, 0, 1}, {0, 0, 1}};
 const Node defaultEndNodes[MAXEFFECTS] = {{NodeType::END_NODE, {0, 1}, {0, 0}, {0, 0}},
 																					{NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}},
-																					{NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}},
+																					{NodeType::END_NODE, {0, 1}, {0, 0}, {0, 0}},
 																					{NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}},
 																					{NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}}};
 
