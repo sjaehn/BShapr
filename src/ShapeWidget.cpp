@@ -271,7 +271,8 @@ void ShapeWidget::onPointerDragged (BEvents::PointerEvent* event)
 
 void ShapeWidget::onWheelScrolled (BEvents::WheelEvent* event)
 {
-	scaleRatio += 0.01 * event->getDeltaY ();
+	double ygrid = pow (10, floor (log10 (scaleRatio)));
+	scaleRatio += 0.1 * ygrid * event->getDeltaY ();
 	if (scaleRatio < 0.01) scaleRatio = 0.01;
 	update ();
 }
@@ -346,7 +347,7 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 
 		// Draw grid
 		double ygrid = pow (10, floor (log10 (scaleRatio)));
-		std::string nrformat = "%3." + (ygrid < 1 ? std::to_string ((int)(-log10 (ygrid))) : "0") + "f";
+		std::string nrformat = "%5." + (ygrid < 1 ? std::to_string ((int)(-log10 (ygrid))) : "0") + "f";
 		cairo_text_extents_t ext;
 		cairo_select_font_face (cr, lbfont.getFontFamily ().c_str (), lbfont.getFontSlant (), lbfont.getFontWeight ());
 		cairo_set_font_size (cr, lbfont.getFontSize ());
