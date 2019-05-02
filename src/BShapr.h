@@ -37,6 +37,8 @@
 #include "Node.hpp"
 #include "Shape.hpp"
 
+#define F_ORDER 8
+
 typedef struct
 {
 	int count;
@@ -61,9 +63,12 @@ public:
 	LV2_URID_Map* map;
 
 private:
-	void audioLevel (const float input1, const float input2, float* output1, float* output2, const float factor);
-	void stereoBalance (const float input1, const float input2, float* output1, float* output2, const float factor);
-	void stereoWidth (const float input1, const float input2, float* output1, float* output2, const float factor);
+	void fillFilterBuffer (float filterBuffer[MAXSHAPES] [F_ORDER / 2], const float value);
+	void audioLevel (const float input1, const float input2, float* output1, float* output2, const float amp);
+	void stereoBalance (const float input1, const float input2, float* output1, float* output2, const float balance);
+	void stereoWidth (const float input1, const float input2, float* output1, float* output2, const float width);
+	void lowPassFilter (const float input1, const float input2, float* output1, float* output2, const float cutoffFreq, const int shape);
+	void highPassFilter (const float input1, const float input2, float* output1, float* output2, const float cutoffFreq, const int shape);
 	void play(uint32_t start, uint32_t end);
 	void notifyMonitorToGui ();
 	void notifyShapeToGui (int shapeNr);
@@ -87,6 +92,10 @@ private:
 	float* audioInput2;
 	float* audioOutput1;
 	float* audioOutput2;
+	float filter1Buffer1 [MAXSHAPES] [F_ORDER / 2];
+	float filter1Buffer2 [MAXSHAPES] [F_ORDER / 2];
+	float filter2Buffer1 [MAXSHAPES] [F_ORDER / 2];
+	float filter2Buffer2 [MAXSHAPES] [F_ORDER / 2];
 
 	// Controllers
 	float* new_controllers[NR_CONTROLLERS];

@@ -51,8 +51,8 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 
 		shapeGui[i].inputSelect = SelectWidget (60, 20, 200 + i * 100, 40, "tool", 100, 40, 2 + i, 1);
 		shapeGui[i].inputAmpDial = BWidgets::DisplayDial (1000, 14, 50, 56, "dial", 1.0, -1.0, 1.0, 0, "%1.3f");
-		shapeGui[i].targetListBox = BWidgets::PopupListBox (120, 280, 100, 20, 0, -120, 100, 120, "menu",
-															{{0, "Level"}, {1, "Balance"}, {2, "Width"}, {3, "Effect 4"}, {4, "Effect 5"}});
+		shapeGui[i].targetListBox = BWidgets::PopupListBox (120, 280, 180, 20, 0, -120, 180, 120, "menu",
+															{{0, "Level"}, {1, "Balance"}, {2, "Width"}, {3, "Low pass filter"}, {4, "High pass filter"}});
 		shapeGui[i].shapeWidget = ShapeWidget (4, 94, 1152, 172, "shape");
 		shapeGui[i].toolSelect = SelectWidget (477, 272, 196, 36, "tool", 36, 36, 5, 1);
 		shapeGui[i].shapeLabelIcon = BWidgets::ImageIcon (1000, 280, 160, 20, "widget", pluginPath + "Shape" + std::to_string (i + 1) + ".png");
@@ -335,8 +335,8 @@ void BShaprGUI::resizeGUI()
 		RESIZE (shapeGui[i].inputSelect, 60, 20, 200 + i * 100, 40, sz);
 		shapeGui[i].inputSelect.resizeSelection (100 * sz, 40 * sz);
 		RESIZE (shapeGui[i].inputAmpDial, 1000, 14, 50, 56, sz);
-		RESIZE (shapeGui[i].targetListBox, 120, 280, 100, 20, sz);
-		shapeGui[i].targetListBox.resizeListBox (100 * sz, 120 * sz);
+		RESIZE (shapeGui[i].targetListBox, 120, 280, 180, 20, sz);
+		shapeGui[i].targetListBox.resizeListBox (180 * sz, 120 * sz);
 		shapeGui[i].targetListBox.moveListBox (0, -120 * sz);
 		RESIZE (shapeGui[i].shapeWidget, 4, 94, 1152, 172, sz);
 		RESIZE (shapeGui[i].toolSelect, 477, 272, 196, 36, sz);

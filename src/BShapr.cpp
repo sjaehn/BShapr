@@ -36,6 +36,10 @@ BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 {
 	notifications.fill (defaultNotification);
 	monitor.fill (defaultMonitorData);
+	fillFilterBuffer (filter1Buffer1, 0);
+	fillFilterBuffer (filter1Buffer2, 0);
+	fillFilterBuffer (filter2Buffer1, 0);
+	fillFilterBuffer (filter2Buffer2, 0);
 
 	//Scan host features for URID map
 	LV2_URID_Map* m = NULL;
@@ -81,6 +85,17 @@ void BShapr::connect_port(uint32_t port, void *data)
 		break;
 	default:
 		if ((port >= CONTROLLERS) && (port < CONTROLLERS + NR_CONTROLLERS)) new_controllers[port - CONTROLLERS] = (float*) data;
+	}
+}
+
+void BShapr::fillFilterBuffer (float filterBuffer[MAXSHAPES] [F_ORDER / 2], const float value)
+{
+	for (int i = 0; i < MAXSHAPES; ++ i)
+	{
+		for (int j = 0; j < F_ORDER / 2; ++ j)
+		{
+			filterBuffer[i][j] = value;
+		}
 	}
 }
 
@@ -251,6 +266,10 @@ void BShapr::run (uint32_t n_samples)
 						{
 							strcpy (message, "Msg: Jack transport off or halted. Plugin halted.");
 							scheduleNotifyMessage = true;
+							fillFilterBuffer (filter1Buffer1, 0);
+							fillFilterBuffer (filter1Buffer2, 0);
+							fillFilterBuffer (filter2Buffer1, 0);
+							fillFilterBuffer (filter2Buffer2, 0);
 						}
 
 						else
@@ -280,6 +299,10 @@ void BShapr::run (uint32_t n_samples)
 						{
 							strcpy (message, "Msg: Jack transport off or halted. Plugin halted.");
 							scheduleNotifyMessage = true;
+							fillFilterBuffer (filter1Buffer1, 0);
+							fillFilterBuffer (filter1Buffer2, 0);
+							fillFilterBuffer (filter2Buffer1, 0);
+							fillFilterBuffer (filter2Buffer2, 0);
 						}
 
 						else
@@ -424,15 +447,15 @@ void BShapr::notifyMessageToGui()
 	scheduleNotifyMessage = false;
 }
 
-void BShapr::audioLevel (const float input1, const float input2, float* output1, float* output2, const float factor)
+void BShapr::audioLevel (const float input1, const float input2, float* output1, float* output2, const float amp)
 {
-	*output1 = input1 * LIM (factor, 0, 100);
-	*output2 = input2 * LIM (factor, 0, 100);
+	*output1 = input1 * LIM (amp, 0, 100);
+	*output2 = input2 * LIM (amp, 0, 100);
 }
 
-void BShapr::stereoBalance (const float input1, const float input2, float* output1, float* output2, const float factor)
+void BShapr::stereoBalance (const float input1, const float input2, float* output1, float* output2, const float balance)
 {
-	float f = LIM (factor, -1, 1);
+	float f = LIM (balance, -1, 1);
 	if (f < 0)
 	{
 		*output1 = input1 + (0 - f) * input2;
@@ -446,14 +469,90 @@ void BShapr::stereoBalance (const float input1, const float input2, float* outpu
 	}
 }
 
-void BShapr::stereoWidth (const float input1, const float input2, float* output1, float* output2, const float factor)
+void BShapr::stereoWidth (const float input1, const float input2, float* output1, float* output2, const float width)
 {
-	float f = LIM (factor, 0, 100);
+	float f = LIM (width, 0, 100);
 	float m = (input1 + input2) / 2;
 	float s = (input1 - input2) * f / 2;
 
 	*output1 = m + s;
 	*output2 = m - s;
+}
+
+void BShapr::lowPassFilter (const float input1, const float input2, float* output1, float* output2, const float cutoffFreq, const int shape)
+{
+	float f = LIM (cutoffFreq, 0, 20000);
+	float a = tan (M_PI * f / rate);
+  float a2 = a * a;
+	float coeff0 [F_ORDER / 2];
+	float coeff1 [F_ORDER / 2];
+	float coeff2 [F_ORDER / 2];
+	float filter1Buffer0 [F_ORDER / 2];
+	float filter2Buffer0 [F_ORDER / 2];
+
+	for (int i = 0; i < F_ORDER / 2; ++i)
+	{
+    float r = sin (M_PI * (2.0f * i + 1.0f) / (2.0f * F_ORDER));
+    float s = a2 + 2.0f * a * r + 1.0f;
+    coeff0[i] = a2 / s;
+    coeff1[i] = 2.0f * (1 - a2) / s;
+    coeff2[i] = -(a2 - 2.0f * a * r + 1.0f) / s;
+	}
+
+	double f1 = input1;
+	double f2 = input2;
+	for (int i = 0; i < F_ORDER / 2; ++i)
+	{
+    filter1Buffer0[i] = coeff1[i] * filter1Buffer1[shape][i] + coeff2[i] * filter1Buffer2[shape][i] + f1;
+		filter2Buffer0[i] = coeff1[i] * filter2Buffer1[shape][i] + coeff2[i] * filter2Buffer2[shape][i] + f2;
+    f1 = coeff0[i] * (filter1Buffer0[i] + 2.0f * filter1Buffer1[shape][i] + filter1Buffer2[shape][i]);
+		f2 = coeff0[i] * (filter2Buffer0[i] + 2.0f * filter2Buffer1[shape][i] + filter2Buffer2[shape][i]);
+    filter1Buffer2[shape][i] = filter1Buffer1[shape][i];
+    filter1Buffer1[shape][i] = filter1Buffer0[i];
+		filter2Buffer2[shape][i] = filter2Buffer1[shape][i];
+    filter2Buffer1[shape][i] = filter2Buffer0[i];
+	}
+
+	*output1 = f1;
+	*output2 = f2;
+}
+
+void BShapr::highPassFilter (const float input1, const float input2, float* output1, float* output2, const float cutoffFreq, const int shape)
+{
+	float f = LIM (cutoffFreq, 0, 20000);
+	float a = tan (M_PI * f / rate);
+  float a2 = a * a;
+	float coeff0 [F_ORDER / 2];
+	float coeff1 [F_ORDER / 2];
+	float coeff2 [F_ORDER / 2];
+	float filter1Buffer0 [F_ORDER / 2];
+	float filter2Buffer0 [F_ORDER / 2];
+
+	for (int i = 0; i < F_ORDER / 2; ++i)
+	{
+    float r = sin (M_PI * (2.0f * i + 1.0f) / (2.0f * F_ORDER));
+    float s = a2 + 2.0f * a * r + 1.0f;
+    coeff0[i] = 1 / s;
+    coeff1[i] = 2.0f * (1 - a2) / s;
+    coeff2[i] = -(a2 - 2.0f * a * r + 1.0f) / s;
+	}
+
+	double f1 = input1;
+	double f2 = input2;
+	for (int i = 0; i < F_ORDER / 2; ++i)
+	{
+    filter1Buffer0[i] = coeff1[i] * filter1Buffer1[shape][i] + coeff2[i] * filter1Buffer2[shape][i] + f1;
+		filter2Buffer0[i] = coeff1[i] * filter2Buffer1[shape][i] + coeff2[i] * filter2Buffer2[shape][i] + f2;
+    f1 = coeff0[i] * (filter1Buffer0[i] - 2.0f * filter1Buffer1[shape][i] + filter1Buffer2[shape][i]);
+		f2 = coeff0[i] * (filter2Buffer0[i] - 2.0f * filter2Buffer1[shape][i] + filter2Buffer2[shape][i]);
+    filter1Buffer2[shape][i] = filter1Buffer1[shape][i];
+    filter1Buffer1[shape][i] = filter1Buffer0[i];
+		filter2Buffer2[shape][i] = filter2Buffer1[shape][i];
+    filter2Buffer1[shape][i] = filter2Buffer0[i];
+	}
+
+	*output1 = f1;
+	*output2 = f2;
 }
 
 void BShapr::play(uint32_t start, uint32_t end)
@@ -526,6 +625,14 @@ void BShapr::play(uint32_t start, uint32_t end)
 
 					case BShaprTargetIndex::WIDTH:
 						stereoWidth (input1, input2, &output1[sh], &output2[sh], iFactor);
+						break;
+
+					case BShaprTargetIndex::LOW_PASS:
+						lowPassFilter (input1, input2, &output1[sh], &output2[sh], iFactor, sh);
+						break;
+
+					case BShaprTargetIndex::HIGH_PASS:
+						highPassFilter (input1, input2, &output1[sh], &output2[sh], iFactor, sh);
 						break;
 
 					default:
