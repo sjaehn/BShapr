@@ -68,11 +68,6 @@ typedef struct
 } ScaleParameters;
 
 const ScaleParameters scaleParameters[MAXEFFECTS] = {{0, -0.05, 1.1}, {0, -1.1, 2.2}, {0, -0.1, 2.2}, {0, -25, 5050}, {0, -5, 1010}};
-const Node defaultEndNodes[MAXEFFECTS] = {{NodeType::END_NODE, {0, 1}, {0, 0}, {0, 0}},
-																					{NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}},
-																					{NodeType::END_NODE, {0, 1}, {0, 0}, {0, 0}},
-																					{NodeType::END_NODE, {0, 2000}, {0, 0}, {0, 0}},
-																					{NodeType::END_NODE, {0, 200}, {0, 0}, {0, 0}}};
 
 class BShaprGUI : public BWidgets::Window
 {

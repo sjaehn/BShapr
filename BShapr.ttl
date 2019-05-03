@@ -102,7 +102,7 @@
 						lv2:scalePoint [ rdfs:label "Shaper 4"; rdf:value 6 ] ;
 						lv2:default 1 ;
             lv2:minimum 0 ;
-            lv2:maximum 11 ;
+            lv2:maximum 6 ;
     ] , [
             a lv2:InputPort , lv2:ControlPort ;
             lv2:index 9 ;
@@ -158,7 +158,7 @@
 						lv2:scalePoint [ rdfs:label "Shaper 4"; rdf:value 6 ] ;
 						lv2:default 0 ;
             lv2:minimum 0 ;
-            lv2:maximum 11 ;
+            lv2:maximum 6 ;
     ] , [
             a lv2:InputPort , lv2:ControlPort ;
             lv2:index 14 ;
@@ -214,7 +214,7 @@
 						lv2:scalePoint [ rdfs:label "Shaper 4"; rdf:value 6 ] ;
 						lv2:default 0 ;
             lv2:minimum 0 ;
-            lv2:maximum 11 ;
+            lv2:maximum 6 ;
     ] , [
             a lv2:InputPort , lv2:ControlPort ;
             lv2:index 19 ;
@@ -271,7 +271,7 @@
 						lv2:scalePoint [ rdfs:label "Shaper 3"; rdf:value 5 ] ;
 						lv2:default 0 ;
             lv2:minimum 0 ;
-            lv2:maximum 11 ;
+            lv2:maximum 6 ;
     ] , [
             a lv2:InputPort , lv2:ControlPort ;
             lv2:index 24 ;

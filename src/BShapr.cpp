@@ -31,9 +31,10 @@ BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 	map(NULL), controlPort(NULL), notifyPort(NULL),
 	audioInput1(NULL), audioInput2(NULL), audioOutput1(NULL), audioOutput2(NULL),
 	rate(samplerate), bpm(120.0f), speed(1), bar (0), barBeat (0), position(0), refFrame(0), beatUnit (4), beatsPerBar (4),
-	ui_on(true), monitorpos(-1), message (), scheduleNotifyMessage (false)
+	ui_on(false), monitorpos(-1), message (), scheduleNotifyMessage (false)
 
 {
+	for (int i = 0; i < MAXSHAPES; ++i) shapes[i].setDefaultShape (defaultEndNodes[0]);
 	notifications.fill (defaultNotification);
 	monitor.fill (defaultMonitorData);
 	fillFilterBuffer (filter1Buffer1, 0);
@@ -58,6 +59,8 @@ BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 
 	// Initialize forge
 	lv2_atom_forge_init (&forge, map);
+
+	for (int i = 0; i < MAXSHAPES; ++i) scheduleNotifyShapes[i] = true;
 }
 
 BShapr::~BShapr () {}
@@ -99,6 +102,12 @@ void BShapr::fillFilterBuffer (float filterBuffer[MAXSHAPES] [F_ORDER / 2], cons
 	}
 }
 
+float BShapr::validateValue (float value, const Limit limit)
+{
+	float ltdValue = ((limit.step != 0) ? (limit.min + round ((value - limit.min) / limit.step) * limit.step) : value);
+	return LIM (ltdValue, limit.min, limit.max);
+}
+
 double BShapr::getPositionFromBeats (double beats)
 {
 	switch (int (controllers[BASE]))
@@ -137,11 +146,29 @@ void BShapr::run (uint32_t n_samples)
 	// Update controller values
 	for (int i = 0; i < NR_CONTROLLERS; ++i)
 	{
-		// TODO Check limits
-		if (controllers[i] != *new_controllers[i]) controllers[i] = *new_controllers[i];
+		if (controllers[i] != *new_controllers[i])
+		{
+			float newValue;
+			int shapeNr = ((i >= SHAPERS) ? ((i - SHAPERS) / SH_SIZE) : -1);
+			int shapeControllerNr = ((i >= SHAPERS) ? ((i - SHAPERS) % SH_SIZE) : -1);
+
+			if (i < SHAPERS) newValue = validateValue (*new_controllers[i], globalControllerLimits[i]);
+			else
+			{
+				newValue = validateValue (*new_controllers[i], shapeControllerLimits[shapeControllerNr]);
+
+				if (shapeControllerNr == SH_TARGET)
+				{
+					// Keep a default shape as a default shape but with new default values
+					if (shapes[shapeNr].isDefault ()) shapes[shapeNr].setDefaultShape (defaultEndNodes[(int)newValue]);
+				}
+			}
+
+			controllers[i] = newValue;
+		}
 	}
 
-	uint32_t last_t =0;
+	uint32_t last_t = 0;
 	LV2_ATOM_SEQUENCE_FOREACH (controlPort, ev)
 	{
 		if ((ev->body.type == urids.atom_Object) || (ev->body.type == urids.atom_Blank))
@@ -232,7 +259,6 @@ void BShapr::run (uint32_t n_samples)
 								shapes[shapeNr].appendNode (node);
 							}
 							shapes[shapeNr].validateShape();
-							//scheduleNotifyShapes[shapeNr] = true;
 						}
 					}
 				}

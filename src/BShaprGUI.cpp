@@ -149,7 +149,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	add (mContainer);
 
 	// Post addition configurations
-	for (int i = 0; i < MAXSHAPES; ++i) shapeGui[i].shapeWidget.setDefaultShape();
+	for (int i = 0; i < MAXSHAPES; ++i) shapeGui[i].shapeWidget.setDefaultShape(defaultEndNodes[0]);
 
 	//Scan host features for URID map
 	LV2_URID_Map* m = NULL;
@@ -264,8 +264,9 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 				}
 			}
 */
+
 			// Shape notification
-/*			else if (obj->body.otype == urids.notify_shapeEvent)
+			else if (obj->body.otype == urids.notify_shapeEvent)
 			{
 				LV2_Atom *sNr = NULL, *sData = NULL;
 				lv2_atom_object_get (obj, urids.notify_shapeNr, &sNr,
@@ -294,8 +295,10 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 					}
 				}
 			}
-*/		}
+
+		}
 	}
+
 
 	// Scan remaining ports
 	else if ((format == 0) && (port >= CONTROLLERS) && (port < CONTROLLERS + NR_CONTROLLERS))

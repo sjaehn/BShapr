@@ -41,6 +41,22 @@
 
 typedef struct
 {
+	float min;
+	float max;
+	float step;
+} Limit;
+
+const Limit globalControllerLimits [SHAPERS]	= {{0, 2, 1},
+																								 {1, 16, 0}};
+
+const Limit shapeControllerLimits [SH_SIZE]		= {{0, 6, 1},
+																								 {-1, 1, 0},
+																							 	 {0, 4, 1},
+																							 	 {0, 1, 1},
+																							 	 {0, 1, 0}};
+
+typedef struct
+{
 	int count;
 	bool ready;
 	double inputMin;
@@ -64,6 +80,7 @@ public:
 
 private:
 	void fillFilterBuffer (float filterBuffer[MAXSHAPES] [F_ORDER / 2], const float value);
+	float validateValue (float value, const Limit limit);
 	void audioLevel (const float input1, const float input2, float* output1, float* output2, const float amp);
 	void stereoBalance (const float input1, const float input2, float* output1, float* output2, const float balance);
 	void stereoWidth (const float input1, const float input2, float* output1, float* output2, const float width);
