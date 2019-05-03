@@ -583,12 +583,13 @@ void BShapr::highPassFilter (const float input1, const float input2, float* outp
 
 void BShapr::play(uint32_t start, uint32_t end)
 {
-	// Clear audio output first
-	memset(audioOutput1,0,(end-start)*sizeof(float));
-	memset(audioOutput2,0,(end-start)*sizeof(float));
-
 	// Return if halted or bpm == 0
-	if ((speed == 0.0f) || (bpm < 1.0f)) return;
+	if ((speed == 0.0f) || (bpm < 1.0f))
+	{
+		memset(audioOutput1,0,(end-start)*sizeof(float));
+		memset(audioOutput2,0,(end-start)*sizeof(float));
+		return;
+	}
 
 	for (uint32_t i = start; i < end; ++i)
 	{
@@ -598,10 +599,12 @@ void BShapr::play(uint32_t start, uint32_t end)
 
 		float input1;
 		float input2;
-		float output1[MAXSHAPES];
-		memset (output1, 0, MAXSHAPES * sizeof (float));
-		float output2[MAXSHAPES];
-		memset (output2, 0, MAXSHAPES * sizeof (float));
+		float output1 = 0;
+		float output2 = 0;
+		float shapeOutput1[MAXSHAPES];
+		memset (shapeOutput1, 0, MAXSHAPES * sizeof (float));
+		float shapeOutput2[MAXSHAPES];
+		memset (shapeOutput2, 0, MAXSHAPES * sizeof (float));
 
 		for (int sh = 0; sh < MAXSHAPES; ++sh)
 		{
@@ -625,8 +628,8 @@ void BShapr::play(uint32_t start, uint32_t end)
 									(controllers[SHAPERS + sh * SH_SIZE + SH_INPUT] < BShaprInputIndex::OUTPUT + MAXSHAPES))
 						{
 							int inputSh = controllers[SHAPERS + sh * SH_SIZE + SH_INPUT] - BShaprInputIndex::OUTPUT;
-							input1 = output1[inputSh] * controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_AMP];
-							input2 = output2[inputSh] * controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_AMP];
+							input1 = shapeOutput1[inputSh] * controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_AMP];
+							input2 = shapeOutput2[inputSh] * controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_AMP];
 						}
 						else
 						{
@@ -642,36 +645,35 @@ void BShapr::play(uint32_t start, uint32_t end)
 				switch (int (controllers[SHAPERS + sh * SH_SIZE + SH_TARGET]))
 				{
 					case BShaprTargetIndex::LEVEL:
-						audioLevel (input1, input2, &output1[sh], &output2[sh], iFactor);
+						audioLevel (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], iFactor);
 						break;
 
 					case BShaprTargetIndex::BALANCE:
-						stereoBalance (input1, input2, &output1[sh], &output2[sh], iFactor);
+						stereoBalance (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], iFactor);
 						break;
 
 					case BShaprTargetIndex::WIDTH:
-						stereoWidth (input1, input2, &output1[sh], &output2[sh], iFactor);
+						stereoWidth (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], iFactor);
 						break;
 
 					case BShaprTargetIndex::LOW_PASS:
-						lowPassFilter (input1, input2, &output1[sh], &output2[sh], iFactor, sh);
+						lowPassFilter (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], iFactor, sh);
 						break;
 
 					case BShaprTargetIndex::HIGH_PASS:
-						highPassFilter (input1, input2, &output1[sh], &output2[sh], iFactor, sh);
+						highPassFilter (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], iFactor, sh);
 						break;
 
 					default:
-						output1[sh] = 0;
-						output2[sh] = 0;
+						shapeOutput1[sh] = 0;
+						shapeOutput2[sh] = 0;
 
 				}
 
-				// Store in output
 				if (controllers[SHAPERS + sh * SH_SIZE + SH_OUTPUT] == BShaprOutputIndex::AUDIO_OUT)
 				{
-					audioOutput1[i] += output1[sh] * controllers[SHAPERS + sh * SH_SIZE + SH_OUTPUT_AMP];
-					audioOutput2[i] += output2[sh] * controllers[SHAPERS + sh * SH_SIZE + SH_OUTPUT_AMP];
+					output1 += shapeOutput1[sh] * controllers[SHAPERS + sh * SH_SIZE + SH_OUTPUT_AMP];
+					output2 += shapeOutput2[sh] * controllers[SHAPERS + sh * SH_SIZE + SH_OUTPUT_AMP];
 				}
 			}
 		}
@@ -690,10 +692,10 @@ void BShapr::play(uint32_t start, uint32_t end)
 			}
 
 			// Get max input and output values for a block
-			if (audioOutput1[i] < monitor[monitorpos].outputMin) monitor[monitorpos].outputMin = audioOutput1[i];
-			if (audioOutput1[i] > monitor[monitorpos].outputMax) monitor[monitorpos].outputMax = audioOutput1[i];
-			if (audioOutput2[i] < monitor[monitorpos].outputMin) monitor[monitorpos].outputMin = audioOutput2[i];
-			if (audioOutput2[i] > monitor[monitorpos].outputMax) monitor[monitorpos].outputMax = audioOutput2[i];
+			if (output1 < monitor[monitorpos].outputMin) monitor[monitorpos].outputMin = output1;
+			if (output1 > monitor[monitorpos].outputMax) monitor[monitorpos].outputMax = output1;
+			if (output2 < monitor[monitorpos].outputMin) monitor[monitorpos].outputMin = output2;
+			if (output2 > monitor[monitorpos].outputMax) monitor[monitorpos].outputMax = output2;
 			if (audioInput1[i] < monitor[monitorpos].inputMin) monitor[monitorpos].inputMin = audioInput1[i];
 			if (audioInput1[i] > monitor[monitorpos].inputMax) monitor[monitorpos].inputMax = audioInput1[i];
 			if (audioInput2[i] < monitor[monitorpos].inputMin) monitor[monitorpos].inputMin = audioInput2[i];
@@ -701,6 +703,10 @@ void BShapr::play(uint32_t start, uint32_t end)
 
 			monitor[monitorpos].ready = false;
 		}
+
+		// Store in audio out
+		audioOutput1[i] = output1;
+		audioOutput2[i] = output2;
 	}
 }
 
