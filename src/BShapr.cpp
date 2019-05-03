@@ -272,7 +272,8 @@ void BShapr::run (uint32_t n_samples)
 				// Update bpm, speed, position
 				LV2_Atom *oBbeat = NULL, *oBpm = NULL, *oSpeed = NULL, *oBpb = NULL, *oBu = NULL, *oBar = NULL;
 				const LV2_Atom_Object* obj = (const LV2_Atom_Object*)&ev->body;
-				lv2_atom_object_get (obj, urids.time_barBeat, &oBbeat,
+				lv2_atom_object_get (obj, urids.time_bar, &oBar,
+											urids.time_barBeat, &oBbeat,
 										  urids.time_beatsPerMinute,  &oBpm,
 										  urids.time_beatsPerBar,  &oBpb,
 										  urids.time_beatUnit,  &oBu,
