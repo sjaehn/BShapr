@@ -74,7 +74,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	// Init main monitor
 	if (!init_mainMonitor ())
 	{
-		std::cerr << "BSlizr.lv2#GUI: Failed to init monitor." <<  std::endl;
+		std::cerr << "BShapr.lv2#GUI: Failed to init monitor." <<  std::endl;
 		destroy_mainMonitor ();
 		throw std::bad_alloc ();
 	}
@@ -150,6 +150,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 
 	// Post addition configurations
 	for (int i = 0; i < MAXSHAPES; ++i) shapeGui[i].shapeWidget.setDefaultShape(defaultEndNodes[0]);
+	for (int i = 0; i < MAXSHAPES; ++i) shapeGui[i].shapeWidget.setValueEnabled (true);
 
 	//Scan host features for URID map
 	LV2_URID_Map* m = NULL;
@@ -270,7 +271,7 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 			{
 				LV2_Atom *sNr = NULL, *sData = NULL;
 				lv2_atom_object_get (obj, urids.notify_shapeNr, &sNr,
-										  urids.notify_shapeData, &sData);
+										  urids.notify_shapeData, &sData, 0);
 
 				if (sNr && (sNr->type == urids.atom_Int) &&
 					sData && (sData->type == urids.atom_Vector))
@@ -283,6 +284,7 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 						size_t vecSize = (sData->size - sizeof(LV2_Atom_Vector_Body)) / (7 * sizeof (float));
 						if (vec->body.child_type == urids.atom_Float)
 						{
+							shapeGui[shapeNr].shapeWidget.setValueEnabled (false);
 							shapeGui[shapeNr].shapeWidget.clearShape ();
 							float* data = (float*)(&vec->body + 1);
 							for (int nodeNr = 0; (nodeNr < vecSize) && (nodeNr < MAXNODES); ++nodeNr)
@@ -291,6 +293,8 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 								shapeGui[shapeNr].shapeWidget.appendNode (node);
 							}
 							shapeGui[shapeNr].shapeWidget.validateShape();
+							shapeGui[shapeNr].shapeWidget.update ();
+							shapeGui[shapeNr].shapeWidget.setValueEnabled (true);
 						}
 					}
 				}
@@ -404,6 +408,17 @@ void BShaprGUI::sendGuiOn ()
 	write_function(controller, CONTROL, lv2_atom_total_size(msg), urids.atom_eventTransfer, msg);
 }
 
+void BShaprGUI::sendGuiOff ()
+{
+	uint8_t obj_buf[64];
+	lv2_atom_forge_set_buffer(&forge, obj_buf, sizeof(obj_buf));
+
+	LV2_Atom_Forge_Frame frame;
+	LV2_Atom* msg = (LV2_Atom*)lv2_atom_forge_object(&forge, &frame, 0, urids.ui_off);
+	lv2_atom_forge_pop(&forge, &frame);
+	write_function(controller, CONTROL, lv2_atom_total_size(msg), urids.atom_eventTransfer, msg);
+}
+
 // TODO
 /*
 void BShaprGUI::sendNode (size_t shapeNr, size_t nodeNr)
@@ -467,17 +482,6 @@ void BShaprGUI::sendShape (size_t shapeNr)
 	write_function (controller, CONTROL, lv2_atom_total_size(msg), urids.atom_eventTransfer, msg);
 }
 
-void BShaprGUI::sendGuiOff ()
-{
-	uint8_t obj_buf[64];
-	lv2_atom_forge_set_buffer(&forge, obj_buf, sizeof(obj_buf));
-
-	LV2_Atom_Forge_Frame frame;
-	LV2_Atom* msg = (LV2_Atom*)lv2_atom_forge_object(&forge, &frame, 0, urids.ui_off);
-	lv2_atom_forge_pop(&forge, &frame);
-	write_function(controller, CONTROL, lv2_atom_total_size(msg), urids.atom_eventTransfer, msg);
-}
-
 void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 {
 	if ((event) && (event->getWidget ()))
@@ -512,7 +516,7 @@ void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 					{
 						int sh = (widgetNr - SHAPERS) / SH_SIZE;
 						int nr = value;
-						if (ui->shapeGui[sh].shapeWidget.isDefault ())
+						if ((ui->shapeGui[sh].shapeWidget.isDefault ()) && (ui->shapeGui[sh].shapeWidget.getNode (0).point.y != defaultEndNodes[nr].point.y))
 						{
 							ui->shapeGui[sh].shapeWidget.setDefaultShape (defaultEndNodes[nr]);
 						}

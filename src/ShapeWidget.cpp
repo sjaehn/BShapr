@@ -26,7 +26,7 @@ ShapeWidget::ShapeWidget () : ShapeWidget (0, 0, 0, 0, "") {}
 
 ShapeWidget::ShapeWidget (const double x, const double y, const double width, const double height, const std::string& name) :
 		ValueWidget (x, y, width, height, name, 0), Shape (), tool (NO_TOOL), scaleAnchorYPos (0), scaleAnchorValue (0), scaleRatio (1),
-		activeNode (-1), activeHandle (-1), selected (false), dragged (false),
+		activeNode (-1), activeHandle (-1), selected (false), dragged (false), valueEnabled (false),
 		fgColors (BColors::reds), bgColors (BColors::darks), lbfont (BWIDGETS_DEFAULT_FONT)
 {
 	setDraggable (true);
@@ -36,7 +36,7 @@ ShapeWidget::ShapeWidget (const double x, const double y, const double width, co
 ShapeWidget::ShapeWidget (const ShapeWidget& that):
 		ValueWidget (that), Shape (that), tool (that.tool), scaleAnchorYPos (that.scaleAnchorYPos),
 		scaleAnchorValue (that.scaleAnchorValue), scaleRatio (that.scaleRatio), activeNode (that.activeNode),
-		activeHandle (that.activeHandle), dragged (that.dragged), selected (that.selected) {}
+		activeHandle (that.activeHandle), dragged (that.dragged), selected (that.selected), valueEnabled (that.valueEnabled) {}
 
 ShapeWidget& ShapeWidget::operator= (const ShapeWidget& that)
 {
@@ -50,10 +50,13 @@ ShapeWidget& ShapeWidget::operator= (const ShapeWidget& that)
 	activeHandle = that.activeHandle;
 	dragged = that.dragged;
 	selected = that.selected;
+	valueEnabled = that.valueEnabled;
 	return *this;
 }
 
 void ShapeWidget::setTool (const ToolType tool) {this->tool = tool;}
+
+void ShapeWidget::setValueEnabled (const bool status) {valueEnabled = status;}
 
 void ShapeWidget::setScaleParameters (double anchorYPos, double anchorValue, double ratio)
 {
@@ -316,7 +319,7 @@ void ShapeWidget::applyTheme (BStyles::Theme& theme, const std::string& name)
 void ShapeWidget::drawLineOnMap (Point p1, Point p2)
 {
 	Shape::drawLineOnMap (p1, p2);
-	setValue (1);	// Value changed
+	if (valueEnabled) setValue (1);	// Value changed
 }
 
 void ShapeWidget::draw (const double x, const double y, const double width, const double height)

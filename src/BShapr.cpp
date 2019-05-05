@@ -186,7 +186,7 @@ void BShapr::run (uint32_t n_samples)
 			else if (obj->body.otype == urids.ui_off) ui_on = false;
 
 			// Process (single) node data
-			else if (obj->body.otype == urids.notify_nodeEvent)
+/*		else if (obj->body.otype == urids.notify_nodeEvent)
 			{
 				LV2_Atom *sNr = NULL, *nNr = NULL, *nOp = NULL, *nData = NULL;
 				lv2_atom_object_get (obj, urids.notify_shapeNr, &sNr,
@@ -231,6 +231,7 @@ void BShapr::run (uint32_t n_samples)
 					}
 				}
 			}
+*/
 
 			// Process (full) shape data
 			else if (obj->body.otype == urids.notify_shapeEvent)
@@ -711,6 +712,130 @@ void BShapr::play(uint32_t start, uint32_t end)
 	}
 }
 
+LV2_State_Status BShapr::state_save (LV2_State_Store_Function store, LV2_State_Handle handle, uint32_t flags,
+			const LV2_Feature* const* features)
+{
+	char shapesDataString[0x8010] = "Shape data:\n";
+
+	for (int sh = 0; sh < MAXSHAPES; ++sh)
+	{
+		for (int nd = 0; nd < shapes[sh].size (); ++nd)
+		{
+			char valueString[128];
+			Node node = shapes[sh].getNode (nd);
+			snprintf (valueString, 126, "shp:%d; typ:%d; ptx:%f; pty:%f; h1x:%f; h1y:%f; h2x:%f; h2y:%f",
+								sh, (int) node.nodeType, node.point.x, node.point.y, node.handle1.x, node.handle1.y, node.handle2.x, node.handle2.y);
+			if ((sh < MAXSHAPES - 1) || nd < shapes[sh].size ()) strcat (valueString, ";\n");
+			else strcat(valueString, "\n");
+			strcat (shapesDataString, valueString);
+		}
+	}
+	store (handle, urids.state_shape, shapesDataString, strlen (shapesDataString) + 1, urids.atom_String, LV2_STATE_IS_POD);
+
+	return LV2_STATE_SUCCESS;
+}
+
+LV2_State_Status BShapr::state_restore (LV2_State_Retrieve_Function retrieve, LV2_State_Handle handle, uint32_t flags,
+			const LV2_Feature* const* features)
+{
+	size_t   size;
+	uint32_t type;
+	uint32_t valflags;
+	const void* shapesData = retrieve(handle, urids.state_shape, &size, &type, &valflags);
+
+	if (shapesData && (type == urids.atom_String))
+	{
+		// Clear old data
+		for (int i = 0; i < MAXSHAPES; ++i) shapes[i].clearShape ();
+
+		// Parse retrieved data
+		std::string shapesDataString = (char*) shapesData;
+		const std::string keywords[8] = {"shp:", "typ:", "ptx:", "pty:", "h1x:", "h1y:", "h2x:", "h2y:"};
+		while (!shapesDataString.empty())
+		{
+			// Look for next "shp:"
+			size_t strPos = shapesDataString.find ("shp:");
+			size_t nextPos = 0;
+			if (strPos == std::string::npos) break;	// No "shp:" found => end
+			if (strPos + 4 > shapesDataString.length()) break;	// Nothing more after id => end
+			shapesDataString.erase (0, strPos + 4);
+
+			int sh;
+			try {sh = std::stof (shapesDataString, &nextPos);}
+			catch  (const std::exception& e)
+			{
+				fprintf (stderr, "BShapr.lv2: Restore shape state incomplete. Can't parse shape number from \"%s...\"", shapesDataString.substr (0, 63).c_str());
+				break;
+			}
+
+			if (nextPos > 0) shapesDataString.erase (0, nextPos);
+			if ((sh < 0) || (sh >= MAXSHAPES))
+			{
+				fprintf (stderr, "BShapr.lv2: Restore shape state incomplete. Invalid matrix data block loaded for shape %i.\n", sh);
+				break;
+			}
+
+			// Look for shape data
+			Node node = {NodeType::POINT_NODE, {0, 0}, {0, 0}, {0, 0}};
+			bool isTypeDef = false;
+			for (int i = 1; i < 8; ++i)
+			{
+				strPos = shapesDataString.find (keywords[i]);
+				if (strPos == std::string::npos) continue;	// Keyword not found => next keyword
+				if (strPos + 4 >= shapesDataString.length())	// Nothing more after keyword => end
+				{
+					shapesDataString ="";
+					break;
+				}
+				if (strPos > 0) shapesDataString.erase (0, strPos + 4);
+				float val;
+				try {val = std::stof (shapesDataString, &nextPos);}
+				catch  (const std::exception& e)
+				{
+					fprintf (stderr, "BShapr.lv2: Restore shape state incomplete. Can't parse %s from \"%s...\"",
+							 keywords[i].substr(0,3).c_str(), shapesDataString.substr (0, 63).c_str());
+					break;
+				}
+
+				if (nextPos > 0) shapesDataString.erase (0, nextPos);
+				switch (i)
+				{
+					case 1: node.nodeType = (NodeType)((int)val);
+									isTypeDef = true;
+									break;
+					case 2: node.point.x = val;
+									break;
+					case 3:	node.point.y = val;
+									break;
+					case 4:	node.handle1.x = val;
+									break;
+					case 5:	node.handle1.y = val;
+									break;
+					case 6:	node.handle2.x = val;
+									break;
+					case 7:	node.handle2.y = val;
+									break;
+					default:break;
+				}
+			}
+
+			if (isTypeDef) shapes[sh].appendNode (node);
+		}
+
+		// Validate all shapes
+		for (int i = 0; i < MAXSHAPES; ++i)
+		{
+			if (shapes[i].size () < 2) shapes[i].setDefaultShape ();
+			else if (!shapes[i].validateShape ()) shapes[i].setDefaultShape ();
+		}
+
+		// Force GUI notification
+		for (int i = 0; i < MAXSHAPES; ++i) scheduleNotifyShapes[i] = true;
+	}
+
+	return LV2_STATE_SUCCESS;
+}
+
 LV2_Handle instantiate (const LV2_Descriptor* descriptor, double samplerate, const char* bundle_path, const LV2_Feature* const* features)
 {
 	// New instance
@@ -756,6 +881,33 @@ void cleanup (LV2_Handle instance)
 	delete inst;
 }
 
+static LV2_State_Status state_save(LV2_Handle instance, LV2_State_Store_Function store, LV2_State_Handle handle, uint32_t flags,
+           const LV2_Feature* const* features)
+{
+	BShapr* inst = (BShapr*)instance;
+	if (!inst) return LV2_STATE_SUCCESS;
+
+	inst->state_save (store, handle, flags, features);
+	return LV2_STATE_SUCCESS;
+}
+
+static LV2_State_Status state_restore(LV2_Handle instance, LV2_State_Retrieve_Function retrieve, LV2_State_Handle handle, uint32_t flags,
+           const LV2_Feature* const* features)
+{
+	BShapr* inst = (BShapr*)instance;
+	inst->state_restore (retrieve, handle, flags, features);
+	return LV2_STATE_SUCCESS;
+}
+
+static const void* extension_data(const char* uri)
+{
+  static const LV2_State_Interface  state  = {state_save, state_restore};
+  if (!strcmp(uri, LV2_STATE__interface)) {
+    return &state;
+  }
+  return NULL;
+}
+
 const LV2_Descriptor descriptor =
 {
 		BSHAPR_URI,
@@ -765,7 +917,7 @@ const LV2_Descriptor descriptor =
 		run,
 		NULL, //deactivate,
 		cleanup,
-		NULL //extension_data
+		extension_data
 };
 
 // LV2 Symbol Export

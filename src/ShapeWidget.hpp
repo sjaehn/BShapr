@@ -46,6 +46,7 @@ public:
 	ShapeWidget& operator= (const ShapeWidget& that);
 
 	void setTool (const ToolType tool);
+	void setValueEnabled (const bool status);
 	void setScaleParameters (double anchorYPos, double anchorValue, double ratio);
 	virtual void onButtonPressed (BEvents::PointerEvent* event) override;
 	virtual void onButtonReleased (BEvents::PointerEvent* event) override;
@@ -60,6 +61,7 @@ protected:
 	int activeNode;
 	int activeHandle;
 	bool selected, dragged;
+	bool valueEnabled;
 	double scaleAnchorYPos;
 	double scaleAnchorValue;
 	double scaleRatio;

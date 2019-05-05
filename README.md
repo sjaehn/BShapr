@@ -37,6 +37,7 @@ to run it stand-alone and connect it to the JACK system.
 Notes:
 
 * **Jack transport is required to get information about beat / position**
+* **Don't forget to select an input for each shape you use and an output (see usage/input and usage/output)**
 
 ## Usage
 
@@ -49,6 +50,11 @@ combined together.
 
 The Monitor in the upper part of the GUI visualizes the input and the output levels. You can change the zoom
 by scrolling the mouse wheel.
+
+### Sequence size
+
+You can set the lenght of the whole shape sequence between 1 and 16 seconds, beats or bars. Change the value
+by dragging, scrolling or clicking on its up and down arrows and select a base.
 
 ### Shape selector
 
@@ -80,6 +86,6 @@ the signal will only be used internally.
 
 ## TODO
 
-* Save / restore
 * Stereo monitor
 * GUI performance
+* Additional target effects

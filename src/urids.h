@@ -44,6 +44,7 @@ typedef struct
 	LV2_URID time_beatsPerBar;
 	LV2_URID time_beatUnit;
 	LV2_URID time_speed;
+	LV2_URID state_shape;
 	LV2_URID ui_on;
 	LV2_URID ui_off;
 	LV2_URID notify_shapeEvent;
@@ -76,6 +77,7 @@ void mapURIDs (LV2_URID_Map* m, BShaprURIDs* uris)
 	uris->time_beatUnit = m->map(m->handle, LV2_TIME__beatUnit);
 	uris->time_beatsPerBar = m->map(m->handle, LV2_TIME__beatsPerBar);
 	uris->time_speed = m->map(m->handle, LV2_TIME__speed);
+	uris->state_shape = m->map(m->handle, BSHAPR_URI "#STATEshape");
 	uris->ui_on = m->map(m->handle, BSHAPR_URI "#UIon");
 	uris->ui_off = m->map(m->handle, BSHAPR_URI "#UIoff");
 	uris->notify_shapeEvent = m->map(m->handle, BSHAPR_URI "#NOTIFYshapeEvent");
