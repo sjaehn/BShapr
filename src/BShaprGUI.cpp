@@ -25,10 +25,10 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	sz (1.0), horizonPos (0), monitorScale (1),
 	pluginPath (bundlePath ? std::string (bundlePath) : std::string ("")), controller (NULL), write_function (NULL), map (NULL),
 	surface (NULL), cr1 (NULL), cr2 (NULL), cr3 (NULL), cr4 (NULL), pat1 (NULL), pat2 (NULL), pat3 (NULL), pat4 (NULL), pat5 (NULL),
-	bgImageSurface (nullptr), activeShape (0),
+	bgImageSurface (nullptr),
 
 	mContainer (0, 0, 1200, 780, "widget"),
-	messageLabel (800, 45, 400, 20, "label", ""),
+	messageLabel (600, 45, 600, 20, "label", ""),
 	baseValueSelect (480, 280, 100, 20, "select", 1.0, 1.0, 16.0, 0.01),
 	baseListBox (620, 280, 100, 20, 100, 80, "menu", {{0, "Seconds"}, {1, "Beats"}, {2, "Bars"}}),
 	monitorSurface (24, 94, 1152, 172, "monitor"),
@@ -211,13 +211,20 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 			{
 				const LV2_Atom* data = NULL;
 				lv2_atom_object_get(obj, urids.notify_message, &data, 0);
-				if (data && (data->type == urids.atom_String))
+				if (data && (data->type == urids.atom_Int))
 				{
-					const LV2_Atom_String* str = (LV2_Atom_String*)data;
-					char* msg = (char*) (str + 1);
-					messageLabel.setText (std::string (msg));
+					const int messageBits = ((LV2_Atom_Int*)data)->body;
+					std::string msg = "";
+					for (uint32_t i = 1; i < MAXMESSAGES; ++i)
+					{
+						if (messageBits & (1 << (i -1)))
+						{
+							msg = messageStrings[i];
+							break;
+						}
+					}
+					messageLabel.setText (msg);
 				}
-
 			}
 
 			// Single node notification
@@ -308,8 +315,24 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 	else if ((format == 0) && (port >= CONTROLLERS) && (port < CONTROLLERS + NR_CONTROLLERS))
 	{
 		float* pval = (float*) buffer;
-		controllerWidgets[port - CONTROLLERS]->setValue (*pval);
-		controllers[port - CONTROLLERS] = *pval;
+		if (port == CONTROLLERS + ACTIVE_SHAPE)
+		{
+			int sh = LIMIT (controllers[ACTIVE_SHAPE], 1, MAXSHAPES) - 1;
+			shapeGui[sh].tabIcon.rename ("tab");
+			shapeGui[sh].tabIcon.applyTheme (theme);
+			shapeGui[sh].shapeContainer.hide();
+			controllers[ACTIVE_SHAPE] = LIMIT (*pval, 1, MAXSHAPES);
+			int nsh = controllers[ACTIVE_SHAPE] - 1;
+			shapeGui[nsh].tabIcon.rename ("activetab");
+			shapeGui[nsh].tabIcon.applyTheme (theme);
+			shapeGui[nsh].shapeContainer.show();
+		}
+
+		else
+		{
+			controllerWidgets[port - CONTROLLERS]->setValue (*pval);
+			controllers[port - CONTROLLERS] = *pval;
+		}
 	}
 }
 
@@ -323,7 +346,7 @@ void BShaprGUI::resizeGUI()
 
 	// Resize widgets
 	RESIZE (mContainer, 0, 0, 1200, 780, sz);
-	RESIZE (messageLabel, 800, 45, 400, 20, sz);
+	RESIZE (messageLabel, 600, 45, 600, 20, sz);
 	RESIZE (baseValueSelect, 480, 280, 100, 20, sz);
 	RESIZE (baseListBox, 620, 280, 100, 20, sz);
 	baseListBox.resizeListBox (100 * sz, 80 * sz);
@@ -576,10 +599,12 @@ void BShaprGUI::tabClickedCallback (BEvents::Event* event)
 			{
 				if (widget == &ui->shapeGui[i].tabIcon)
 				{
-					ui->shapeGui[ui->activeShape].tabIcon.rename ("tab");
-					ui->shapeGui[ui->activeShape].tabIcon.applyTheme (ui->theme);
-					ui->shapeGui[ui->activeShape].shapeContainer.hide();
-					ui->activeShape = i;
+					int sh = LIMIT (ui->controllers[ACTIVE_SHAPE], 1, MAXSHAPES) - 1;
+					ui->shapeGui[sh].tabIcon.rename ("tab");
+					ui->shapeGui[sh].tabIcon.applyTheme (ui->theme);
+					ui->shapeGui[sh].shapeContainer.hide();
+					ui->controllers[ACTIVE_SHAPE] = i + 1;
+					ui->write_function(ui->controller, CONTROLLERS + ACTIVE_SHAPE, sizeof(float), 0, &ui->controllers[ACTIVE_SHAPE]);
 					ui->shapeGui[i].tabIcon.rename ("activetab");
 					ui->shapeGui[i].tabIcon.applyTheme (ui->theme);
 					ui->shapeGui[i].shapeContainer.show();

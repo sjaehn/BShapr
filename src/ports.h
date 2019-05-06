@@ -33,8 +33,9 @@ typedef enum
 	CONTROLLERS		= 6,
 	BASE					= 0,
 	BASE_VALUE		= 1,
+	ACTIVE_SHAPE	= 2,
 
-	SHAPERS					= 2,
+	SHAPERS					= 3,
 	SH_INPUT				= 0,
 	SH_INPUT_AMP		= 1,
 	SH_TARGET				= 2,
@@ -42,7 +43,7 @@ typedef enum
 	SH_OUTPUT_AMP		= 4,
 	SH_SIZE					= 5,
 
-	NR_CONTROLLERS	= 22
+	NR_CONTROLLERS	= 23
 } BShaprPortIndex;
 
 typedef enum

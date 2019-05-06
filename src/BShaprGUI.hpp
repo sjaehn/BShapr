@@ -69,6 +69,11 @@ typedef struct
 
 const ScaleParameters scaleParameters[MAXEFFECTS] = {{0, -0.05, 1.1}, {0, -1.1, 2.2}, {0, -0.1, 2.2}, {0, -25, 5050}, {0, -5, 1010}};
 
+const std::string messageStrings[MAXMESSAGES] = {"",
+																								 "Msg: Jack transport off or halted. Plugin halted.",
+																							 	 "Msg: Orphan active shape. Select an input for this shape!",
+																							 	 "Msg: Orphan active shape. Select an output for this or a connected shape!"};
+
 class BShaprGUI : public BWidgets::Window
 {
 public:
@@ -128,7 +133,6 @@ private:
 	} ShapeGui;
 
 	std::array<ShapeGui, MAXSHAPES> shapeGui;
-	int activeShape;
 
 
 	cairo_surface_t* surface;

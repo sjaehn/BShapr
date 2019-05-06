@@ -48,7 +48,8 @@ typedef struct
 } Limit;
 
 const Limit globalControllerLimits [SHAPERS]	= {{0, 2, 1},
-																								 {1, 16, 0}};
+																								 {1, 16, 0},
+																							 	 {1, 4, 1}};
 
 const Limit shapeControllerLimits [SH_SIZE]		= {{0, 6, 1},
 																								 {-1, 1, 0},
@@ -83,6 +84,7 @@ public:
 private:
 	void fillFilterBuffer (float filterBuffer[MAXSHAPES] [F_ORDER / 2], const float value);
 	float validateValue (float value, const Limit limit);
+	bool isAudioOutputConnected (int shapeNr);
 	void audioLevel (const float input1, const float input2, float* output1, float* output2, const float amp);
 	void stereoBalance (const float input1, const float input2, float* output1, float* output2, const float balance);
 	void stereoWidth (const float input1, const float input2, float* output1, float* output2, const float width);
@@ -138,7 +140,7 @@ private:
 
 	// Internals
 	bool ui_on;
-	char message[256];
+	uint32_t messagebits;
 	int monitorpos;
 	std::array<BShaprNotifications, NOTIFYBUFFERSIZE> notifications;
 	std::array<BShaprMonitor_t, MONITORBUFFERSIZE> monitor;
