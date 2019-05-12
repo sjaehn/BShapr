@@ -31,7 +31,7 @@ BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 	map(NULL), controlPort(NULL), notifyPort(NULL),
 	audioInput1(NULL), audioInput2(NULL), audioOutput1(NULL), audioOutput2(NULL),
 	rate(samplerate), bpm(120.0f), speed(1), bar (0), barBeat (0), position(0), refFrame(0), beatUnit (4), beatsPerBar (4),
-	ui_on(false), monitorpos(-1), messagebits (NO_MSG), scheduleNotifyMessage (false)
+	ui_on(false), monitorpos(-1), messagebits (NO_MSG), scheduleNotifyMessage (false), scheduleNotifyStatus (true)
 
 {
 	for (int i = 0; i < MAXSHAPES; ++i) shapes[i].setDefaultShape (defaultEndNodes[0]);
@@ -360,10 +360,18 @@ void BShapr::run (uint32_t n_samples)
 				}
 
 				// Beats per bar changed?
-				if (oBpb && (oBpb->type == urids.atom_Float) && (((LV2_Atom_Float*)oBpb)->body > 0)) beatsPerBar = ((LV2_Atom_Float*)oBpb)->body;
+				if (oBpb && (oBpb->type == urids.atom_Float) && (((LV2_Atom_Float*)oBpb)->body > 0))
+				{
+					beatsPerBar = ((LV2_Atom_Float*)oBpb)->body;
+					scheduleNotifyStatus = true;
+				}
 
 				// BeatUnit changed?
-				if (oBu && (oBu->type == urids.atom_Int) && (((LV2_Atom_Int*)oBu)->body > 0)) beatUnit = ((LV2_Atom_Int*)oBu)->body;
+				if (oBu && (oBu->type == urids.atom_Int) && (((LV2_Atom_Int*)oBu)->body > 0))
+				{
+					beatUnit = ((LV2_Atom_Int*)oBu)->body;
+					scheduleNotifyStatus = true;
+				}
 
 				// Speed changed?
 				if (oSpeed && (oSpeed->type == urids.atom_Float))
@@ -433,6 +441,7 @@ void BShapr::run (uint32_t n_samples)
 		notifyMonitorToGui();
 		for (int i = 0; i < MAXSHAPES; ++i) if (scheduleNotifyShapes[i]) notifyShapeToGui (i);
 		if (scheduleNotifyMessage) notifyMessageToGui ();
+		if (scheduleNotifyStatus) notifyStatusToGui ();
 	}
 	lv2_atom_forge_pop(&forge, &notify_frame);
 }
@@ -526,6 +535,21 @@ void BShapr::notifyMessageToGui()
 	scheduleNotifyMessage = false;
 }
 
+void BShapr::notifyStatusToGui()
+{
+	// Send notifications
+	LV2_Atom_Forge_Frame frame;
+	lv2_atom_forge_frame_time(&forge, 0);
+	lv2_atom_forge_object(&forge, &frame, 0, urids.notify_statusEvent);
+	lv2_atom_forge_key(&forge, urids.time_beatsPerBar);
+	lv2_atom_forge_float(&forge, beatsPerBar);
+	lv2_atom_forge_key(&forge, urids.time_beatUnit);
+	lv2_atom_forge_int(&forge, beatUnit);
+	lv2_atom_forge_pop(&forge, &frame);
+
+	scheduleNotifyStatus = false;
+}
+
 void BShapr::audioLevel (const float input1, const float input2, float* output1, float* output2, const float amp)
 {
 	*output1 = input1 * LIM (amp, 0, 100);
@@ -560,7 +584,7 @@ void BShapr::stereoWidth (const float input1, const float input2, float* output1
 
 void BShapr::lowPassFilter (const float input1, const float input2, float* output1, float* output2, const float cutoffFreq, const int shape)
 {
-	float f = LIM (cutoffFreq, 0, 20000);
+	float f = LIM (cutoffFreq, 20, 20000);
 	float a = tan (M_PI * f / rate);
   float a2 = a * a;
 	float coeff0 [F_ORDER / 2];
@@ -598,7 +622,7 @@ void BShapr::lowPassFilter (const float input1, const float input2, float* outpu
 
 void BShapr::highPassFilter (const float input1, const float input2, float* output1, float* output2, const float cutoffFreq, const int shape)
 {
-	float f = LIM (cutoffFreq, 0, 20000);
+	float f = LIM (cutoffFreq, 20, 20000);
 	float a = tan (M_PI * f / rate);
   float a2 = a * a;
 	float coeff0 [F_ORDER / 2];

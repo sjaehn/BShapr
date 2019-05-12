@@ -26,6 +26,7 @@ ShapeWidget::ShapeWidget () : ShapeWidget (0, 0, 0, 0, "") {}
 
 ShapeWidget::ShapeWidget (const double x, const double y, const double width, const double height, const std::string& name) :
 		ValueWidget (x, y, width, height, name, 0), Shape (), tool (NO_TOOL), scaleAnchorYPos (0), scaleAnchorValue (0), scaleRatio (1),
+		minorXSteps (1), majorXSteps (1),
 		activeNode (-1), activeHandle (-1), selected (false), dragged (false), valueEnabled (false),
 		fgColors (BColors::reds), bgColors (BColors::darks), lbfont (BWIDGETS_DEFAULT_FONT)
 {
@@ -65,6 +66,10 @@ void ShapeWidget::setScaleParameters (double anchorYPos, double anchorValue, dou
 	scaleRatio = ratio;
 	update ();
 }
+
+void ShapeWidget::setMinorXSteps (double stepSize) {minorXSteps = stepSize;}
+
+void ShapeWidget::setMajorXSteps (double stepSize) {majorXSteps = stepSize;}
 
 void ShapeWidget::onButtonPressed (BEvents::PointerEvent* event)
 {
@@ -348,7 +353,7 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 		BColors::Color activeNodeColor = *syColors.getColor (BColors::ACTIVE);
 		BColors::Color gridColor = *bgColors.getColor (BColors::NORMAL);
 
-		// Draw grid
+		// Draw Y grid
 		double ygrid = pow (10, floor (log10 (scaleRatio)));
 		std::string nrformat = "%5." + (ygrid < 1 ? std::to_string ((int)(-log10 (ygrid))) : "0") + "f";
 		cairo_text_extents_t ext;
@@ -372,6 +377,23 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 
 		cairo_set_source_rgba (cr, CAIRO_RGBA (gridColor));
 		cairo_set_line_width (cr, 1);
+		cairo_stroke (cr);
+
+		// Draw X grid
+		cairo_set_line_width (cr, 0.5);
+		for (double x = 0; x < 1; x += minorXSteps)
+		{
+			cairo_move_to (cr, x * width, 0);
+			cairo_line_to (cr, x * width, height);
+		}
+		cairo_stroke (cr);
+
+		cairo_set_line_width (cr, 1);
+		for (double x = 0; x < 1; x += majorXSteps)
+		{
+			cairo_move_to (cr, x * width, 0);
+			cairo_line_to (cr, x * width, height);
+		}
 		cairo_stroke (cr);
 
 		// Draw curve

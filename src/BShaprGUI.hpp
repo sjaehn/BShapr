@@ -99,6 +99,7 @@ public:
 
 private:
 	void resizeGUI ();
+	void calculateXSteps ();
 	bool init_mainMonitor ();
 	void destroy_mainMonitor ();
 	void add_monitor_data (BShaprNotifications* notifications, uint32_t notificationsCount, double& end);
@@ -107,6 +108,9 @@ private:
 	// Controllers
 	std::array<BWidgets::ValueWidget*, NR_CONTROLLERS> controllerWidgets;
 	std::array<float, NR_CONTROLLERS> controllers;
+
+	float beatsPerBar;
+	int beatUnit;
 
 	// Widgets
 	BWidgets::ImageIcon mContainer;
@@ -151,6 +155,8 @@ private:
 	std::array<BShaprNotifications, MONITORBUFFERSIZE> mainMonitorData;
 	double horizonPos;
 	double monitorScale;
+	double minorXSteps;
+	double majorXSteps;
 
 	std::string pluginPath;
 	double sz;

@@ -58,6 +58,7 @@ typedef struct
 	LV2_URID notify_monitor;
 	LV2_URID notify_messageEvent;
 	LV2_URID notify_message;
+	LV2_URID notify_statusEvent;
 }  BShaprURIDs;
 
 void mapURIDs (LV2_URID_Map* m, BShaprURIDs* uris)
@@ -91,6 +92,7 @@ void mapURIDs (LV2_URID_Map* m, BShaprURIDs* uris)
 	uris->notify_monitor = m->map(m->handle, BSHAPR_URI "#NOTIFYmonitor");
 	uris->notify_messageEvent = m->map(m->handle, BSHAPR_URI "#NOTIFYmessageEvent");
 	uris->notify_message = m->map(m->handle, BSHAPR_URI "#NOTIFYmessage");
+	uris->notify_statusEvent = m->map(m->handle, BSHAPR_URI "#NOTIFYstatusEvent");
 }
 
 #endif /* URIDS_H_ */

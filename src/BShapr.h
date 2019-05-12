@@ -94,6 +94,7 @@ private:
 	void notifyMonitorToGui ();
 	void notifyShapeToGui (int shapeNr);
 	void notifyMessageToGui ();
+	void notifyStatusToGui ();
 	double getPositionFromBeats (double beats);
 	double getPositionFromFrames (uint64_t frames);
 
@@ -146,6 +147,7 @@ private:
 	std::array<BShaprMonitor_t, MONITORBUFFERSIZE> monitor;
 	bool scheduleNotifyShapes[MAXSHAPES];
 	bool scheduleNotifyMessage;
+	bool scheduleNotifyStatus;
 
 };
 

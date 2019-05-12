@@ -48,6 +48,8 @@ public:
 	void setTool (const ToolType tool);
 	void setValueEnabled (const bool status);
 	void setScaleParameters (double anchorYPos, double anchorValue, double ratio);
+	void setMinorXSteps (double stepSize);
+	void setMajorXSteps (double stepSize);
 	virtual void onButtonPressed (BEvents::PointerEvent* event) override;
 	virtual void onButtonReleased (BEvents::PointerEvent* event) override;
 	virtual void onPointerDragged (BEvents::PointerEvent* event) override;
@@ -65,6 +67,8 @@ protected:
 	double scaleAnchorYPos;
 	double scaleAnchorValue;
 	double scaleRatio;
+	double minorXSteps;
+	double majorXSteps;
 	BColors::ColorSet fgColors;
 	BColors::ColorSet syColors;
 	BColors::ColorSet bgColors;

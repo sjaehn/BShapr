@@ -22,7 +22,7 @@
 
 BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features, PuglNativeWindow parentWindow) :
 	Window (1200, 780, "B.Shapr", parentWindow, true),
-	sz (1.0), horizonPos (0), monitorScale (1),
+	sz (1.0), horizonPos (0), monitorScale (1), beatsPerBar (4.0), beatUnit (4), minorXSteps (1.0), majorXSteps (1.0),
 	pluginPath (bundlePath ? std::string (bundlePath) : std::string ("")), controller (NULL), write_function (NULL), map (NULL),
 	surface (NULL), cr1 (NULL), cr2 (NULL), cr3 (NULL), cr4 (NULL), pat1 (NULL), pat2 (NULL), pat3 (NULL), pat4 (NULL), pat5 (NULL),
 	bgImageSurface (nullptr),
@@ -108,6 +108,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	}
 
 	// Configure widgets
+	calculateXSteps ();
 	mContainer.loadImage (pluginPath + BG_FILE);
 	monitorSurface.setScrollable (true);
 	shapeGui[0].tabIcon.rename ("activetab");
@@ -227,6 +228,25 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 				}
 			}
 
+			// Status notification
+			else if (obj->body.otype == urids.notify_statusEvent)
+			{
+				const LV2_Atom *oBpb = NULL, *oBu = NULL;
+				lv2_atom_object_get(obj, urids.time_beatsPerBar, &oBpb,
+					 											 urids.time_beatUnit, &oBu, 0);
+				if (oBpb && (oBpb->type == urids.atom_Float))
+				{
+					beatsPerBar = ((LV2_Atom_Float*)oBpb)->body;
+					calculateXSteps ();
+				}
+
+				if (oBu && (oBu->type == urids.atom_Int))
+				{
+					beatUnit = ((LV2_Atom_Float*)oBu)->body;
+					calculateXSteps ();
+				}
+			}
+
 			// Single node notification
 /*			else if (obj->body.otype == urids.notify_nodeEvent)
 			{
@@ -332,6 +352,8 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 		{
 			controllerWidgets[port - CONTROLLERS]->setValue (*pval);
 			controllers[port - CONTROLLERS] = *pval;
+
+			if ((port == CONTROLLERS + BASE) || (port == CONTROLLERS + BASE_VALUE)) calculateXSteps ();
 		}
 	}
 }
@@ -677,6 +699,32 @@ void BShaprGUI::wheelScrolledCallback (BEvents::Event* event)
 	}
 }
 
+void BShaprGUI::calculateXSteps ()
+{
+	majorXSteps = 1.0 / controllers[BASE_VALUE];
+
+	switch ((BShaprBaseIndex)controllers[BASE])
+	{
+		case SECONDS:	minorXSteps = majorXSteps / 10.0;
+									break;
+
+		case BEATS:		minorXSteps = majorXSteps / (16.0 / ((double)beatUnit));
+									break;
+
+		case BARS:		minorXSteps = majorXSteps / beatsPerBar;
+									break;
+	}
+
+	if (controllers[BASE_VALUE] >= 10.0) minorXSteps = majorXSteps;
+
+	for (int sh = 0; sh < MAXSHAPES; ++sh)
+	{
+		shapeGui[sh].shapeWidget.setMinorXSteps (minorXSteps);
+		shapeGui[sh].shapeWidget.setMajorXSteps (majorXSteps);
+		shapeGui[sh].shapeWidget.update ();
+	}
+}
+
 bool BShaprGUI::init_mainMonitor ()
 {
 	//Initialize mainMonitor
@@ -753,11 +801,12 @@ void BShaprGUI::redrawMainMonitor ()
 	cairo_t* cr = cairo_create (monitorSurface.getDrawingSurface ());
 	if (cairo_status (cr) != CAIRO_STATUS_SUCCESS) return;
 
-	// Draw background
+	// Clear background
 	cairo_set_source_rgba (cr, CAIRO_BG_COLOR);
 	cairo_rectangle (cr, 0, 0, width, height);
 	cairo_fill (cr);
 
+	// Draw grid
 	cairo_set_source_rgba (cr, CAIRO_BG_COLOR2);
 	cairo_set_line_width (cr, 1);
 	cairo_move_to (cr, 0, (0.5 - 0.4 / monitorScale) * height);
@@ -766,6 +815,22 @@ void BShaprGUI::redrawMainMonitor ()
 	cairo_line_to (cr, width, 0.5 * height);
 	cairo_move_to (cr, 0, (0.5 + 0.4 / monitorScale) * height);
 	cairo_line_to (cr, width, (0.5 + 0.4 / monitorScale) * height);
+	cairo_stroke (cr);
+
+	cairo_set_line_width (cr, 0.5);
+	for (double x = 0; x < 1; x += minorXSteps)
+	{
+		cairo_move_to (cr, x * width, 0);
+		cairo_line_to (cr, x * width, height);
+	}
+	cairo_stroke (cr);
+
+	cairo_set_line_width (cr, 1);
+	for (double x = 0; x < 1; x += majorXSteps)
+	{
+		cairo_move_to (cr, x * width, 0);
+		cairo_line_to (cr, x * width, height);
+	}
 	cairo_stroke (cr);
 
 	cairo_surface_clear (surface);

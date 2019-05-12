@@ -86,6 +86,7 @@ the signal will only be used internally.
 
 ## TODO
 
+* Non-linear shapers
 * Stereo monitor
 * GUI performance
 * Additional target effects
