@@ -90,3 +90,7 @@ the signal will only be used internally.
 * Stereo monitor
 * GUI performance
 * Additional target effects
+
+## See also
+
+* https://www.youtube.com/watch?v=DxYQJ_XJwbU
