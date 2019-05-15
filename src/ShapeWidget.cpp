@@ -26,7 +26,7 @@ ShapeWidget::ShapeWidget () : ShapeWidget (0, 0, 0, 0, "") {}
 
 ShapeWidget::ShapeWidget (const double x, const double y, const double width, const double height, const std::string& name) :
 		ValueWidget (x, y, width, height, name, 0), Shape (), tool (NO_TOOL), scaleAnchorYPos (0), scaleAnchorValue (0), scaleRatio (1),
-		minorXSteps (1), majorXSteps (1),
+		minorXSteps (1), majorXSteps (1), prefix (""), unit (""),
 		activeNode (-1), activeHandle (-1), selected (false), dragged (false), valueEnabled (false),
 		fgColors (BColors::reds), bgColors (BColors::darks), lbfont (BWIDGETS_DEFAULT_FONT)
 {
@@ -67,9 +67,29 @@ void ShapeWidget::setScaleParameters (double anchorYPos, double anchorValue, dou
 	update ();
 }
 
-void ShapeWidget::setMinorXSteps (double stepSize) {minorXSteps = stepSize;}
+void ShapeWidget::setMinorXSteps (double stepSize)
+{
+	minorXSteps = stepSize;
+	update ();
+}
 
-void ShapeWidget::setMajorXSteps (double stepSize) {majorXSteps = stepSize;}
+void ShapeWidget::setMajorXSteps (double stepSize)
+{
+	majorXSteps = stepSize;
+	update ();
+}
+
+void ShapeWidget::setPrefix (std::string text)
+{
+	prefix = text;
+	update ();
+}
+
+void ShapeWidget::setUnit (std::string text)
+{
+	unit = text;
+	update ();
+}
 
 void ShapeWidget::onButtonPressed (BEvents::PointerEvent* event)
 {
@@ -355,7 +375,7 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 
 		// Draw Y grid
 		double ygrid = pow (10, floor (log10 (scaleRatio)));
-		std::string nrformat = "%5." + (ygrid < 1 ? std::to_string ((int)(-log10 (ygrid))) : "0") + "f";
+		std::string nrformat = "%" + ((ygrid < 1) ? ("1." + std::to_string ((int)(-log10 (ygrid)))) : (std::to_string ((int)(log10 (ygrid)) + 1) + ".0")) + "f";
 		cairo_text_extents_t ext;
 		cairo_select_font_face (cr, lbfont.getFontFamily ().c_str (), lbfont.getFontSlant (), lbfont.getFontWeight ());
 		cairo_set_font_size (cr, lbfont.getFontSize ());
@@ -365,7 +385,7 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 			cairo_move_to (cr, x0, y0 + h - h * (yp - ymin) / (ymax - ymin));
 			cairo_line_to (cr, x0 + 0.02 * w, y0 + h - h * (yp - ymin) / (ymax - ymin));
 
-			std::string label = BValues::toBString (nrformat, yp);
+			std::string label = prefix + BValues::toBString (nrformat, yp) + ((unit != "") ? (" " + unit) : "");
 			cairo_text_extents (cr, label.c_str(), &ext);
 			cairo_move_to (cr, x0 + 0.025 * w - ext.x_bearing, y0 + h - h * (yp - ymin) / (ymax - ymin) - ext.height / 2 - ext.y_bearing);
 			cairo_set_source_rgba (cr, CAIRO_RGBA (gridColor));

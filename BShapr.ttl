@@ -133,9 +133,12 @@
 						lv2:scalePoint [ rdfs:label "Width"; rdf:value 2 ] ;
 						lv2:scalePoint [ rdfs:label "Low pass"; rdf:value 3 ] ;
 						lv2:scalePoint [ rdfs:label "High pass"; rdf:value 4 ] ;
+						lv2:scalePoint [ rdfs:label "Gain"; rdf:value 5 ] ;
+						lv2:scalePoint [ rdfs:label "Low pass (log)"; rdf:value 6 ] ;
+						lv2:scalePoint [ rdfs:label "High pass (log)"; rdf:value 7 ] ;
 						lv2:default 0 ;
             lv2:minimum 0 ;
-            lv2:maximum 4 ;
+            lv2:maximum 7 ;
     ] , [
             a lv2:InputPort , lv2:ControlPort ;
             lv2:index 12 ;
@@ -189,9 +192,12 @@
 						lv2:scalePoint [ rdfs:label "Width"; rdf:value 2 ] ;
 						lv2:scalePoint [ rdfs:label "Low pass"; rdf:value 3 ] ;
 						lv2:scalePoint [ rdfs:label "High pass"; rdf:value 4 ] ;
+						lv2:scalePoint [ rdfs:label "Gain"; rdf:value 5 ] ;
+						lv2:scalePoint [ rdfs:label "Low pass (log)"; rdf:value 6 ] ;
+						lv2:scalePoint [ rdfs:label "High pass (log)"; rdf:value 7 ] ;
 						lv2:default 0 ;
             lv2:minimum 0 ;
-            lv2:maximum 4 ;
+            lv2:maximum 7 ;
     ] , [
             a lv2:InputPort , lv2:ControlPort ;
             lv2:index 17 ;
@@ -246,9 +252,12 @@
 						lv2:scalePoint [ rdfs:label "Width"; rdf:value 2 ] ;
 						lv2:scalePoint [ rdfs:label "Low pass"; rdf:value 3 ] ;
 						lv2:scalePoint [ rdfs:label "High pass"; rdf:value 4 ] ;
+						lv2:scalePoint [ rdfs:label "Gain"; rdf:value 5 ] ;
+						lv2:scalePoint [ rdfs:label "Low pass (log)"; rdf:value 6 ] ;
+						lv2:scalePoint [ rdfs:label "High pass (log)"; rdf:value 7 ] ;
 						lv2:default 0 ;
             lv2:minimum 0 ;
-            lv2:maximum 4 ;
+            lv2:maximum 7 ;
     ] , [
             a lv2:InputPort , lv2:ControlPort ;
             lv2:index 22 ;
@@ -303,9 +312,12 @@
 						lv2:scalePoint [ rdfs:label "Width"; rdf:value 2 ] ;
 						lv2:scalePoint [ rdfs:label "Low pass"; rdf:value 3 ] ;
 						lv2:scalePoint [ rdfs:label "High pass"; rdf:value 4 ] ;
+						lv2:scalePoint [ rdfs:label "Gain"; rdf:value 5 ] ;
+						lv2:scalePoint [ rdfs:label "Low pass (log)"; rdf:value 6 ] ;
+						lv2:scalePoint [ rdfs:label "High pass (log)"; rdf:value 7 ] ;
 						lv2:default 0 ;
             lv2:minimum 0 ;
-            lv2:maximum 4 ;
+            lv2:maximum 7 ;
     ] , [
             a lv2:InputPort , lv2:ControlPort ;
             lv2:index 27 ;

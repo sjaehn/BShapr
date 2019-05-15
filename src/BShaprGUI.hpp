@@ -65,9 +65,19 @@ typedef struct
 	double anchorYPos;
 	double anchorValue;
 	double ratio;
+	std::string prefix;
+	std::string unit;
 } ScaleParameters;
 
-const ScaleParameters scaleParameters[MAXEFFECTS] = {{0, -0.05, 1.1}, {0, -1.1, 2.2}, {0, -0.1, 2.2}, {0, -25, 5050}, {0, -5, 1010}};
+const ScaleParameters scaleParameters[MAXEFFECTS] = {{0, -0.05, 1.1, "", ""},
+																										 {0, -1.1, 2.2, "", ""},
+																										 {0, -0.1, 2.2, "", ""},
+																										 {0, 0, 5050, "", "Hz"},
+																										 {0, 0, 810, "", "Hz"},
+																										 {0, -70, 90, "", "dB"},
+																										 {0, 0, 4.8, "10^", "Hz"},
+																										 {0, 0, 4.1, "10^", "Hz"}
+																									 };
 
 const std::string messageStrings[MAXMESSAGES] = {"",
 																								 "Msg: Jack transport off or halted. Plugin halted.",

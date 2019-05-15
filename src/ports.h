@@ -67,7 +67,10 @@ typedef enum
 	BALANCE		= 1,
 	WIDTH			= 2,
 	LOW_PASS	= 3,
-	HIGH_PASS	= 4
+	HIGH_PASS	= 4,
+	GAIN			= 5,
+	LOW_PASS_LOG	= 6,
+	HIGH_PASS_LOG	= 7
 } BShaprTargetIndex;
 
 typedef enum

@@ -658,7 +658,7 @@ void BShapr::highPassFilter (const float input1, const float input2, float* outp
 	*output2 = f2;
 }
 
-void BShapr::play(uint32_t start, uint32_t end)
+void BShapr::play (uint32_t start, uint32_t end)
 {
 	// Return if halted or bpm == 0
 	if ((speed == 0.0f) || (bpm < 1.0f))
@@ -725,6 +725,10 @@ void BShapr::play(uint32_t start, uint32_t end)
 						audioLevel (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], iFactor);
 						break;
 
+					case BShaprTargetIndex::GAIN:
+						audioLevel (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], pow (10, 0.05 * (LIM (iFactor, -90, 30))));
+						break;
+
 					case BShaprTargetIndex::BALANCE:
 						stereoBalance (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], iFactor);
 						break;
@@ -737,8 +741,16 @@ void BShapr::play(uint32_t start, uint32_t end)
 						lowPassFilter (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], iFactor, sh);
 						break;
 
+					case BShaprTargetIndex::LOW_PASS_LOG:
+						lowPassFilter (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], pow (10, LIM (iFactor, 1.301, 4.301)), sh);
+						break;
+
 					case BShaprTargetIndex::HIGH_PASS:
 						highPassFilter (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], iFactor, sh);
+						break;
+
+					case BShaprTargetIndex::HIGH_PASS_LOG:
+						highPassFilter (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], pow (10, LIM (iFactor, 1.301, 4.301)), sh);
 						break;
 
 					default:

@@ -50,6 +50,8 @@ public:
 	void setScaleParameters (double anchorYPos, double anchorValue, double ratio);
 	void setMinorXSteps (double stepSize);
 	void setMajorXSteps (double stepSize);
+	void setPrefix (std::string text);
+	void setUnit (std::string text);
 	virtual void onButtonPressed (BEvents::PointerEvent* event) override;
 	virtual void onButtonReleased (BEvents::PointerEvent* event) override;
 	virtual void onPointerDragged (BEvents::PointerEvent* event) override;
@@ -69,6 +71,8 @@ protected:
 	double scaleRatio;
 	double minorXSteps;
 	double majorXSteps;
+	std::string prefix;
+	std::string unit;
 	BColors::ColorSet fgColors;
 	BColors::ColorSet syColors;
 	BColors::ColorSet bgColors;

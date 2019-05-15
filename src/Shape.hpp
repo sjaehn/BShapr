@@ -49,6 +49,7 @@ protected:
 	StaticArrayList<Node, sz> nodes;
 	double map[MAPRES];
 	Node defaultEndNode;
+
 };
 
 template<size_t sz> Shape<sz>::Shape () : nodes (), defaultEndNode ()
@@ -385,6 +386,7 @@ template<size_t sz> bool Shape<sz>::validateShape ()
 	return status;
 }
 
+
 template<size_t sz> void Shape<sz>::drawLineOnMap (Point p1, Point p2)
 {
 	if (p1.x < p2.x)
@@ -415,9 +417,9 @@ template<size_t sz> void Shape<sz>::renderBezier (Node& n1, Node& n2)
 {
 	// Interpolate Bezier curve
 	Point p1 = n1.point;
-	Point p2 = p1 + n1.handle2;
+	Point p2 = n1.point + n1.handle2;
 	Point p4 = n2.point;
-	Point p3 = p4 + n2.handle1;
+	Point p3 = n2.point + n2.handle1;
 	Point py = p1;
 	double step = 1 / (fabs (n2.point.x - n1.point.x) * MAPRES + 1);
 
@@ -433,7 +435,7 @@ template<size_t sz> void Shape<sz>::renderBezier (Node& n1, Node& n2)
 	    drawLineOnMap (py, pz);
 	    py = pz;
 	}
-	drawLineOnMap (py, p4);
+	drawLineOnMap (py,p4);
 }
 
 template<size_t shapesize> double Shape<shapesize>::getMapValue (double x)

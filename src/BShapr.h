@@ -53,7 +53,7 @@ const Limit globalControllerLimits [SHAPERS]	= {{0, 2, 1},
 
 const Limit shapeControllerLimits [SH_SIZE]		= {{0, 6, 1},
 																								 {-1, 1, 0},
-																							 	 {0, 4, 1},
+																							 	 {0, MAXEFFECTS - 1, 1},
 																							 	 {0, 1, 1},
 																							 	 {0, 1, 0}};
 

@@ -86,7 +86,7 @@ the signal will only be used internally.
 
 ## TODO
 
-* Non-linear shapers
+* Jack transport-independet playback (if "seconds" selected as base)
 * Stereo monitor
 * GUI performance
 * Additional target effects
