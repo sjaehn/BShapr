@@ -76,7 +76,8 @@ const ScaleParameters scaleParameters[MAXEFFECTS] = {{0, -0.05, 1.1, "", ""},
 																										 {0, 0, 810, "", "Hz"},
 																										 {0, -70, 90, "", "dB"},
 																										 {0, 0, 4.8, "10^", "Hz"},
-																										 {0, 0, 4.1, "10^", "Hz"}
+																										 {0, 0, 4.1, "10^", "Hz"},
+																										 {0, -12.5, 25, "", "semitones"}
 																									 };
 
 const std::string messageStrings[MAXMESSAGES] = {"",

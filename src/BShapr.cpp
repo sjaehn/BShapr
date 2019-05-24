@@ -658,6 +658,39 @@ void BShapr::highPassFilter (const float input1, const float input2, float* outp
 	*output2 = f2;
 }
 
+void BShapr::pitch (const float input1, const float input2, float* output1, float* output2, const float semitone, const int shape)
+{
+	const float p  = LIM (semitone, -12, 12);
+	audioBuffer1[shape][audioBuffer1WPtr[shape] % PITCHBUFFERSIZE] = input1;
+	audioBuffer2[shape][audioBuffer2WPtr[shape] % PITCHBUFFERSIZE] = input2;
+
+	double diff1 = fabs (audioBuffer1RPtr[shape] - audioBuffer1WPtr[shape]);
+	if (diff1 > PITCHBUFFERSIZE / 2) diff1 = PITCHBUFFERSIZE - diff1;
+	double ratio1 = diff1 / PITCHBUFFERSIZE;
+	uint32_t rPtrInt1 = (uint32_t)audioBuffer1RPtr[shape];
+	double rPtrFrac1 = fmod (audioBuffer1RPtr[shape], 1);
+	double bufferValue11 = (1 - rPtrFrac1) * audioBuffer1[shape][rPtrInt1 % PITCHBUFFERSIZE] +
+													rPtrFrac1 * audioBuffer1[shape][(rPtrInt1 + 1) % PITCHBUFFERSIZE];
+	double bufferValue12 = (1 - rPtrFrac1) * audioBuffer1[shape][(rPtrInt1 + PITCHBUFFERSIZE / 2) % PITCHBUFFERSIZE] +
+													rPtrFrac1 * audioBuffer1[shape][(rPtrInt1 + PITCHBUFFERSIZE / 2 + 1) % PITCHBUFFERSIZE];
+	*output1 = bufferValue11 * sin (M_PI * ratio1) + bufferValue12 * cos (M_PI * ratio1);
+	audioBuffer1WPtr[shape] = (audioBuffer1WPtr[shape] + 1) % PITCHBUFFERSIZE;
+	audioBuffer1RPtr[shape] = fmod (audioBuffer1RPtr[shape] + pow (2, p / 12), PITCHBUFFERSIZE);
+
+	double diff2 = fabs (audioBuffer2RPtr[shape] - audioBuffer2WPtr[shape]);
+	if (diff2 > PITCHBUFFERSIZE / 2) diff2 = PITCHBUFFERSIZE - diff2;
+	double ratio2 = diff2 / PITCHBUFFERSIZE;
+	uint32_t rPtrInt2 = (uint32_t)audioBuffer2RPtr[shape];
+	double rPtrFrac2 = fmod (audioBuffer2RPtr[shape], 1);
+	double bufferValue21 = (1 - rPtrFrac2) * audioBuffer2[shape][rPtrInt2 % PITCHBUFFERSIZE] +
+													rPtrFrac2 * audioBuffer2[shape][(rPtrInt2 + 1) % PITCHBUFFERSIZE];
+	double bufferValue22 = (1 - rPtrFrac2) * audioBuffer2[shape][(rPtrInt2 + PITCHBUFFERSIZE / 2) % PITCHBUFFERSIZE] +
+												rPtrFrac2 * audioBuffer2[shape][(rPtrInt2 + PITCHBUFFERSIZE / 2 + 1) % PITCHBUFFERSIZE];
+	*output2 = bufferValue21 * sin (M_PI * ratio2) + bufferValue22 * cos (M_PI * ratio2);
+	audioBuffer2WPtr[shape] = (audioBuffer2WPtr[shape] + 1) % PITCHBUFFERSIZE;
+	audioBuffer2RPtr[shape] = fmod (audioBuffer2RPtr[shape] + pow (2, p / 12), PITCHBUFFERSIZE);
+}
+
 void BShapr::play (uint32_t start, uint32_t end)
 {
 	// Return if halted or bpm == 0
@@ -751,6 +784,10 @@ void BShapr::play (uint32_t start, uint32_t end)
 
 					case BShaprTargetIndex::HIGH_PASS_LOG:
 						highPassFilter (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], pow (10, LIM (iFactor, 1.301, 4.301)), sh);
+						break;
+
+					case BShaprTargetIndex::PITCH:
+						pitch (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], iFactor, sh);
 						break;
 
 					default:
