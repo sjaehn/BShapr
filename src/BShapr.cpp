@@ -141,7 +141,16 @@ double BShapr::getPositionFromFrames (uint64_t frames)
 		case BARS:		return frames * (speed / (rate / (bpm / 60))) / (controllers[BASE_VALUE] * beatsPerBar);
 		default:		return 0;
 	}
+}
 
+void BShapr::clearAudioBuffer (const int shapeNr)
+{
+		memset (audioBuffer1[shapeNr], 0, AUDIOBUFFERSIZE * sizeof (float));
+		memset (audioBuffer2[shapeNr], 0, AUDIOBUFFERSIZE * sizeof (float));
+		audioBuffer1WPtr[shapeNr] = 0;
+		audioBuffer1RPtr[shapeNr] = 0;
+		audioBuffer2WPtr[shapeNr] = 0;
+		audioBuffer2RPtr[shapeNr] = 0;
 }
 
 void BShapr::run (uint32_t n_samples)
@@ -174,6 +183,9 @@ void BShapr::run (uint32_t n_samples)
 				{
 					// Keep a default shape as a default shape but with new default values
 					if (shapes[shapeNr].isDefault ()) shapes[shapeNr].setDefaultShape (defaultEndNodes[(int)newValue]);
+
+					// Clear audiobuffers, if needed
+					if (newValue == BShaprTargetIndex::PITCH) clearAudioBuffer (shapeNr);
 				}
 			}
 
@@ -380,9 +392,14 @@ void BShapr::run (uint32_t n_samples)
 
 					if (nspeed != speed)
 					{
-						speed = nspeed;
+						// Start ?
+						if (speed == 0)
+						{
+							for (int i = 0; i < MAXSHAPES; ++i) clearAudioBuffer (i);
+						}
 
-						if (nspeed == 0)
+						// Stop ?
+						else if (nspeed == 0)
 						{
 							messagebits = messagebits | (1 << (JACK_STOP_MSG - 1));
 							scheduleNotifyMessage = true;
@@ -392,11 +409,14 @@ void BShapr::run (uint32_t n_samples)
 							fillFilterBuffer (filter2Buffer2, 0);
 						}
 
+						// Only change of speed
 						else
 						{
 							messagebits = messagebits & (~(1 << (JACK_STOP_MSG - 1)));
 							scheduleNotifyMessage = true;
 						}
+
+						speed = nspeed;
 					}
 				}
 

@@ -88,6 +88,7 @@ private:
 	void fillFilterBuffer (float filterBuffer[MAXSHAPES] [F_ORDER / 2], const float value);
 	float validateValue (float value, const Limit limit);
 	bool isAudioOutputConnected (int shapeNr);
+	void clearAudioBuffer (const int shapeNr);
 	void audioLevel (const float input1, const float input2, float* output1, float* output2, const float amp);
 	void stereoBalance (const float input1, const float input2, float* output1, float* output2, const float balance);
 	void stereoWidth (const float input1, const float input2, float* output1, float* output2, const float width);
