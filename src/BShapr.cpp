@@ -392,14 +392,15 @@ void BShapr::run (uint32_t n_samples)
 
 					if (nspeed != speed)
 					{
-						// Start ?
+
+						// Started ?
 						if (speed == 0)
 						{
 							for (int i = 0; i < MAXSHAPES; ++i) clearAudioBuffer (i);
 						}
 
-						// Stop ?
-						else if (nspeed == 0)
+						// Stopped ?
+						if (nspeed == 0)
 						{
 							messagebits = messagebits | (1 << (JACK_STOP_MSG - 1));
 							scheduleNotifyMessage = true;
@@ -409,7 +410,7 @@ void BShapr::run (uint32_t n_samples)
 							fillFilterBuffer (filter2Buffer2, 0);
 						}
 
-						// Only change of speed
+						// Not stopped ?
 						else
 						{
 							messagebits = messagebits & (~(1 << (JACK_STOP_MSG - 1)));
