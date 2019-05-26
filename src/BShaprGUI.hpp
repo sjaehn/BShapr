@@ -69,15 +69,15 @@ typedef struct
 	std::string unit;
 } ScaleParameters;
 
-const ScaleParameters scaleParameters[MAXEFFECTS] = {{0, -0.05, 1.1, "", ""},
-																										 {0, -1.1, 2.2, "", ""},
-																										 {0, -0.1, 2.2, "", ""},
+const ScaleParameters scaleParameters[MAXEFFECTS] = {{0.05, 0, 1.1, "", ""},
+																										 {0.5, 0, 2.2, "", ""},
+																										 {0.05, 0, 2.2, "", ""},
 																										 {0, 0, 5050, "", "Hz"},
 																										 {0, 0, 810, "", "Hz"},
-																										 {0, -70, 90, "", "dB"},
+																										 {0.75, 0, 90, "", "dB"},
 																										 {0, 0, 4.8, "10^", "Hz"},
 																										 {0, 0, 4.1, "10^", "Hz"},
-																										 {0, -12.5, 25, "", "semitones"}
+																										 {0.5, 0, 25, "", "semitones"}
 																									 };
 
 const std::string messageStrings[MAXMESSAGES] = {"",
