@@ -71,7 +71,8 @@ typedef enum
 	GAIN			= 5,
 	LOW_PASS_LOG	= 6,
 	HIGH_PASS_LOG	= 7,
-	PITCH			= 8
+	PITCH			= 8,
+	DELAY			= 9
 } BShaprTargetIndex;
 
 typedef enum

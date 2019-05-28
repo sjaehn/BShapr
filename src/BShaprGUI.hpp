@@ -77,8 +77,9 @@ const ScaleParameters scaleParameters[MAXEFFECTS] = {{0.05, 0, 1.1, "", ""},
 																										 {0.75, 0, 90, "", "dB"},
 																										 {0, 0, 4.8, "10^", "Hz"},
 																										 {0, 0, 4.1, "10^", "Hz"},
-																										 {0.5, 0, 25, "", "semitones"}
-																									 };
+																										 {0.5, 0, 25, "", "semitones"},
+																										 {0.05, 0, 800, "", "ms"}
+																									  };
 
 const std::string messageStrings[MAXMESSAGES] = {"",
 																								 "Msg: Jack transport off or halted. Plugin halted.",
@@ -93,7 +94,6 @@ public:
 	void portEvent (uint32_t port, uint32_t bufferSize, uint32_t format, const void *buffer);
 	void sendGuiOn ();
 	void sendGuiOff ();
-	void sendNode (size_t shapeNr, size_t nodeNr);
 	void sendShape (size_t shapeNr);
 	virtual void onConfigure (BEvents::ExposeEvent* event) override;
 	void applyChildThemes ();

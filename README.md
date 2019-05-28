@@ -93,4 +93,5 @@ the signal will only be used internally.
 
 ## See also
 
-* https://www.youtube.com/watch?v=DxYQJ_XJwbU
+* Preview: https://www.youtube.com/watch?v=DxYQJ_XJwbU
+* Autotune with B.Shapr: https://youtu.be/c6bUW_dTxGg

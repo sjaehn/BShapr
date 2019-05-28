@@ -51,7 +51,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 
 		shapeGui[i].inputSelect = SelectWidget (60, 20, 200 + i * 100, 40, "tool", 100, 40, 2 + i, 1);
 		shapeGui[i].inputAmpDial = BWidgets::DisplayDial (1000, 14, 50, 56, "dial", 1.0, -1.0, 1.0, 0, "%1.3f");
-		shapeGui[i].targetListBox = BWidgets::PopupListBox (120, 280, 180, 20, 0, -200, 180, 200, "menu",
+		shapeGui[i].targetListBox = BWidgets::PopupListBox (120, 280, 180, 20, 0, -220, 180, 220, "menu",
 															{{0, "Level"},
 															 {5, "Gain"},
 															 {1, "Balance"},
@@ -60,7 +60,8 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 															 {6, "Low pass filter (log)"},
 															 {4, "High pass filter"},
 														 	 {7, "High pass filter (log)"},
-														 	 {8, "Pitch"}});
+														 	 {8, "Pitch"},
+														 	 {9, "Delay"}});
 		shapeGui[i].shapeWidget = ShapeWidget (4, 94, 1152, 172, "shape");
 		shapeGui[i].toolSelect = SelectWidget (477, 272, 196, 36, "tool", 36, 36, 5, 1);
 		shapeGui[i].shapeLabelIcon = BWidgets::ImageIcon (1000, 280, 160, 20, "widget", pluginPath + "Shape" + std::to_string (i + 1) + ".png");
@@ -255,52 +256,6 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 				}
 			}
 
-			// Single node notification
-/*			else if (obj->body.otype == urids.notify_nodeEvent)
-			{
-				LV2_Atom *sNr = NULL, *nNr = NULL, *nOp = NULL, *nData = NULL;
-				lv2_atom_object_get (obj, urids.notify_shapeNr, &sNr,
-										  urids.notify_nodeNr, &nNr,
-										  urids.notify_nodeOperation, &nOp,
-										  urids.notify_nodeData, &nData);
-
-				if (sNr && (sNr->type == urids.atom_Int) &&
-					nNr && (nNr->type == urids.atom_Int) &&
-					nOp && (nOp->type == urids.atom_Int) &&
-					nData && (nData->type == urids.atom_Vector))
-				{
-					int shapeNr = ((LV2_Atom_Int*)nNr)->body;
-					int nodeNr = ((LV2_Atom_Int*)nNr)->body;
-					int op = ((LV2_Atom_Int*)nOp)->body;
-					NodeOperationType operation = (NodeOperationType) op;
-
-					if ((shapeNr >= 0) && (shapeNr < MAXSHAPES) &&
-						(nodeNr >= 0) && (nodeNr < MAXNODES) &&
-						(op >= 0) && (op < 3))
-					{
-						const LV2_Atom_Vector* vec = (const LV2_Atom_Vector*) nData;
-						size_t vecSize = (nData->size - sizeof(LV2_Atom_Vector_Body)) / sizeof (float);
-						if ((vec->body.child_type == urids.atom_Float) && (vecSize == 7))
-						{
-							Node node ((float*)(&vec->body + 1));
-
-							switch (operation)
-							{
-								case NodeOperationType::DELETE:	shapeGui[shapeNr].shapeWidget.deleteNode (nodeNr);
-																break;
-
-								case NodeOperationType::ADD:	shapeGui[shapeNr].shapeWidget.insertNode (nodeNr, node);
-																break;
-
-								case NodeOperationType::CHANGE:	shapeGui[shapeNr].shapeWidget.changeNode (nodeNr, node);
-																break;
-							}
-						}
-					}
-				}
-			}
-*/
-
 			// Shape notification
 			else if (obj->body.otype == urids.notify_shapeEvent)
 			{
@@ -396,8 +351,8 @@ void BShaprGUI::resizeGUI()
 		shapeGui[i].inputSelect.resizeSelection (100 * sz, 40 * sz);
 		RESIZE (shapeGui[i].inputAmpDial, 1000, 14, 50, 56, sz);
 		RESIZE (shapeGui[i].targetListBox, 120, 280, 180, 20, sz);
-		shapeGui[i].targetListBox.resizeListBox (180 * sz, 120 * sz);
-		shapeGui[i].targetListBox.moveListBox (0, -120 * sz);
+		shapeGui[i].targetListBox.resizeListBox (180 * sz, 220 * sz);
+		shapeGui[i].targetListBox.moveListBox (0, -220 * sz);
 		RESIZE (shapeGui[i].shapeWidget, 4, 94, 1152, 172, sz);
 		RESIZE (shapeGui[i].toolSelect, 477, 272, 196, 36, sz);
 		shapeGui[i].toolSelect.resizeSelection (36 * sz, 36 * sz);
@@ -471,38 +426,6 @@ void BShaprGUI::sendGuiOff ()
 	lv2_atom_forge_pop(&forge, &frame);
 	write_function(controller, CONTROL, lv2_atom_total_size(msg), urids.atom_eventTransfer, msg);
 }
-
-// TODO
-/*
-void BShaprGUI::sendNode (size_t shapeNr, size_t nodeNr)
-{
-	uint8_t obj_buf[128];
-	lv2_atom_forge_set_buffer(&forge, obj_buf, sizeof(obj_buf));
-
-	Node node = shapeGui[shapeNr].shapeWidget.getNode (nodeNr);
-	float nodeData[7];
-	nodeData[0] = (float)((int)node.nodeType);
-	nodeData[1] = node.point.x;
-	nodeData[2] = node.point.y;
-	nodeData[3] = node.handle1.x;
-	nodeData[4] = node.handle1.y;
-	nodeData[5] = node.handle2.x;
-	nodeData[6] = node.handle2.y;
-
-	LV2_Atom_Forge_Frame frame;
-	LV2_Atom* msg = (LV2_Atom*)lv2_atom_forge_object (&forge, &frame, 0, urids.notify_nodeEvent);
-	lv2_atom_forge_key (&forge, urids.notify_shapeNr);
-	lv2_atom_forge_int (&forge, shapeNr);
-	lv2_atom_forge_key (&forge, urids.notify_nodeNr);
-	lv2_atom_forge_int (&forge, nodeNr);
-	lv2_atom_forge_key (&forge, urids.notify_nodeOperation);
-	lv2_atom_forge_int (&forge, nodeOperation);
-	lv2_atom_forge_key (&forge, urids.notify_nodeData);
-	lv2_atom_forge_vector(&forge, sizeof(float), urids.atom_Float, 7, (void*) &nodeData);
-	lv2_atom_forge_pop (&forge, &frame);
-	write_function (controller, CONTROL, lv2_atom_total_size(msg), urids.atom_eventTransfer, msg);
-}
-*/
 
 void BShaprGUI::sendShape (size_t shapeNr)
 {

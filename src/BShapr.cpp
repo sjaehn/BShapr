@@ -27,6 +27,13 @@
 
 inline double floorfrac (const double value) {return value - floor (value);}
 
+void AudioBuffer::reset ()
+{
+		memset (frames, 0, AUDIOBUFFERSIZE * sizeof (float));
+		memset (frames, 0, AUDIOBUFFERSIZE * sizeof (float));
+		wPtr1 = wPtr2 = rPtr1 = rPtr2 = 0;
+}
+
 BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 	map(NULL), controlPort(NULL), notifyPort(NULL),
 	audioInput1(NULL), audioInput2(NULL), audioOutput1(NULL), audioOutput2(NULL),
@@ -143,16 +150,6 @@ double BShapr::getPositionFromFrames (uint64_t frames)
 	}
 }
 
-void BShapr::clearAudioBuffer (const int shapeNr)
-{
-		memset (audioBuffer1[shapeNr], 0, AUDIOBUFFERSIZE * sizeof (float));
-		memset (audioBuffer2[shapeNr], 0, AUDIOBUFFERSIZE * sizeof (float));
-		audioBuffer1WPtr[shapeNr] = 0;
-		audioBuffer1RPtr[shapeNr] = 0;
-		audioBuffer2WPtr[shapeNr] = 0;
-		audioBuffer2RPtr[shapeNr] = 0;
-}
-
 void BShapr::run (uint32_t n_samples)
 {
 	// Check ports
@@ -185,7 +182,11 @@ void BShapr::run (uint32_t n_samples)
 					if (shapes[shapeNr].isDefault ()) shapes[shapeNr].setDefaultShape (defaultEndNodes[(int)newValue]);
 
 					// Clear audiobuffers, if needed
-					if (newValue == BShaprTargetIndex::PITCH) clearAudioBuffer (shapeNr);
+					if (newValue == BShaprTargetIndex::PITCH)
+					{
+						audioBuffer1[shapeNr].reset ();
+						audioBuffer2[shapeNr].reset ();
+					}
 				}
 			}
 
@@ -247,54 +248,6 @@ void BShapr::run (uint32_t n_samples)
 
 			// Process GUI off status data
 			else if (obj->body.otype == urids.ui_off) ui_on = false;
-
-			// Process (single) node data
-/*		else if (obj->body.otype == urids.notify_nodeEvent)
-			{
-				LV2_Atom *sNr = NULL, *nNr = NULL, *nOp = NULL, *nData = NULL;
-				lv2_atom_object_get (obj, urids.notify_shapeNr, &sNr,
-										  urids.notify_nodeNr, &nNr,
-										  urids.notify_nodeOperation, &nOp,
-										  urids.notify_nodeData, &nData,
-										  NULL);
-
-				if (sNr && (sNr->type == urids.atom_Int) &&
-					nNr && (nNr->type == urids.atom_Int) &&
-					nOp && (nOp->type == urids.atom_Int) &&
-					nData && (nData->type == urids.atom_Vector))
-				{
-					int shapeNr = ((LV2_Atom_Int*)nNr)->body;
-					int nodeNr = ((LV2_Atom_Int*)nNr)->body;
-					int op = ((LV2_Atom_Int*)nOp)->body;
-					NodeOperationType operation = (NodeOperationType) op;
-
-					if ((shapeNr >= 0) && (shapeNr < MAXSHAPES) &&
-						(nodeNr >= 0) && (nodeNr < MAXNODES) &&
-						(op >= 0) && (op < 3))
-					{
-						const LV2_Atom_Vector* vec = (const LV2_Atom_Vector*) nData;
-						size_t vecSize = (nData->size - sizeof(LV2_Atom_Vector_Body)) / sizeof (float);
-						if ((vec->body.child_type == urids.atom_Float) && (vecSize == 7))
-						{
-							Node node ((float*)(&vec->body + 1));
-
-							switch (operation)
-							{
-								case NodeOperationType::DELETE:	shapes[shapeNr].deleteNode (nodeNr);
-																break;
-
-								case NodeOperationType::ADD:	shapes[shapeNr].insertNode (nodeNr, node);
-																break;
-
-								case NodeOperationType::CHANGE:	shapes[shapeNr].changeNode (nodeNr, node);
-																break;
-							}
-							//scheduleNotifyShapes[shapeNr] = true;
-						}
-					}
-				}
-			}
-*/
 
 			// Process (full) shape data
 			else if (obj->body.otype == urids.notify_shapeEvent)
@@ -396,7 +349,11 @@ void BShapr::run (uint32_t n_samples)
 						// Started ?
 						if (speed == 0)
 						{
-							for (int i = 0; i < MAXSHAPES; ++i) clearAudioBuffer (i);
+							for (int i = 0; i < MAXSHAPES; ++i)
+							{
+								audioBuffer1[i].reset ();
+								audioBuffer2[i].reset ();
+							}
 						}
 
 						// Stopped ?
@@ -682,34 +639,86 @@ void BShapr::highPassFilter (const float input1, const float input2, float* outp
 void BShapr::pitch (const float input1, const float input2, float* output1, float* output2, const float semitone, const int shape)
 {
 	const float p  = LIM (semitone, -12, 12);
-	audioBuffer1[shape][audioBuffer1WPtr[shape] % PITCHBUFFERSIZE] = input1;
-	audioBuffer2[shape][audioBuffer2WPtr[shape] % PITCHBUFFERSIZE] = input2;
+	const uint32_t wPtr = audioBuffer1[shape].wPtr1;
+	const double rPtr = audioBuffer1[shape].rPtr1;
+	const uint32_t rPtrInt = uint32_t (rPtr);
+	const double rPtrFrac = fmod (rPtr, 1);
+	double diff = fabs (rPtr - wPtr);
+	if (diff > PITCHBUFFERSIZE / 2) diff = PITCHBUFFERSIZE - diff;
+	const double ratio = diff / PITCHBUFFERSIZE;
+	const double factor1 = sin (M_PI * ratio);
+	const double factor2 = cos (M_PI * ratio);
 
-	double diff1 = fabs (audioBuffer1RPtr[shape] - audioBuffer1WPtr[shape]);
-	if (diff1 > PITCHBUFFERSIZE / 2) diff1 = PITCHBUFFERSIZE - diff1;
-	double ratio1 = diff1 / PITCHBUFFERSIZE;
-	uint32_t rPtrInt1 = (uint32_t)audioBuffer1RPtr[shape];
-	double rPtrFrac1 = fmod (audioBuffer1RPtr[shape], 1);
-	double bufferValue11 = (1 - rPtrFrac1) * audioBuffer1[shape][rPtrInt1 % PITCHBUFFERSIZE] +
-													rPtrFrac1 * audioBuffer1[shape][(rPtrInt1 + 1) % PITCHBUFFERSIZE];
-	double bufferValue12 = (1 - rPtrFrac1) * audioBuffer1[shape][(rPtrInt1 + PITCHBUFFERSIZE / 2) % PITCHBUFFERSIZE] +
-													rPtrFrac1 * audioBuffer1[shape][(rPtrInt1 + PITCHBUFFERSIZE / 2 + 1) % PITCHBUFFERSIZE];
-	*output1 = bufferValue11 * sin (M_PI * ratio1) + bufferValue12 * cos (M_PI * ratio1);
-	audioBuffer1WPtr[shape] = (audioBuffer1WPtr[shape] + 1) % PITCHBUFFERSIZE;
-	audioBuffer1RPtr[shape] = fmod (audioBuffer1RPtr[shape] + pow (2, p / 12), PITCHBUFFERSIZE);
+	audioBuffer1[shape].frames[wPtr % PITCHBUFFERSIZE] = input1;
+	audioBuffer2[shape].frames[wPtr % PITCHBUFFERSIZE] = input2;
 
-	double diff2 = fabs (audioBuffer2RPtr[shape] - audioBuffer2WPtr[shape]);
-	if (diff2 > PITCHBUFFERSIZE / 2) diff2 = PITCHBUFFERSIZE - diff2;
-	double ratio2 = diff2 / PITCHBUFFERSIZE;
-	uint32_t rPtrInt2 = (uint32_t)audioBuffer2RPtr[shape];
-	double rPtrFrac2 = fmod (audioBuffer2RPtr[shape], 1);
-	double bufferValue21 = (1 - rPtrFrac2) * audioBuffer2[shape][rPtrInt2 % PITCHBUFFERSIZE] +
-													rPtrFrac2 * audioBuffer2[shape][(rPtrInt2 + 1) % PITCHBUFFERSIZE];
-	double bufferValue22 = (1 - rPtrFrac2) * audioBuffer2[shape][(rPtrInt2 + PITCHBUFFERSIZE / 2) % PITCHBUFFERSIZE] +
-												rPtrFrac2 * audioBuffer2[shape][(rPtrInt2 + PITCHBUFFERSIZE / 2 + 1) % PITCHBUFFERSIZE];
-	*output2 = bufferValue21 * sin (M_PI * ratio2) + bufferValue22 * cos (M_PI * ratio2);
-	audioBuffer2WPtr[shape] = (audioBuffer2WPtr[shape] + 1) % PITCHBUFFERSIZE;
-	audioBuffer2RPtr[shape] = fmod (audioBuffer2RPtr[shape] + pow (2, p / 12), PITCHBUFFERSIZE);
+	double bufferValue11 = (1 - rPtrFrac) * audioBuffer1[shape].frames[rPtrInt % PITCHBUFFERSIZE] +
+													rPtrFrac * audioBuffer1[shape].frames[(rPtrInt + 1) % PITCHBUFFERSIZE];
+	double bufferValue12 = (1 - rPtrFrac) * audioBuffer1[shape].frames[(rPtrInt + PITCHBUFFERSIZE / 2) % PITCHBUFFERSIZE] +
+													rPtrFrac * audioBuffer1[shape].frames[(rPtrInt + PITCHBUFFERSIZE / 2 + 1) % PITCHBUFFERSIZE];
+	double bufferValue21 = (1 - rPtrFrac) * audioBuffer2[shape].frames[rPtrInt % PITCHBUFFERSIZE] +
+													rPtrFrac * audioBuffer2[shape].frames[(rPtrInt + 1) % PITCHBUFFERSIZE];
+	double bufferValue22 = (1 - rPtrFrac) * audioBuffer2[shape].frames[(rPtrInt + PITCHBUFFERSIZE / 2) % PITCHBUFFERSIZE] +
+													rPtrFrac * audioBuffer2[shape].frames[(rPtrInt + PITCHBUFFERSIZE / 2 + 1) % PITCHBUFFERSIZE];
+
+	*output1 = factor1 * bufferValue11 + factor2 * bufferValue12;
+	*output2 = factor1 * bufferValue21 + factor2 * bufferValue22;
+
+	audioBuffer1[shape].wPtr1 = (wPtr + 1) % PITCHBUFFERSIZE;
+	audioBuffer1[shape].rPtr1 = fmod (rPtr + pow (2, p / 12), PITCHBUFFERSIZE);
+	audioBuffer2[shape].wPtr1 = audioBuffer1[shape].wPtr1;
+	audioBuffer2[shape].rPtr1 = audioBuffer1[shape].rPtr1;
+}
+
+void BShapr::delay (const float input1, const float input2, float* output1, float* output2, const float delaytime, const int shape)
+{
+	const float delayframes = delaytime * rate / 1000;
+	const float df = LIM (delayframes, 0, AUDIOBUFFERSIZE);
+	const double wPtr1 = audioBuffer1[shape].wPtr1;
+	const double wPtr2 = audioBuffer1[shape].wPtr2;
+	const double rPtr1 = audioBuffer1[shape].rPtr1;
+	const double rPtr2 = audioBuffer1[shape].rPtr2;
+	const uint32_t rPtr1Int = uint32_t (rPtr1);
+	const double rPtr1Frac = fmod (rPtr1, 1);
+	const uint32_t rPtr2Int = uint32_t (rPtr2);
+	const double rPtr2Frac = fmod (rPtr2, 1);
+	double diff = fabs (wPtr2 - wPtr1);
+	if (diff > AUDIOBUFFERSIZE / 2) diff = AUDIOBUFFERSIZE - diff;
+	const double ratio = LIM (diff / DELAYBUFFERSIZE, 0, 1);
+	const double factor1 = 1 - ratio;
+	const double factor2 = ratio;
+
+	audioBuffer1[shape].frames[uint32_t (wPtr2) % AUDIOBUFFERSIZE] = input1;
+	audioBuffer2[shape].frames[uint32_t (wPtr2) % AUDIOBUFFERSIZE] = input2;
+
+	double bufferValue11 = (1 - rPtr1Frac) * audioBuffer1[shape].frames[rPtr1Int % AUDIOBUFFERSIZE] +
+													rPtr1Frac * audioBuffer1[shape].frames[(rPtr1Int + 1) % AUDIOBUFFERSIZE];
+	double bufferValue12 = (1 - rPtr2Frac) * audioBuffer1[shape].frames[rPtr2Int  % AUDIOBUFFERSIZE] +
+													rPtr2Frac * audioBuffer1[shape].frames[(rPtr2Int + 1) % AUDIOBUFFERSIZE];
+	double bufferValue21 = (1 - rPtr1Frac) * audioBuffer2[shape].frames[rPtr1Int % AUDIOBUFFERSIZE] +
+													rPtr1Frac * audioBuffer2[shape].frames[(rPtr1Int + 1) % AUDIOBUFFERSIZE];
+	double bufferValue22 = (1 - rPtr2Frac) * audioBuffer2[shape].frames[rPtr2Int % AUDIOBUFFERSIZE] +
+													rPtr2Frac * audioBuffer2[shape].frames[(rPtr2Int + 1) % AUDIOBUFFERSIZE];
+
+	*output1 = factor1 * bufferValue11 + factor2 * bufferValue12;
+	*output2 = factor1 * bufferValue21 + factor2 * bufferValue22;
+
+	if (diff >= DELAYBUFFERSIZE)
+	{
+		audioBuffer1[shape].wPtr1 = wPtr2;
+		audioBuffer2[shape].wPtr1 = wPtr2;
+		audioBuffer1[shape].rPtr1 = rPtr2;
+		audioBuffer2[shape].rPtr1 = rPtr2;
+		audioBuffer1[shape].rPtr2 = fmod (wPtr2 + AUDIOBUFFERSIZE - df, AUDIOBUFFERSIZE);
+		audioBuffer2[shape].rPtr2 = audioBuffer1[shape].rPtr2;
+	}
+
+	audioBuffer1[shape].wPtr2 = (uint32_t (audioBuffer1[shape].wPtr2) + 1) % AUDIOBUFFERSIZE;
+	audioBuffer1[shape].rPtr1 = fmod (audioBuffer1[shape].rPtr1 + 1, AUDIOBUFFERSIZE);
+	audioBuffer1[shape].rPtr2 = fmod (audioBuffer1[shape].rPtr2 + 1, AUDIOBUFFERSIZE);
+	audioBuffer2[shape].wPtr2 = audioBuffer1[shape].wPtr2;
+	audioBuffer2[shape].rPtr1 = audioBuffer1[shape].rPtr1;
+	audioBuffer2[shape].rPtr2 = audioBuffer1[shape].rPtr2;
 }
 
 void BShapr::play (uint32_t start, uint32_t end)
@@ -809,6 +818,10 @@ void BShapr::play (uint32_t start, uint32_t end)
 
 					case BShaprTargetIndex::PITCH:
 						pitch (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], iFactor, sh);
+						break;
+
+					case BShaprTargetIndex::DELAY:
+						delay (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], iFactor, sh);
 						break;
 
 					default:

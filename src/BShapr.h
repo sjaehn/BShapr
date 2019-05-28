@@ -40,8 +40,9 @@
 #include "Shape.hpp"
 
 #define F_ORDER 8
-#define AUDIOBUFFERSIZE 1024
+#define AUDIOBUFFERSIZE 0x8000
 #define PITCHBUFFERSIZE 1024
+#define DELAYBUFFERSIZE 1024
 
 typedef struct
 {
@@ -72,6 +73,13 @@ typedef struct
 
 BShaprMonitor_t defaultMonitorData = {0, false, 0.0, 0.0};
 
+struct AudioBuffer
+{
+	float frames [AUDIOBUFFERSIZE];
+	double wPtr1, wPtr2, rPtr1, rPtr2;
+	void reset ();
+};
+
 class BShapr
 {
 public:
@@ -88,13 +96,13 @@ private:
 	void fillFilterBuffer (float filterBuffer[MAXSHAPES] [F_ORDER / 2], const float value);
 	float validateValue (float value, const Limit limit);
 	bool isAudioOutputConnected (int shapeNr);
-	void clearAudioBuffer (const int shapeNr);
 	void audioLevel (const float input1, const float input2, float* output1, float* output2, const float amp);
 	void stereoBalance (const float input1, const float input2, float* output1, float* output2, const float balance);
 	void stereoWidth (const float input1, const float input2, float* output1, float* output2, const float width);
 	void lowPassFilter (const float input1, const float input2, float* output1, float* output2, const float cutoffFreq, const int shape);
 	void highPassFilter (const float input1, const float input2, float* output1, float* output2, const float cutoffFreq, const int shape);
 	void pitch (const float input1, const float input2, float* output1, float* output2, const float semitone, const int shape);
+	void delay (const float input1, const float input2, float* output1, float* output2, const float delaytime, const int shape);
 	void play(uint32_t start, uint32_t end);
 	void notifyMonitorToGui ();
 	void notifyShapeToGui (int shapeNr);
@@ -119,12 +127,8 @@ private:
 	float* audioInput2;
 	float* audioOutput1;
 	float* audioOutput2;
-	float audioBuffer1 [MAXSHAPES] [AUDIOBUFFERSIZE];
-	float audioBuffer2 [MAXSHAPES] [AUDIOBUFFERSIZE];
-	uint32_t audioBuffer1WPtr [MAXSHAPES];
-	double audioBuffer1RPtr [MAXSHAPES];
-	uint32_t audioBuffer2WPtr [MAXSHAPES];
-	double audioBuffer2RPtr [MAXSHAPES];
+	AudioBuffer audioBuffer1 [MAXSHAPES];
+	AudioBuffer audioBuffer2 [MAXSHAPES];
 	float filter1Buffer1 [MAXSHAPES] [F_ORDER / 2];
 	float filter1Buffer2 [MAXSHAPES] [F_ORDER / 2];
 	float filter2Buffer1 [MAXSHAPES] [F_ORDER / 2];
