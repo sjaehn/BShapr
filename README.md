@@ -36,7 +36,7 @@ to run it stand-alone and connect it to the JACK system.
 
 Notes:
 
-* **Jack transport is required to get information about beat / position**
+* **Jack transport is required to get information about beat and bar position (not required for seconds mode)**
 * **Don't forget to select an input for each shape you use and an output (see usage/input and usage/output)**
 
 ## Usage

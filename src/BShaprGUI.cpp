@@ -63,7 +63,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 														 	 {8, "Pitch"},
 														 	 {9, "Delay"}});
 		shapeGui[i].shapeWidget = ShapeWidget (4, 94, 1152, 172, "shape");
-		shapeGui[i].toolSelect = SelectWidget (477, 272, 196, 36, "tool", 36, 36, 5, 1);
+		shapeGui[i].toolSelect = SelectWidget (437, 272, 276, 36, "tool", 36, 36, 5, 1);
 		shapeGui[i].shapeLabelIcon = BWidgets::ImageIcon (1000, 280, 160, 20, "widget", pluginPath + "Shape" + std::to_string (i + 1) + ".png");
 		shapeGui[i].outputSelect = SelectWidget (60, 340, 100, 40, "tool", 100, 40, 1, 1);
 		shapeGui[i].outputAmpDial = BWidgets::DisplayDial (1000, 334, 50, 56, "dial", 1.0, 0.0, 1.0, 0, "%1.3f");
@@ -346,7 +346,7 @@ void BShaprGUI::resizeGUI()
 		shapeGui[i].targetListBox.resizeListBox (180 * sz, 220 * sz);
 		shapeGui[i].targetListBox.moveListBox (0, -220 * sz);
 		RESIZE (shapeGui[i].shapeWidget, 4, 94, 1152, 172, sz);
-		RESIZE (shapeGui[i].toolSelect, 477, 272, 196, 36, sz);
+		RESIZE (shapeGui[i].toolSelect, 437, 272, 276, 36, sz);
 		shapeGui[i].toolSelect.resizeSelection (36 * sz, 36 * sz);
 		RESIZE (shapeGui[i].shapeLabelIcon, 1000, 280, 160, 20, sz);
 		RESIZE (shapeGui[i].outputSelect, 60, 340, 100, 40, sz);
