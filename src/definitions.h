@@ -48,8 +48,9 @@ typedef enum
 	NO_MSG				= 0,
 	JACK_STOP_MSG	= 1,
 	NO_INPUT_MSG	= 2,
-	NO_OUTPUT_MSG	= 3
-} Messages;
+	NO_OUTPUT_MSG	= 3,
+	MAX_MSG				= 3
+} MessageNr;
 
 typedef enum
 {

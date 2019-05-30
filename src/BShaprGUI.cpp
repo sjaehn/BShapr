@@ -216,23 +216,15 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 				else std::cerr << "BShapr.lv2#GUI: Corrupt audio message." << std::endl;
 			}
 
-			// Monitor notification
+			// Message notification
 			else if (obj->body.otype == urids.notify_messageEvent)
 			{
 				const LV2_Atom* data = NULL;
 				lv2_atom_object_get(obj, urids.notify_message, &data, 0);
 				if (data && (data->type == urids.atom_Int))
 				{
-					const int messageBits = ((LV2_Atom_Int*)data)->body;
-					std::string msg = "";
-					for (uint32_t i = 1; i < MAXMESSAGES; ++i)
-					{
-						if (messageBits & (1 << (i -1)))
-						{
-							msg = messageStrings[i];
-							break;
-						}
-					}
+					const int messageNr = ((LV2_Atom_Int*)data)->body;
+					std::string msg = ((messageNr >= NO_MSG) && (messageNr <= MAX_MSG) ? messageStrings[messageNr] : "");
 					messageLabel.setText (msg);
 				}
 			}

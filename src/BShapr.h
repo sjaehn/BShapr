@@ -44,12 +44,12 @@
 #define PITCHBUFFERSIZE 1024
 #define DELAYBUFFERSIZE 1024
 
-typedef struct
+struct Limit
 {
 	float min;
 	float max;
 	float step;
-} Limit;
+};
 
 const Limit globalControllerLimits [SHAPERS]	= {{0, 2, 1},
 																								 {1, 16, 0},
@@ -61,7 +61,7 @@ const Limit shapeControllerLimits [SH_SIZE]		= {{0, 6, 1},
 																							 	 {0, 1, 1},
 																							 	 {0, 1, 0}};
 
-typedef struct
+struct BShaprMonitor_t
 {
 	int count;
 	bool ready;
@@ -69,7 +69,7 @@ typedef struct
 	double inputMax;
 	double outputMin;
 	double outputMax;
-} BShaprMonitor_t;
+};
 
 BShaprMonitor_t defaultMonitorData = {0, false, 0.0, 0.0};
 
@@ -78,6 +78,21 @@ struct AudioBuffer
 	float frames [AUDIOBUFFERSIZE];
 	double wPtr1, wPtr2, rPtr1, rPtr2;
 	void reset ();
+};
+
+class Message
+{
+public:
+	Message ();
+	void clearMessages ();
+	void setMessage (MessageNr messageNr);
+	void deleteMessage (MessageNr messageNr);
+	bool isMessage (MessageNr messageNr);
+	MessageNr loadMessage ();
+	bool isScheduled ();
+private:
+	uint32_t messageBits;
+	bool scheduled;
 };
 
 class BShapr
@@ -156,12 +171,11 @@ private:
 
 	// Internals
 	bool ui_on;
-	uint32_t messagebits;
+	Message message;
 	int monitorpos;
 	std::array<BShaprNotifications, NOTIFYBUFFERSIZE> notifications;
 	std::array<BShaprMonitor_t, MONITORBUFFERSIZE> monitor;
 	bool scheduleNotifyShapes[MAXSHAPES];
-	bool scheduleNotifyMessage;
 	bool scheduleNotifyStatus;
 
 };

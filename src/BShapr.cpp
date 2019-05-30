@@ -34,11 +34,57 @@ void AudioBuffer::reset ()
 		wPtr1 = wPtr2 = rPtr1 = rPtr2 = 0;
 }
 
+Message::Message () : messageBits (0), scheduled (true) {}
+
+void Message::clearMessages ()
+{
+	messageBits = 0;
+	scheduled = true;
+}
+
+void Message::setMessage (MessageNr messageNr)
+{
+	if ((messageNr > NO_MSG) && (messageNr <= MAX_MSG) && (!isMessage (messageNr)))
+	{
+		messageBits = messageBits | (1 << (messageNr - 1));
+		scheduled = true;
+	}
+}
+
+void Message::deleteMessage (MessageNr messageNr)
+{
+	if ((messageNr > NO_MSG) && (messageNr <= MAX_MSG) && (isMessage (messageNr)))
+	{
+		messageBits = messageBits & (~(1 << (messageNr - 1)));
+		scheduled = true;
+	}
+}
+
+bool Message::isMessage (MessageNr messageNr)
+{
+	if ((messageNr > NO_MSG) && (messageNr <= MAX_MSG)) return ((messageBits & (1 << (messageNr - 1))) != 0);
+	else if (messageNr == NO_MSG) return (messageBits == 0);
+	else return false;
+}
+
+MessageNr Message::loadMessage ()
+{
+	scheduled = false;
+	for (int i = NO_MSG + 1; i <= MAX_MSG; ++i)
+	{
+		MessageNr messageNr = MessageNr (i);
+		if (isMessage (messageNr)) return messageNr;
+	}
+	return NO_MSG;
+}
+
+bool Message::isScheduled () {return scheduled;}
+
 BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 	map(NULL), controlPort(NULL), notifyPort(NULL),
 	audioInput1(NULL), audioInput2(NULL), audioOutput1(NULL), audioOutput2(NULL),
 	rate(samplerate), bpm(120.0f), speed(1), bar (0), barBeat (0), position(0), refFrame(0), beatUnit (4), beatsPerBar (4),
-	ui_on(false), monitorpos(-1), messagebits (NO_MSG), scheduleNotifyMessage (false), scheduleNotifyStatus (true)
+	ui_on(false), monitorpos(-1), scheduleNotifyStatus (true), message ()
 
 {
 	for (int i = 0; i < MAXSHAPES; ++i) shapes[i].setDefaultShape (defaultEndNodes[0]);
@@ -143,7 +189,7 @@ double BShapr::getPositionFromFrames (uint64_t frames)
 {
 	switch (int (controllers[BASE]))
 	{
-		case SECONDS: 	return frames * (speed / rate) / controllers[BASE_VALUE] ;
+		case SECONDS: 	return frames * (1.0 / rate) / controllers[BASE_VALUE] ;
 		case BEATS:		return frames * (speed / (rate / (bpm / 60))) / controllers[BASE_VALUE];
 		case BARS:		return frames * (speed / (rate / (bpm / 60))) / (controllers[BASE_VALUE] * beatsPerBar);
 		default:		return 0;
@@ -171,7 +217,25 @@ void BShapr::run (uint32_t n_samples)
 			int shapeNr = ((i >= SHAPERS) ? ((i - SHAPERS) / SH_SIZE) : -1);
 			int shapeControllerNr = ((i >= SHAPERS) ? ((i - SHAPERS) % SH_SIZE) : -1);
 
-			if (i < SHAPERS) newValue = validateValue (*new_controllers[i], globalControllerLimits[i]);
+			if (i < SHAPERS)
+			{
+				newValue = validateValue (*new_controllers[i], globalControllerLimits[i]);
+
+				if (i == BASE)
+				{
+					if (newValue == SECONDS)
+					{
+						if (bpm < 1.0) message.setMessage (JACK_STOP_MSG);
+						else message.deleteMessage (JACK_STOP_MSG);
+					}
+					else
+					{
+						if ((speed == 0) || (bpm < 1.0)) message.setMessage (JACK_STOP_MSG);
+						else message.deleteMessage (JACK_STOP_MSG);
+					}
+				}
+			}
+
 			else
 			{
 				newValue = validateValue (*new_controllers[i], shapeControllerLimits[shapeControllerNr]);
@@ -196,41 +260,12 @@ void BShapr::run (uint32_t n_samples)
 
 	// Check activeShape input
 	int activeShape = LIM (controllers[ACTIVE_SHAPE], 1, MAXSHAPES) - 1;
-	if (controllers[SHAPERS + activeShape * SH_SIZE + SH_INPUT] == 0)
-	{
-		if (!(messagebits & (1 << (NO_INPUT_MSG - 1))))
-		{
-			messagebits = messagebits | (1 << (NO_INPUT_MSG - 1));
-			scheduleNotifyMessage = true;
-		}
-	}
-	else
-	{
-		if (messagebits & (1 << (NO_INPUT_MSG - 1)))
-		{
-			messagebits = messagebits & (~(1 << (NO_INPUT_MSG - 1)));
-			scheduleNotifyMessage = true;
-		}
-	}
+	if (controllers[SHAPERS + activeShape * SH_SIZE + SH_INPUT] == 0) message.setMessage (NO_INPUT_MSG);
+	else message.deleteMessage (NO_INPUT_MSG);
 
 	// Check activeShape output
-	if (!isAudioOutputConnected (activeShape))
-	{
-		if (!(messagebits & (1 << (NO_OUTPUT_MSG - 1))))
-		{
-			messagebits = messagebits | (1 << (NO_OUTPUT_MSG - 1));
-			scheduleNotifyMessage = true;
-		}
-	}
-	else
-	{
-		if (messagebits & (1 << (NO_OUTPUT_MSG - 1)))
-		{
-			messagebits = messagebits & (~(1 << (NO_OUTPUT_MSG - 1)));
-			scheduleNotifyMessage = true;
-		}
-	}
-
+	if (!isAudioOutputConnected (activeShape)) message.setMessage (NO_OUTPUT_MSG);
+	else message.deleteMessage (NO_OUTPUT_MSG);
 
 	uint32_t last_t = 0;
 	LV2_ATOM_SEQUENCE_FOREACH (controlPort, ev)
@@ -308,19 +343,14 @@ void BShapr::run (uint32_t n_samples)
 
 						if (nbpm < 1.0)
 						{
-							messagebits = messagebits | (1 << (JACK_STOP_MSG - 1));
-							scheduleNotifyMessage = true;
+							message.setMessage (JACK_STOP_MSG);
 							fillFilterBuffer (filter1Buffer1, 0);
 							fillFilterBuffer (filter1Buffer2, 0);
 							fillFilterBuffer (filter2Buffer1, 0);
 							fillFilterBuffer (filter2Buffer2, 0);
 						}
 
-						else
-						{
-							messagebits = messagebits & (~(1 << (JACK_STOP_MSG - 1)));
-							scheduleNotifyMessage = true;
-						}
+						else message.deleteMessage (JACK_STOP_MSG);
 					}
 				}
 
@@ -346,32 +376,31 @@ void BShapr::run (uint32_t n_samples)
 					if (nspeed != speed)
 					{
 
-						// Started ?
-						if (speed == 0)
+						if (controllers[BASE] != SECONDS)
 						{
-							for (int i = 0; i < MAXSHAPES; ++i)
+
+							// Started ?
+							if (speed == 0)
 							{
-								audioBuffer1[i].reset ();
-								audioBuffer2[i].reset ();
+								for (int i = 0; i < MAXSHAPES; ++i)
+								{
+									audioBuffer1[i].reset ();
+									audioBuffer2[i].reset ();
+								}
 							}
-						}
 
-						// Stopped ?
-						if (nspeed == 0)
-						{
-							messagebits = messagebits | (1 << (JACK_STOP_MSG - 1));
-							scheduleNotifyMessage = true;
-							fillFilterBuffer (filter1Buffer1, 0);
-							fillFilterBuffer (filter1Buffer2, 0);
-							fillFilterBuffer (filter2Buffer1, 0);
-							fillFilterBuffer (filter2Buffer2, 0);
-						}
+							// Stopped ?
+							if (nspeed == 0)
+							{
+								message.setMessage (JACK_STOP_MSG);
+								fillFilterBuffer (filter1Buffer1, 0);
+								fillFilterBuffer (filter1Buffer2, 0);
+								fillFilterBuffer (filter2Buffer1, 0);
+								fillFilterBuffer (filter2Buffer2, 0);
+							}
 
-						// Not stopped ?
-						else
-						{
-							messagebits = messagebits & (~(1 << (JACK_STOP_MSG - 1)));
-							scheduleNotifyMessage = true;
+							// Not stopped ?
+							else message.deleteMessage (JACK_STOP_MSG);
 						}
 
 						speed = nspeed;
@@ -418,7 +447,7 @@ void BShapr::run (uint32_t n_samples)
 	{
 		notifyMonitorToGui();
 		for (int i = 0; i < MAXSHAPES; ++i) if (scheduleNotifyShapes[i]) notifyShapeToGui (i);
-		if (scheduleNotifyMessage) notifyMessageToGui ();
+		if (message.isScheduled ()) notifyMessageToGui ();
 		if (scheduleNotifyStatus) notifyStatusToGui ();
 	}
 	lv2_atom_forge_pop(&forge, &notify_frame);
@@ -502,15 +531,15 @@ void BShapr::notifyShapeToGui (int shapeNr)
 
 void BShapr::notifyMessageToGui()
 {
+	uint32_t messageNr = message.loadMessage ();
+
 	// Send notifications
 	LV2_Atom_Forge_Frame frame;
 	lv2_atom_forge_frame_time(&forge, 0);
 	lv2_atom_forge_object(&forge, &frame, 0, urids.notify_messageEvent);
 	lv2_atom_forge_key(&forge, urids.notify_message);
-	lv2_atom_forge_int(&forge, messagebits);
+	lv2_atom_forge_int(&forge, messageNr);
 	lv2_atom_forge_pop(&forge, &frame);
-
-	scheduleNotifyMessage = false;
 }
 
 void BShapr::notifyStatusToGui()
@@ -724,7 +753,7 @@ void BShapr::delay (const float input1, const float input2, float* output1, floa
 void BShapr::play (uint32_t start, uint32_t end)
 {
 	// Return if halted or bpm == 0
-	if ((speed == 0.0f) || (bpm < 1.0f))
+	if (((speed == 0.0f) && (controllers[BASE] != SECONDS)) || (bpm < 1.0f))
 	{
 		memset(audioOutput1,0,(end-start)*sizeof(float));
 		memset(audioOutput2,0,(end-start)*sizeof(float));

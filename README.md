@@ -86,10 +86,10 @@ the signal will only be used internally.
 
 ## TODO
 
-* Jack transport-independet playback (if "seconds" selected as base)
 * Stereo monitor
 * GUI performance
-* Additional target effects
+* Optimize dynamic pitch and delay methods
+* Additional target effects (any ideas welcome)
 
 ## See also
 
