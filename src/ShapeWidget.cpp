@@ -28,6 +28,7 @@ ShapeWidget::ShapeWidget (const double x, const double y, const double width, co
 		ValueWidget (x, y, width, height, name, 0), Shape (), tool (NO_TOOL), scaleAnchorYPos (0), scaleAnchorValue (0), scaleRatio (1),
 		minorXSteps (1), majorXSteps (1), prefix (""), unit (""),
 		activeNode (-1), activeHandle (-1), selected (false), dragged (false), valueEnabled (false),
+		loLimit (-1000000), hiLimit (1000000), hardLoLimit (false), hardHiLimit (false),
 		fgColors (BColors::reds), bgColors (BColors::darks), lbfont (BWIDGETS_DEFAULT_FONT)
 {
 	setDraggable (true);
@@ -61,34 +62,68 @@ void ShapeWidget::setValueEnabled (const bool status) {valueEnabled = status;}
 
 void ShapeWidget::setScaleParameters (double anchorYPos, double anchorValue, double ratio)
 {
-	scaleAnchorYPos = anchorYPos;
-	scaleAnchorValue = anchorValue;
-	scaleRatio = ratio;
-	update ();
+	if ((scaleAnchorYPos != anchorYPos) || (scaleAnchorValue != anchorValue) || (scaleRatio != ratio))
+	{
+		scaleAnchorYPos = anchorYPos;
+		scaleAnchorValue = anchorValue;
+		scaleRatio = ratio;
+		update ();
+	}
 }
 
 void ShapeWidget::setMinorXSteps (double stepSize)
 {
-	minorXSteps = stepSize;
-	update ();
+	if (minorXSteps != stepSize)
+	{
+		minorXSteps = stepSize;
+		update ();
+	}
 }
 
 void ShapeWidget::setMajorXSteps (double stepSize)
 {
-	majorXSteps = stepSize;
-	update ();
+	if (majorXSteps != stepSize)
+	{
+		majorXSteps = stepSize;
+		update ();
+	}
 }
 
 void ShapeWidget::setPrefix (std::string text)
 {
-	prefix = text;
-	update ();
+	if (prefix != text)
+	{
+		prefix = text;
+		update ();
+	}
 }
 
 void ShapeWidget::setUnit (std::string text)
 {
-	unit = text;
-	update ();
+	if (unit != text)
+	{
+		unit = text;
+		update ();
+	}
+}
+
+void ShapeWidget::setLowerLimit (double value, bool hard)
+{
+	if ((value != loLimit) || (hard != hardLoLimit))
+	{
+		loLimit = value;
+		hardLoLimit = hard;
+		update ();
+	}
+}
+void ShapeWidget::setHigherLimit (double value, bool hard)
+{
+	if ((value != hiLimit) || (hard != hardHiLimit))
+	{
+		hiLimit = value;
+		hardHiLimit = hard;
+		update ();
+	}
 }
 
 void ShapeWidget::onButtonPressed (BEvents::PointerEvent* event)
@@ -374,7 +409,7 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 		BColors::Color gridColor = *bgColors.getColor (BColors::NORMAL);
 
 		// Draw Y grid
-		double ygrid = pow (10, floor (log10 (scaleRatio)));
+		double ygrid = pow (10, floor (log10 (scaleRatio / 1.5)));
 		std::string nrformat = "%" + ((ygrid < 1) ? ("1." + std::to_string ((int)(-log10 (ygrid)))) : (std::to_string ((int)(log10 (ygrid)) + 1) + ".0")) + "f";
 		cairo_text_extents_t ext;
 		cairo_select_font_face (cr, lbfont.getFontFamily ().c_str (), lbfont.getFontSlant (), lbfont.getFontWeight ());
@@ -398,6 +433,46 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 		cairo_set_source_rgba (cr, CAIRO_RGBA (gridColor));
 		cairo_set_line_width (cr, 1);
 		cairo_stroke (cr);
+
+		// Draw lower Y limits
+		if ((loLimit >= ymin) && (loLimit <= ymax))
+		{
+			std::string label = "Lower limit";
+			cairo_text_extents (cr, label.c_str(), &ext);
+			cairo_move_to (cr, x0 + 0.5 * w - 0.5 * ext.width - ext.x_bearing, y0 + h - h * (loLimit - ymin) / (ymax - ymin) - ext.height / 2 - ext.y_bearing);
+			cairo_set_source_rgba (cr, CAIRO_RGBA (lineColor));
+			cairo_show_text (cr, label.c_str ());
+
+			cairo_move_to (cr, x0 + 0.1 * w, y0 + h - h * (loLimit - ymin) / (ymax - ymin));
+			cairo_line_to (cr, x0 + 0.48 * w - 0.5 * ext.width - ext.x_bearing, y0 + h - h * (loLimit - ymin) / (ymax - ymin));
+
+			cairo_move_to (cr, x0 + 0.52 * w + 0.5 * ext.width - ext.x_bearing, y0 + h - h * (loLimit - ymin) / (ymax - ymin));
+			cairo_line_to (cr, x0 + 0.9 * w, y0 + h - h * (loLimit - ymin) / (ymax - ymin));
+
+			cairo_set_source_rgba (cr, CAIRO_RGBA (lineColor));
+			cairo_set_line_width (cr, 1);
+			cairo_stroke (cr);
+		}
+
+		// Draw upper Y limits
+		if ((hiLimit >= ymin) && (hiLimit <= ymax))
+		{
+			std::string label = "Upper limit";
+			cairo_text_extents (cr, label.c_str(), &ext);
+			cairo_move_to (cr, x0 + 0.5 * w - 0.5 * ext.width - ext.x_bearing, y0 + h - h * (hiLimit - ymin) / (ymax - ymin) - ext.height / 2 - ext.y_bearing);
+			cairo_set_source_rgba (cr, CAIRO_RGBA (lineColor));
+			cairo_show_text (cr, label.c_str ());
+
+			cairo_move_to (cr, x0 + 0.1 * w, y0 + h - h * (hiLimit - ymin) / (ymax - ymin));
+			cairo_line_to (cr, x0 + 0.48 * w - 0.5 * ext.width - ext.x_bearing, y0 + h - h * (hiLimit - ymin) / (ymax - ymin));
+
+			cairo_move_to (cr, x0 + 0.52 * w + 0.5 * ext.width - ext.x_bearing, y0 + h - h * (hiLimit - ymin) / (ymax - ymin));
+			cairo_line_to (cr, x0 + 0.9 * w, y0 + h - h * (hiLimit - ymin) / (ymax - ymin));
+
+			cairo_set_source_rgba (cr, CAIRO_RGBA (lineColor));
+			cairo_set_line_width (cr, 1);
+			cairo_stroke (cr);
+		}
 
 		// Draw X grid
 		cairo_set_line_width (cr, 0.5);

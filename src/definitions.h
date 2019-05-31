@@ -70,4 +70,23 @@ typedef struct
 
 const BShaprNotifications defaultNotification = {0.0, 0.0, 0.0, 0.0, 0.0};
 
+struct Limit
+{
+	float min;
+	float max;
+	float step;
+};
+
+const Limit methodLimits [MAXEFFECTS] = {{0, 10, 0},
+																				 {-1, 1, 0},
+																				 {0, 100, 0},
+																				 {20, 20000, 0},
+																				 {20, 20000, 0},
+																				 {-90, 30, 0},
+																				 {1.301, 4.301, 0},
+																				 {1.301, 4.301, 0},
+																				 {-12, 12, 0},
+																				 {0, 1000, 0}
+																			 };
+
 #endif /* DEFINITIONS_H_ */

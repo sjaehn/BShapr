@@ -28,12 +28,12 @@
 
 enum ToolType
 {
-	NO_TOOL						= 0,
-	POINT_NODE_TOOL				= 1,
-	AUTO_SMOOTH_NODE_TOOL		= 2,
+	NO_TOOL											= 0,
+	POINT_NODE_TOOL							= 1,
+	AUTO_SMOOTH_NODE_TOOL				= 2,
 	SYMMETRIC_SMOOTH_NODE_TOOL	= 3,
-	CORNER_NODE_TOOL			= 4,
-	DELETE_TOOL					= 5
+	CORNER_NODE_TOOL						= 4,
+	DELETE_TOOL									= 5
 };
 
 class ShapeWidget : public Shape<MAXNODES>, public BWidgets::ValueWidget
@@ -52,6 +52,8 @@ public:
 	void setMajorXSteps (double stepSize);
 	void setPrefix (std::string text);
 	void setUnit (std::string text);
+	void setLowerLimit (double value, bool hard = false);
+	void setHigherLimit (double value, bool hard = false);
 	virtual void onButtonPressed (BEvents::PointerEvent* event) override;
 	virtual void onButtonReleased (BEvents::PointerEvent* event) override;
 	virtual void onPointerDragged (BEvents::PointerEvent* event) override;
@@ -71,6 +73,8 @@ protected:
 	double scaleRatio;
 	double minorXSteps;
 	double majorXSteps;
+	double loLimit, hiLimit;
+	bool hardLoLimit, hardHiLimit;	// TODO, not in use yet
 	std::string prefix;
 	std::string unit;
 	BColors::ColorSet fgColors;

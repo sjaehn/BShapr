@@ -44,13 +44,6 @@
 #define PITCHBUFFERSIZE 1024
 #define DELAYBUFFERSIZE 1024
 
-struct Limit
-{
-	float min;
-	float max;
-	float step;
-};
-
 const Limit globalControllerLimits [SHAPERS]	= {{0, 2, 1},
 																								 {1, 16, 0},
 																							 	 {1, 4, 1}};

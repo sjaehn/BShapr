@@ -125,6 +125,8 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	{
 		for (int j = 0; j < shapeGui[i].inputShapeLabelIcons.size(); ++j) shapeGui[i].inputShapeLabelIcons[j].setClickable (false);
 		shapeGui[i].shapeWidget.setTool (ToolType::POINT_NODE_TOOL);
+		shapeGui[i].shapeWidget.setLowerLimit (methodLimits[0].min);
+		shapeGui[i].shapeWidget.setHigherLimit (methodLimits[0].max);
 		shapeGui[i].inputAmpDial.setScrollable (true);
 		shapeGui[i].inputAmpDial.setHardChangeable (false);
 		//shapeGui[i].inputAmpDial.hide ();
@@ -492,6 +494,8 @@ void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 						ui->shapeGui[sh].shapeWidget.setScaleParameters (scaleParameters[nr].anchorYPos, scaleParameters[nr].anchorValue, scaleParameters[nr].ratio);
 						ui->shapeGui[sh].shapeWidget.setUnit (scaleParameters[nr].unit);
 						ui->shapeGui[sh].shapeWidget.setPrefix (scaleParameters[nr].prefix);
+						ui->shapeGui[sh].shapeWidget.setLowerLimit (methodLimits[nr].min);
+						ui->shapeGui[sh].shapeWidget.setHigherLimit (methodLimits[nr].max);
 					}
 
 					// Input
