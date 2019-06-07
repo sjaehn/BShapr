@@ -41,6 +41,8 @@ Notes:
 
 ## Usage
 
++++ See tutorial: https://youtu.be/fjhL_rku2BU +++
+
 B.Shapr is an envelope plugin for time or beat position-dependent effects.
 The user can define up to four different envelope shapes by drawing Bezier curves. Each of these envelope
 shapes can be connected to different target effects, such as level, balance, or stereo width, and can be
