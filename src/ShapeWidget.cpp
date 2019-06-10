@@ -410,7 +410,8 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 
 		// Draw Y grid
 		double ygrid = pow (10, floor (log10 (scaleRatio / 1.5)));
-		std::string nrformat = "%" + ((ygrid < 1) ? ("1." + std::to_string ((int)(-log10 (ygrid)))) : (std::to_string ((int)(log10 (ygrid)) + 1) + ".0")) + "f";
+		int ldYgrid = log10 (ygrid);
+		std::string nrformat = "%" + ((ygrid < 1) ? ("1." + std::to_string (-ldYgrid)) : (std::to_string (ldYgrid + 1) + ".0")) + "f";
 		cairo_text_extents_t ext;
 		cairo_select_font_face (cr, lbfont.getFontFamily ().c_str (), lbfont.getFontSlant (), lbfont.getFontWeight ());
 		cairo_set_font_size (cr, lbfont.getFontSize ());

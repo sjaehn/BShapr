@@ -326,8 +326,8 @@ template<size_t sz> bool Shape<sz>::validateNode (size_t nr)
 			}
 
 			// Calculate handle distances
-			double dist1 = sqrt (pow (nodes[nr].handle1.x, 2) + pow (nodes[nr].handle1.y, 2));
-			double dist2 = sqrt (pow (nodes[nr].handle2.x, 2) + pow (nodes[nr].handle2.y, 2));
+			double dist1 = sqrt (nodes[nr].handle1.x * nodes[nr].handle1.x + nodes[nr].handle1.y * nodes[nr].handle1.y);
+			double dist2 = sqrt (nodes[nr].handle2.x * nodes[nr].handle2.x + nodes[nr].handle2.y * nodes[nr].handle2.y);
 
 			// Recalculate handle2
 			if ((dist1 != 0) && (dist2 != 0))
