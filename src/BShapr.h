@@ -40,8 +40,10 @@
 #include "Shape.hpp"
 
 #define F_ORDER 8
+#define P_ORDER 6
 #define AUDIOBUFFERSIZE 0x8000
 #define PITCHBUFFERSIZE 1024
+#define PITCHFADERSIZE 64
 #define DELAYBUFFERSIZE 1024
 
 const Limit globalControllerLimits [SHAPERS]	= {{0, 2, 1},

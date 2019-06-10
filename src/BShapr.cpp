@@ -24,6 +24,7 @@
 #include "BShapr.h"
 
 #define LIM(g , min, max) ((g) > (max) ? (max) : ((g) < (min) ? (min) : (g)))
+#define SQR(a) (a * a)
 
 inline double floorfrac (const double value) {return value - floor (value);}
 
@@ -589,6 +590,7 @@ void BShapr::stereoWidth (const float input1, const float input2, float* output1
 	*output2 = m - s;
 }
 
+// Butterworth algorithm
 void BShapr::lowPassFilter (const float input1, const float input2, float* output1, float* output2, const float cutoffFreq, const int shape)
 {
 	float f = LIM (cutoffFreq, methodLimits[LOW_PASS].min, methodLimits[LOW_PASS].max);
@@ -627,6 +629,7 @@ void BShapr::lowPassFilter (const float input1, const float input2, float* outpu
 	*output2 = f2;
 }
 
+// Butterworth algorithm
 void BShapr::highPassFilter (const float input1, const float input2, float* output1, float* output2, const float cutoffFreq, const int shape)
 {
 	float f = LIM (cutoffFreq, methodLimits[HIGH_PASS].min, methodLimits[HIGH_PASS].max);
@@ -665,38 +668,93 @@ void BShapr::highPassFilter (const float input1, const float input2, float* outp
 	*output2 = f2;
 }
 
+// Ring buffer method with least squares ring closure
 void BShapr::pitch (const float input1, const float input2, float* output1, float* output2, const float semitone, const int shape)
 {
 	const float p  = LIM (semitone, methodLimits[PITCH].min, methodLimits[PITCH].max);
+	const double pitchFactor = pow (2, p / 12);
 	const uint32_t wPtr = audioBuffer1[shape].wPtr1;
 	const double rPtr = audioBuffer1[shape].rPtr1;
 	const uint32_t rPtrInt = uint32_t (rPtr);
 	const double rPtrFrac = fmod (rPtr, 1);
-	double diff = fabs (rPtr - wPtr);
-	if (diff > PITCHBUFFERSIZE / 2) diff = PITCHBUFFERSIZE - diff;
-	const double ratio = diff / PITCHBUFFERSIZE;
-	const double factor1 = sin (M_PI * ratio);
-	const double factor2 = cos (M_PI * ratio);
+	double diff = rPtr - wPtr;
+	if (diff > PITCHBUFFERSIZE / 2) diff = diff - PITCHBUFFERSIZE;
+	if (diff < -PITCHBUFFERSIZE / 2) diff = diff + PITCHBUFFERSIZE;
 
+	// Write to buffers and output
 	audioBuffer1[shape].frames[wPtr % PITCHBUFFERSIZE] = input1;
 	audioBuffer2[shape].frames[wPtr % PITCHBUFFERSIZE] = input2;
+	*output1 = (1 - rPtrFrac) * audioBuffer1[shape].frames[rPtrInt % PITCHBUFFERSIZE] +
+						 rPtrFrac * audioBuffer1[shape].frames[(rPtrInt + 1) % PITCHBUFFERSIZE];
+	*output2 = (1 - rPtrFrac) * audioBuffer2[shape].frames[rPtrInt % PITCHBUFFERSIZE] +
+						 rPtrFrac * audioBuffer2[shape].frames[(rPtrInt + 1) % PITCHBUFFERSIZE];
 
-	double bufferValue11 = (1 - rPtrFrac) * audioBuffer1[shape].frames[rPtrInt % PITCHBUFFERSIZE] +
-													rPtrFrac * audioBuffer1[shape].frames[(rPtrInt + 1) % PITCHBUFFERSIZE];
-	double bufferValue12 = (1 - rPtrFrac) * audioBuffer1[shape].frames[(rPtrInt + PITCHBUFFERSIZE / 2) % PITCHBUFFERSIZE] +
-													rPtrFrac * audioBuffer1[shape].frames[(rPtrInt + PITCHBUFFERSIZE / 2 + 1) % PITCHBUFFERSIZE];
-	double bufferValue21 = (1 - rPtrFrac) * audioBuffer2[shape].frames[rPtrInt % PITCHBUFFERSIZE] +
-													rPtrFrac * audioBuffer2[shape].frames[(rPtrInt + 1) % PITCHBUFFERSIZE];
-	double bufferValue22 = (1 - rPtrFrac) * audioBuffer2[shape].frames[(rPtrInt + PITCHBUFFERSIZE / 2) % PITCHBUFFERSIZE] +
-													rPtrFrac * audioBuffer2[shape].frames[(rPtrInt + PITCHBUFFERSIZE / 2 + 1) % PITCHBUFFERSIZE];
+	// Update pointers
+ 	const double newWPtr = (wPtr + 1) % PITCHBUFFERSIZE;
+ 	double newRPtr = fmod (rPtr + pitchFactor, PITCHBUFFERSIZE);
 
-	*output1 = factor1 * bufferValue11 + factor2 * bufferValue12;
-	*output2 = factor1 * bufferValue21 + factor2 * bufferValue22;
+ 	double newDiff = newRPtr - newWPtr;
+ 	if (newDiff > PITCHBUFFERSIZE / 2) newDiff = newDiff - PITCHBUFFERSIZE;
+ 	if (newDiff < -PITCHBUFFERSIZE / 2) newDiff = newDiff + PITCHBUFFERSIZE;
 
-	audioBuffer1[shape].wPtr1 = (wPtr + 1) % PITCHBUFFERSIZE;
-	audioBuffer1[shape].rPtr1 = fmod (rPtr + pow (2, p / 12), PITCHBUFFERSIZE);
-	audioBuffer2[shape].wPtr1 = audioBuffer1[shape].wPtr1;
-	audioBuffer2[shape].rPtr1 = audioBuffer1[shape].rPtr1;
+	// Run into new data area on positive pitch or
+	// run into old data area on negative pitch => find best point to continue
+	if (((diff < 0) && (newDiff >= 0) && (p > 0)) ||
+			((diff >= 1) && (newDiff < 1) && (p < 0)))
+	{
+		int sig = (p > 0 ? -1 : 1);
+		double bestOverlayScore = 9999;
+		double bestI = 0;
+
+		// Calulate slopes for the reference sample points
+		double slope11[P_ORDER];
+		double slope12[P_ORDER];
+		for (int j = 0; j < P_ORDER; ++j)
+		{
+			int jpos = (1 << j);
+			int jptr = rPtrInt + PITCHBUFFERSIZE + sig * jpos;
+			slope11[j] = audioBuffer1[shape].frames[(jptr + 1) % PITCHBUFFERSIZE] -
+									 audioBuffer1[shape].frames[jptr % PITCHBUFFERSIZE];
+			slope12[j] = audioBuffer2[shape].frames[(jptr + 1) % PITCHBUFFERSIZE] -
+									 audioBuffer2[shape].frames[jptr % PITCHBUFFERSIZE];
+		}
+
+		// Iterate through the buffer to find the best match
+		for (int i = PITCHFADERSIZE + 1; i < PITCHBUFFERSIZE - PITCHFADERSIZE; ++i)
+		{
+			double posDiff1 = audioBuffer1[shape].frames[rPtrInt % PITCHBUFFERSIZE] - audioBuffer1[shape].frames[(rPtrInt + i) % PITCHBUFFERSIZE];
+			double posDiff2 = audioBuffer2[shape].frames[rPtrInt % PITCHBUFFERSIZE] - audioBuffer2[shape].frames[(rPtrInt + i) % PITCHBUFFERSIZE];
+			double overlayScore = SQR (posDiff1) + SQR (posDiff2);
+
+			for (int j = 0; j < P_ORDER; ++j)
+			{
+				if (overlayScore > bestOverlayScore) break;
+
+				int jpos = (1 << j);
+				int jptr = rPtrInt + PITCHBUFFERSIZE + i + sig * jpos;
+				double slope21 = audioBuffer1[shape].frames[(jptr + 1) % PITCHBUFFERSIZE] -
+												 audioBuffer1[shape].frames[jptr % PITCHBUFFERSIZE];
+				double slope22 = audioBuffer2[shape].frames[(jptr + 1) % PITCHBUFFERSIZE] -
+												 audioBuffer2[shape].frames[jptr % PITCHBUFFERSIZE];
+				double slopeDiff1 = slope11[j] - slope21;
+				double slopeDiff2 = slope12[j] - slope22;
+				overlayScore += SQR (slopeDiff1) + SQR (slopeDiff2);
+			}
+
+			if (overlayScore < bestOverlayScore)
+			{
+				bestI = i;
+				bestOverlayScore = overlayScore;
+			}
+		}
+
+		newRPtr = fmod (rPtr + bestI + pitchFactor, PITCHBUFFERSIZE);
+	}
+
+	audioBuffer1[shape].wPtr1 = newWPtr;
+	audioBuffer1[shape].rPtr1 = newRPtr;
+	audioBuffer2[shape].wPtr1 = newWPtr;
+	audioBuffer2[shape].rPtr1 = newRPtr;
 }
 
 void BShapr::delay (const float input1, const float input2, float* output1, float* output2, const float delaytime, const int shape)

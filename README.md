@@ -89,8 +89,7 @@ the signal will only be used internally.
 ## TODO
 
 * Stereo monitor
-* GUI performance
-* Optimize dynamic pitch and delay methods
+* Optimize dynamic delay method (challening)
 * Additional target effects (any ideas welcome)
 
 ## See also
