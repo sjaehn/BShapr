@@ -39,11 +39,12 @@ typedef enum
 	SH_INPUT				= 0,
 	SH_INPUT_AMP		= 1,
 	SH_TARGET				= 2,
-	SH_OUTPUT				= 3,
-	SH_OUTPUT_AMP		= 4,
-	SH_SIZE					= 5,
+	SH_DRY_WET			= 3,
+	SH_OUTPUT				= 4,
+	SH_OUTPUT_AMP		= 5,
+	SH_SIZE					= 6,
 
-	NR_CONTROLLERS	= 23
+	NR_CONTROLLERS	= 27
 } BShaprPortIndex;
 
 typedef enum

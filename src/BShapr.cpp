@@ -867,58 +867,56 @@ void BShapr::play (uint32_t start, uint32_t end)
 
 				// Get shaper value for the actual position
 				float iFactor = shapes[sh].getMapValue (pos);
+				float drywet = controllers[SHAPERS + sh * SH_SIZE + SH_DRY_WET];
+				float wet1 = 0;
+				float wet2 = 0;
 
 				// Apply shaper on target
 				switch (int (controllers[SHAPERS + sh * SH_SIZE + SH_TARGET]))
 				{
 					case BShaprTargetIndex::LEVEL:
-						audioLevel (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], iFactor);
+						audioLevel (input1, input2, &wet1, &wet2, iFactor);
 						break;
 
 					case BShaprTargetIndex::GAIN:
-						audioLevel (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh],
-												pow (10, 0.05 * (LIM (iFactor, methodLimits[GAIN].min, methodLimits[GAIN].max))));
+						audioLevel (input1, input2, &wet1, &wet2, pow (10, 0.05 * (LIM (iFactor, methodLimits[GAIN].min, methodLimits[GAIN].max))));
 						break;
 
 					case BShaprTargetIndex::BALANCE:
-						stereoBalance (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], iFactor);
+						stereoBalance (input1, input2, &wet1, &wet2, iFactor);
 						break;
 
 					case BShaprTargetIndex::WIDTH:
-						stereoWidth (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], iFactor);
+						stereoWidth (input1, input2, &wet1, &wet2, iFactor);
 						break;
 
 					case BShaprTargetIndex::LOW_PASS:
-						lowPassFilter (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], iFactor, sh);
+						lowPassFilter (input1, input2, &wet1, &wet2, iFactor, sh);
 						break;
 
 					case BShaprTargetIndex::LOW_PASS_LOG:
-						lowPassFilter (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh],
-													 pow (10, LIM (iFactor, methodLimits[LOW_PASS_LOG].min, methodLimits[LOW_PASS_LOG].max)), sh);
+						lowPassFilter (input1, input2, &wet1, &wet2, pow (10, LIM (iFactor, methodLimits[LOW_PASS_LOG].min, methodLimits[LOW_PASS_LOG].max)), sh);
 						break;
 
 					case BShaprTargetIndex::HIGH_PASS:
-						highPassFilter (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], iFactor, sh);
+						highPassFilter (input1, input2, &wet1, &wet2, iFactor, sh);
 						break;
 
 					case BShaprTargetIndex::HIGH_PASS_LOG:
-						highPassFilter (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh],
-														pow (10, LIM (iFactor, methodLimits[HIGH_PASS_LOG].min, methodLimits[HIGH_PASS_LOG].max)), sh);
+						highPassFilter (input1, input2, &wet1, &wet2, pow (10, LIM (iFactor, methodLimits[HIGH_PASS_LOG].min, methodLimits[HIGH_PASS_LOG].max)), sh);
 						break;
 
 					case BShaprTargetIndex::PITCH:
-						pitch (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], iFactor, sh);
+						pitch (input1, input2, &wet1, &wet2, iFactor, sh);
 						break;
 
 					case BShaprTargetIndex::DELAY:
-						delay (input1, input2, &shapeOutput1[sh], &shapeOutput2[sh], iFactor, sh);
+						delay (input1, input2, &wet1, &wet2, iFactor, sh);
 						break;
-
-					default:
-						shapeOutput1[sh] = 0;
-						shapeOutput2[sh] = 0;
-
 				}
+
+				shapeOutput1[sh] = (1 - drywet) * input1 + drywet * wet1;
+				shapeOutput2[sh] = (1 - drywet) * input2 + drywet * wet2;
 
 				if (controllers[SHAPERS + sh * SH_SIZE + SH_OUTPUT] == BShaprOutputIndex::AUDIO_OUT)
 				{

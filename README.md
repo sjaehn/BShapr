@@ -76,10 +76,18 @@ or its handles.
 However, dragging the background results only in dragging the whole **display** of the envelope. Similarly,
 scrolling zooms the display in or out.
 
-### Target
+### Method
 
-Select a target effect for this shape. E.g., if you select balance, the input signal will be panned according
-to the shape envelope.
+Select a method that will be applied on the input signal by the use of the shape. You can choose between:
+
+* Level
+* Gain
+* Stereo balance
+* Stereo width
+* Low pass filter
+* High pass filter
+* Pitch shifter
+* Delay (experimental)
 
 ### Output
 

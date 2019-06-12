@@ -50,7 +50,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		}
 
 		shapeGui[i].inputSelect = SelectWidget (60, 20, 200 + i * 100, 40, "tool", 100, 40, 2 + i, 1);
-		shapeGui[i].inputAmpDial = BWidgets::DisplayDial (1000, 14, 50, 56, "dial", 1.0, -1.0, 1.0, 0, "%1.3f");
+		shapeGui[i].inputAmpDial = BWidgets::DisplayDial (920, 14, 50, 56, "dial", 1.0, -1.0, 1.0, 0, "%1.3f");
 		shapeGui[i].targetListBox = BWidgets::PopupListBox (120, 280, 180, 20, 0, -220, 180, 220, "menu",
 															{{0, "Level"},
 															 {5, "Gain"},
@@ -62,11 +62,13 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 														 	 {7, "High pass filter (log)"},
 														 	 {8, "Pitch"},
 														 	 {9, "Delay"}});
-		shapeGui[i].shapeWidget = ShapeWidget (4, 94, 1152, 172, "shape");
-		shapeGui[i].toolSelect = SelectWidget (437, 272, 276, 36, "tool", 36, 36, 5, 1);
+		shapeGui[i].shapeWidget = ShapeWidget (4, 84, 1152, 172, "shape");
+		shapeGui[i].toolSelect = SelectWidget (433, 268, 284, 44, "tool", 44, 44, 5, 1);
+		shapeGui[i].drywetLabel = BWidgets::Label (920, 304, 50, 16, "smlabel", "dry/wet");
+		shapeGui[i].drywetDial = BWidgets::Dial (920, 264, 50, 50, "dial", 1.0, 0.0, 1.0, 0);
 		shapeGui[i].shapeLabelIcon = BWidgets::ImageIcon (1000, 280, 160, 20, "widget", pluginPath + "Shape" + std::to_string (i + 1) + ".png");
 		shapeGui[i].outputSelect = SelectWidget (60, 340, 100, 40, "tool", 100, 40, 1, 1);
-		shapeGui[i].outputAmpDial = BWidgets::DisplayDial (1000, 334, 50, 56, "dial", 1.0, 0.0, 1.0, 0, "%1.3f");
+		shapeGui[i].outputAmpDial = BWidgets::DisplayDial (920, 334, 50, 56, "dial", 1.0, 0.0, 1.0, 0, "%1.3f");
 
 		shapeGui[i].shapeContainer.rename ("widget");
 		shapeGui[i].tabIcon.rename ("tab");
@@ -75,6 +77,8 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].targetListBox.rename ("menu");
 		shapeGui[i].shapeWidget.rename ("shape");
 		shapeGui[i].toolSelect.rename ("tool");
+		shapeGui[i].drywetLabel.rename ("smlabel");
+		shapeGui[i].drywetDial.rename ("dial");
 		shapeGui[i].shapeLabelIcon.rename ("widget");
 		shapeGui[i].outputSelect.rename ("tool");
 		shapeGui[i].outputAmpDial.rename ("dial");
@@ -96,6 +100,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		controllerWidgets[SHAPERS + i * SH_SIZE + SH_INPUT] = (BWidgets::ValueWidget*) &shapeGui[i].inputSelect;
 		controllerWidgets[SHAPERS + i * SH_SIZE + SH_INPUT_AMP] = (BWidgets::ValueWidget*) &shapeGui[i].inputAmpDial;
 		controllerWidgets[SHAPERS + i * SH_SIZE + SH_TARGET] = (BWidgets::ValueWidget*) &shapeGui[i].targetListBox;
+		controllerWidgets[SHAPERS + i * SH_SIZE + SH_DRY_WET] = (BWidgets::ValueWidget*) &shapeGui[i].drywetDial;
 		controllerWidgets[SHAPERS + i * SH_SIZE + SH_OUTPUT] = (BWidgets::ValueWidget*) &shapeGui[i].outputSelect;
 		controllerWidgets[SHAPERS + i * SH_SIZE + SH_OUTPUT_AMP] = (BWidgets::ValueWidget*) &shapeGui[i].outputAmpDial;
 	}
@@ -110,6 +115,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].inputSelect.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 		shapeGui[i].inputAmpDial.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 		shapeGui[i].targetListBox.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
+		shapeGui[i].drywetDial.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 		shapeGui[i].outputSelect.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 		shapeGui[i].outputAmpDial.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 		shapeGui[i].shapeWidget.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::shapeChangedCallback);
@@ -129,10 +135,9 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].shapeWidget.setHigherLimit (methodLimits[0].max);
 		shapeGui[i].inputAmpDial.setScrollable (true);
 		shapeGui[i].inputAmpDial.setHardChangeable (false);
-		//shapeGui[i].inputAmpDial.hide ();
+		shapeGui[i].drywetDial.setHardChangeable (false);
 		shapeGui[i].outputAmpDial.setScrollable (true);
 		shapeGui[i].outputAmpDial.setHardChangeable (false);
-		//shapeGui[i].outputAmpDial.hide ();
 		if (i >= 1) shapeGui[i].shapeContainer.hide();
 	}
 	applyChildThemes ();
@@ -148,6 +153,8 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].shapeContainer.add (shapeGui[i].inputSelect);
 		shapeGui[i].shapeContainer.add (shapeGui[i].inputAmpDial);
 		shapeGui[i].shapeContainer.add (shapeGui[i].targetListBox);
+		shapeGui[i].shapeContainer.add (shapeGui[i].drywetLabel);
+		shapeGui[i].shapeContainer.add (shapeGui[i].drywetDial);
 		shapeGui[i].shapeContainer.add (shapeGui[i].shapeWidget);
 		shapeGui[i].shapeContainer.add (shapeGui[i].toolSelect);
 		shapeGui[i].shapeContainer.add (shapeGui[i].shapeLabelIcon);
@@ -321,6 +328,7 @@ void BShaprGUI::resizeGUI()
 
 	// Resize Fonts
 	defaultFont.setFontSize (12 * sz);
+	smFont.setFontSize (10 * sz);
 	lfLabelFont.setFontSize (12 * sz);
 
 	// Resize widgets
@@ -343,17 +351,19 @@ void BShaprGUI::resizeGUI()
 
 		RESIZE (shapeGui[i].inputSelect, 60, 20, 200 + i * 100, 40, sz);
 		shapeGui[i].inputSelect.resizeSelection (100 * sz, 40 * sz);
-		RESIZE (shapeGui[i].inputAmpDial, 1000, 14, 50, 56, sz);
+		RESIZE (shapeGui[i].inputAmpDial, 920, 14, 50, 56, sz);
 		RESIZE (shapeGui[i].targetListBox, 120, 280, 180, 20, sz);
 		shapeGui[i].targetListBox.resizeListBox (180 * sz, 220 * sz);
 		shapeGui[i].targetListBox.moveListBox (0, -220 * sz);
-		RESIZE (shapeGui[i].shapeWidget, 4, 94, 1152, 172, sz);
-		RESIZE (shapeGui[i].toolSelect, 437, 272, 276, 36, sz);
-		shapeGui[i].toolSelect.resizeSelection (36 * sz, 36 * sz);
+		RESIZE (shapeGui[i].drywetLabel, 920, 304, 50, 16, sz);
+		RESIZE (shapeGui[i].drywetDial, 920, 264, 50, 50, sz);
+		RESIZE (shapeGui[i].shapeWidget, 4, 84, 1152, 172, sz);
+		RESIZE (shapeGui[i].toolSelect, 433, 268, 284, 44, sz);
+		shapeGui[i].toolSelect.resizeSelection (44 * sz, 44 * sz);
 		RESIZE (shapeGui[i].shapeLabelIcon, 1000, 280, 160, 20, sz);
 		RESIZE (shapeGui[i].outputSelect, 60, 340, 100, 40, sz);
 		shapeGui[i].outputSelect.resizeSelection (100 * sz, 40 * sz);
-		RESIZE (shapeGui[i].outputAmpDial, 1000, 334, 50, 56, sz);
+		RESIZE (shapeGui[i].outputAmpDial, 920, 334, 50, 56, sz);
 	}
 
 	// Update monitor, const std::string& name
@@ -382,6 +392,9 @@ void BShaprGUI::applyChildThemes ()
 		shapeGui[i].inputAmpDial.applyTheme (theme);
 		shapeGui[i].inputAmpDial.getDisplayLabel()->setTextColors (lbColors);
 		shapeGui[i].targetListBox.applyTheme (theme);
+		shapeGui[i].drywetLabel.applyTheme (theme);
+		shapeGui[i].drywetLabel.setTextColors (lbColors);
+		shapeGui[i].drywetDial.applyTheme (theme);
 		shapeGui[i].shapeWidget.applyTheme (theme);
 		shapeGui[i].toolSelect.applyTheme (theme);
 		shapeGui[i].shapeLabelIcon.applyTheme (theme);
@@ -868,10 +881,8 @@ LV2UI_Handle instantiate (const LV2UI_Descriptor *descriptor, const char *plugin
 	int screenHeight = getScreenHeight ();
 	if ((screenWidth < 1240) || (screenHeight < 800)) sz = 0.66;
 	if ((screenWidth < 840) || (screenHeight < 530)) sz = 0.50;
-	std::cerr << "BShapr_GUI.lv2 screen size " << screenWidth << " x " << screenHeight <<
-			". Set GUI size to " << 1200 * sz << " x " << 780 * sz << ".\n";
 
-	if (resize) resize->ui_resize (resize->handle, 1200, 780);
+	if (resize) resize->ui_resize (resize->handle, 1200 * sz, 780 * sz);
 
 	*widget = (LV2UI_Widget) puglGetNativeWindow (ui->getPuglView ());
 	ui->sendGuiOn();
