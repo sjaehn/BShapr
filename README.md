@@ -87,7 +87,7 @@ Select a method that will be applied on the input signal by the use of the shape
 * Low pass filter
 * High pass filter
 * Pitch shifter
-* Delay (experimental)
+* Delay
 
 ### Output
 
@@ -97,7 +97,6 @@ the signal will only be used internally.
 ## TODO
 
 * Stereo monitor
-* Optimize dynamic delay method (challening)
 * Additional target effects (any ideas welcome)
 
 ## See also

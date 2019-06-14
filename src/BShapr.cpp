@@ -759,52 +759,83 @@ void BShapr::pitch (const float input1, const float input2, float* output1, floa
 
 void BShapr::delay (const float input1, const float input2, float* output1, float* output2, const float delaytime, const int shape)
 {
-	const float delayframes = delaytime * rate / 1000;
-	const float df = LIM (delayframes, 0, AUDIOBUFFERSIZE);
-	const double wPtr1 = audioBuffer1[shape].wPtr1;
-	const double wPtr2 = audioBuffer1[shape].wPtr2;
-	const double rPtr1 = audioBuffer1[shape].rPtr1;
-	const double rPtr2 = audioBuffer1[shape].rPtr2;
-	const uint32_t rPtr1Int = uint32_t (rPtr1);
-	const double rPtr1Frac = fmod (rPtr1, 1);
-	const uint32_t rPtr2Int = uint32_t (rPtr2);
-	const double rPtr2Frac = fmod (rPtr2, 1);
-	double diff = fabs (wPtr2 - wPtr1);
-	if (diff > AUDIOBUFFERSIZE / 2) diff = AUDIOBUFFERSIZE - diff;
-	const double ratio = LIM (diff / DELAYBUFFERSIZE, 0, 1);
-	const double factor1 = (ratio < 0.05 ? 1 - 20 * ratio : 0);
-	const double factor2 = (ratio < 0.05 ? 20 * ratio : 1);
+	float param = delaytime * rate / 1000;
+	const uint32_t delayframes = LIM (param, 0, AUDIOBUFFERSIZE);
 
-	audioBuffer1[shape].frames[uint32_t (wPtr2) % AUDIOBUFFERSIZE] = input1;
-	audioBuffer2[shape].frames[uint32_t (wPtr2) % AUDIOBUFFERSIZE] = input2;
+	const uint32_t wPtr = uint32_t (audioBuffer1[shape].wPtr1) % AUDIOBUFFERSIZE;
+	const uint32_t rPtr1 = uint32_t (audioBuffer1[shape].rPtr1) % AUDIOBUFFERSIZE;
+	const uint32_t rPtr2 = uint32_t (audioBuffer1[shape].rPtr2) % AUDIOBUFFERSIZE;
+	const uint32_t diff = (rPtr2 > rPtr1 ? rPtr2 - rPtr1 : rPtr2 + AUDIOBUFFERSIZE - rPtr1);
 
-	double bufferValue11 = (1 - rPtr1Frac) * audioBuffer1[shape].frames[rPtr1Int % AUDIOBUFFERSIZE] +
-													rPtr1Frac * audioBuffer1[shape].frames[(rPtr1Int + 1) % AUDIOBUFFERSIZE];
-	double bufferValue12 = (1 - rPtr2Frac) * audioBuffer1[shape].frames[rPtr2Int  % AUDIOBUFFERSIZE] +
-													rPtr2Frac * audioBuffer1[shape].frames[(rPtr2Int + 1) % AUDIOBUFFERSIZE];
-	double bufferValue21 = (1 - rPtr1Frac) * audioBuffer2[shape].frames[rPtr1Int % AUDIOBUFFERSIZE] +
-													rPtr1Frac * audioBuffer2[shape].frames[(rPtr1Int + 1) % AUDIOBUFFERSIZE];
-	double bufferValue22 = (1 - rPtr2Frac) * audioBuffer2[shape].frames[rPtr2Int % AUDIOBUFFERSIZE] +
-													rPtr2Frac * audioBuffer2[shape].frames[(rPtr2Int + 1) % AUDIOBUFFERSIZE];
+	// Write to buffers and output
+	audioBuffer1[shape].frames[wPtr] = input1;
+	audioBuffer2[shape].frames[wPtr] = input2;
+	*output1 = audioBuffer1[shape].frames[rPtr2];
+	*output2 = audioBuffer2[shape].frames[rPtr2];
 
-	*output1 = factor1 * bufferValue11 + factor2 * bufferValue12;
-	*output2 = factor1 * bufferValue21 + factor2 * bufferValue22;
+	// Update pointers
+	uint32_t newRPtr1 = rPtr1;
+	uint32_t newRPtr2 = rPtr2;
 
+	// End of block? Find best point to continue.
 	if (diff >= DELAYBUFFERSIZE)
 	{
-		audioBuffer1[shape].wPtr1 = wPtr2;
-		audioBuffer2[shape].wPtr1 = wPtr2;
-		audioBuffer1[shape].rPtr1 = rPtr2;
-		audioBuffer2[shape].rPtr1 = rPtr2;
-		audioBuffer1[shape].rPtr2 = fmod (wPtr2 + AUDIOBUFFERSIZE - df, AUDIOBUFFERSIZE);
-		audioBuffer2[shape].rPtr2 = audioBuffer1[shape].rPtr2;
+		double bestOverlayScore = 9999;
+		uint32_t bestI = 0;
+
+		// Calulate slopes for the reference sample points
+		double slope11[P_ORDER];
+		double slope12[P_ORDER];
+		for (int j = 0; j < P_ORDER; ++j)
+		{
+			int jpos = (1 << j);
+			int jptr = rPtr2 + AUDIOBUFFERSIZE - jpos;
+			slope11[j] = audioBuffer1[shape].frames[(jptr + 1) % AUDIOBUFFERSIZE] -
+									 audioBuffer1[shape].frames[jptr % AUDIOBUFFERSIZE];
+			slope12[j] = audioBuffer2[shape].frames[(jptr + 1) % AUDIOBUFFERSIZE] -
+									 audioBuffer2[shape].frames[jptr % AUDIOBUFFERSIZE];
+		}
+
+		// Iterate through the buffer to find the best match
+		for (int i = 0; (i < DELAYBUFFERSIZE) && (i < delayframes); ++i)
+		{
+			uint32_t iPtr = (wPtr + 2 * AUDIOBUFFERSIZE - delayframes - i) % AUDIOBUFFERSIZE;
+			double posDiff1 = audioBuffer1[shape].frames[rPtr2] - audioBuffer1[shape].frames[iPtr];
+			double posDiff2 = audioBuffer2[shape].frames[rPtr2] - audioBuffer2[shape].frames[iPtr];
+			double overlayScore = SQR (posDiff1) + SQR (posDiff2);
+
+			for (int j = 0; j < P_ORDER; ++j)
+			{
+				if (overlayScore > bestOverlayScore) break;
+
+				int jpos = (1 << j);
+				int jptr = iPtr + AUDIOBUFFERSIZE - jpos;
+				double slope21 = audioBuffer1[shape].frames[(jptr + 1) % AUDIOBUFFERSIZE] -
+												 audioBuffer1[shape].frames[jptr % AUDIOBUFFERSIZE];
+				double slope22 = audioBuffer2[shape].frames[(jptr + 1) % AUDIOBUFFERSIZE] -
+												 audioBuffer2[shape].frames[jptr % AUDIOBUFFERSIZE];
+				double slopeDiff1 = slope11[j] - slope21;
+				double slopeDiff2 = slope12[j] - slope22;
+				overlayScore += SQR (slopeDiff1) + SQR (slopeDiff2);
+			}
+
+			if (overlayScore < bestOverlayScore)
+			{
+				bestI = i;
+				bestOverlayScore = overlayScore;
+			}
+		}
+
+		newRPtr1 = (wPtr + 2 * AUDIOBUFFERSIZE - delayframes - bestI) % AUDIOBUFFERSIZE;
+		newRPtr2 = newRPtr1;
 	}
 
-	audioBuffer1[shape].wPtr2 = (uint32_t (audioBuffer1[shape].wPtr2) + 1) % AUDIOBUFFERSIZE;
-	audioBuffer1[shape].rPtr1 = fmod (audioBuffer1[shape].rPtr1 + 1, AUDIOBUFFERSIZE);
-	audioBuffer1[shape].rPtr2 = fmod (audioBuffer1[shape].rPtr2 + 1, AUDIOBUFFERSIZE);
-	audioBuffer2[shape].wPtr2 = audioBuffer1[shape].wPtr2;
-	audioBuffer2[shape].rPtr1 = audioBuffer1[shape].rPtr1;
+	// Write back pointers
+	audioBuffer1[shape].wPtr1 = (wPtr + 1) % AUDIOBUFFERSIZE;
+	audioBuffer2[shape].wPtr1 = audioBuffer1[shape].wPtr1;
+	audioBuffer1[shape].rPtr1 = newRPtr1;
+	audioBuffer2[shape].rPtr1 = newRPtr1;
+	audioBuffer1[shape].rPtr2 = (newRPtr2 + 1) % AUDIOBUFFERSIZE;
 	audioBuffer2[shape].rPtr2 = audioBuffer1[shape].rPtr2;
 }
 
