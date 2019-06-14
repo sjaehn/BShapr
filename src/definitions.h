@@ -86,7 +86,7 @@ const Limit methodLimits [MAXEFFECTS] = {{0, 10, 0},
 																				 {1.301, 4.301, 0},
 																				 {1.301, 4.301, 0},
 																				 {-12, 12, 0},
-																				 {0, 1000, 0}
+																				 {0, 800, 0}
 																			 };
 
 #endif /* DEFINITIONS_H_ */

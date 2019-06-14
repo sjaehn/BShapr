@@ -41,10 +41,9 @@
 
 #define F_ORDER 8
 #define P_ORDER 6
-#define AUDIOBUFFERSIZE 0x8000
-#define PITCHBUFFERSIZE 1024
-#define PITCHFADERSIZE 64
-#define DELAYBUFFERSIZE 1024
+#define PITCHBUFFERTIME 20
+#define PITCHFADERTIME 2
+#define DELAYBUFFERTIME 20
 
 const Limit globalControllerLimits [SHAPERS]	= {{0, 2, 1},
 																								 {1, 16, 0},
@@ -71,8 +70,13 @@ BShaprMonitor_t defaultMonitorData = {0, false, 0.0, 0.0};
 
 struct AudioBuffer
 {
-	float frames [AUDIOBUFFERSIZE];
+	AudioBuffer ();
+	AudioBuffer (const uint32_t size);
+	~AudioBuffer ();
+	float* frames;
 	double wPtr1, wPtr2, rPtr1, rPtr2;
+	uint32_t size;
+	void resize (const uint32_t size);
 	void reset ();
 };
 

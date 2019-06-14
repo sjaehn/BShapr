@@ -28,10 +28,39 @@
 
 inline double floorfrac (const double value) {return value - floor (value);}
 
+AudioBuffer::AudioBuffer () : AudioBuffer (0) {}
+
+AudioBuffer::AudioBuffer (const uint32_t size) : frames (nullptr), wPtr1 (0), wPtr2 (0), rPtr1 (0), rPtr2 (0), size (0)
+{
+	if (size !=0)
+	{
+		try {resize (size);}
+		catch (std::bad_alloc& ba) {throw ba;}
+	}
+}
+
+AudioBuffer::~AudioBuffer ()
+{
+	delete (frames);
+}
+
+void AudioBuffer::resize (const uint32_t size)
+{
+	if (frames) delete (frames);
+	try {frames = new float[size];}
+	catch (std::bad_alloc& ba)
+	{
+		this->size = 0;
+		throw ba;
+	}
+
+	this->size = size;
+}
+
 void AudioBuffer::reset ()
 {
-		memset (frames, 0, AUDIOBUFFERSIZE * sizeof (float));
-		memset (frames, 0, AUDIOBUFFERSIZE * sizeof (float));
+		memset (frames, 0, size * sizeof (float));
+		memset (frames, 0, size * sizeof (float));
 		wPtr1 = wPtr2 = rPtr1 = rPtr2 = 0;
 }
 
@@ -88,7 +117,16 @@ BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 	ui_on(false), monitorpos(-1), scheduleNotifyStatus (true), message ()
 
 {
-	for (int i = 0; i < MAXSHAPES; ++i) shapes[i].setDefaultShape (defaultEndNodes[0]);
+	for (int i = 0; i < MAXSHAPES; ++i)
+	{
+		shapes[i].setDefaultShape (defaultEndNodes[0]);
+
+		try {audioBuffer1[i].resize (samplerate);}
+		catch (std::bad_alloc& ba) {throw ba;}
+
+		try {audioBuffer2[i].resize (samplerate);}
+		catch (std::bad_alloc& ba) {throw ba;}
+	}
 	notifications.fill (defaultNotification);
 	monitor.fill (defaultMonitorData);
 	fillFilterBuffer (filter1Buffer1, 0);
@@ -247,7 +285,8 @@ void BShapr::run (uint32_t n_samples)
 					if (shapes[shapeNr].isDefault ()) shapes[shapeNr].setDefaultShape (defaultEndNodes[(int)newValue]);
 
 					// Clear audiobuffers, if needed
-					if (newValue == BShaprTargetIndex::PITCH)
+					if ((newValue == BShaprTargetIndex::PITCH) ||
+							(newValue == BShaprTargetIndex::DELAY))
 					{
 						audioBuffer1[shapeNr].reset ();
 						audioBuffer2[shapeNr].reset ();
@@ -671,6 +710,8 @@ void BShapr::highPassFilter (const float input1, const float input2, float* outp
 // Ring buffer method with least squares ring closure
 void BShapr::pitch (const float input1, const float input2, float* output1, float* output2, const float semitone, const int shape)
 {
+	const int pitchBufferSize = rate * PITCHBUFFERTIME / 1000;
+	const int pitchFaderSize = rate * PITCHFADERTIME / 1000;
 	const float p  = LIM (semitone, methodLimits[PITCH].min, methodLimits[PITCH].max);
 	const double pitchFactor = pow (2, p / 12);
 	const uint32_t wPtr = audioBuffer1[shape].wPtr1;
@@ -678,24 +719,24 @@ void BShapr::pitch (const float input1, const float input2, float* output1, floa
 	const uint32_t rPtrInt = uint32_t (rPtr);
 	const double rPtrFrac = fmod (rPtr, 1);
 	double diff = rPtr - wPtr;
-	if (diff > PITCHBUFFERSIZE / 2) diff = diff - PITCHBUFFERSIZE;
-	if (diff < -PITCHBUFFERSIZE / 2) diff = diff + PITCHBUFFERSIZE;
+	if (diff > pitchBufferSize / 2) diff = diff - pitchBufferSize;
+	if (diff < -pitchBufferSize / 2) diff = diff + pitchBufferSize;
 
 	// Write to buffers and output
-	audioBuffer1[shape].frames[wPtr % PITCHBUFFERSIZE] = input1;
-	audioBuffer2[shape].frames[wPtr % PITCHBUFFERSIZE] = input2;
-	*output1 = (1 - rPtrFrac) * audioBuffer1[shape].frames[rPtrInt % PITCHBUFFERSIZE] +
-						 rPtrFrac * audioBuffer1[shape].frames[(rPtrInt + 1) % PITCHBUFFERSIZE];
-	*output2 = (1 - rPtrFrac) * audioBuffer2[shape].frames[rPtrInt % PITCHBUFFERSIZE] +
-						 rPtrFrac * audioBuffer2[shape].frames[(rPtrInt + 1) % PITCHBUFFERSIZE];
+	audioBuffer1[shape].frames[wPtr % pitchBufferSize] = input1;
+	audioBuffer2[shape].frames[wPtr % pitchBufferSize] = input2;
+	*output1 = (1 - rPtrFrac) * audioBuffer1[shape].frames[rPtrInt % pitchBufferSize] +
+						 rPtrFrac * audioBuffer1[shape].frames[(rPtrInt + 1) % pitchBufferSize];
+	*output2 = (1 - rPtrFrac) * audioBuffer2[shape].frames[rPtrInt % pitchBufferSize] +
+						 rPtrFrac * audioBuffer2[shape].frames[(rPtrInt + 1) % pitchBufferSize];
 
 	// Update pointers
- 	const double newWPtr = (wPtr + 1) % PITCHBUFFERSIZE;
- 	double newRPtr = fmod (rPtr + pitchFactor, PITCHBUFFERSIZE);
+ 	const double newWPtr = (wPtr + 1) % pitchBufferSize;
+ 	double newRPtr = fmod (rPtr + pitchFactor, pitchBufferSize);
 
  	double newDiff = newRPtr - newWPtr;
- 	if (newDiff > PITCHBUFFERSIZE / 2) newDiff = newDiff - PITCHBUFFERSIZE;
- 	if (newDiff < -PITCHBUFFERSIZE / 2) newDiff = newDiff + PITCHBUFFERSIZE;
+ 	if (newDiff > pitchBufferSize / 2) newDiff = newDiff - pitchBufferSize;
+ 	if (newDiff < -pitchBufferSize / 2) newDiff = newDiff + pitchBufferSize;
 
 	// Run into new data area on positive pitch or
 	// run into old data area on negative pitch => find best point to continue
@@ -704,38 +745,38 @@ void BShapr::pitch (const float input1, const float input2, float* output1, floa
 	{
 		int sig = (p > 0 ? -1 : 1);
 		double bestOverlayScore = 9999;
-		double bestI = 0;
+		int bestI = 0;
 
 		// Calulate slopes for the reference sample points
 		double slope11[P_ORDER];
 		double slope12[P_ORDER];
 		for (int j = 0; j < P_ORDER; ++j)
 		{
-			int jpos = (1 << j);
-			int jptr = rPtrInt + PITCHBUFFERSIZE + sig * jpos;
-			slope11[j] = audioBuffer1[shape].frames[(jptr + 1) % PITCHBUFFERSIZE] -
-									 audioBuffer1[shape].frames[jptr % PITCHBUFFERSIZE];
-			slope12[j] = audioBuffer2[shape].frames[(jptr + 1) % PITCHBUFFERSIZE] -
-									 audioBuffer2[shape].frames[jptr % PITCHBUFFERSIZE];
+			double jpos = double (pitchBufferSize * (1 << j)) / 1000;
+			uint32_t jptr = rPtrInt + pitchBufferSize + sig * jpos;
+			slope11[j] = audioBuffer1[shape].frames[(jptr + 1) % pitchBufferSize] -
+									 audioBuffer1[shape].frames[jptr % pitchBufferSize];
+			slope12[j] = audioBuffer2[shape].frames[(jptr + 1) % pitchBufferSize] -
+									 audioBuffer2[shape].frames[jptr % pitchBufferSize];
 		}
 
 		// Iterate through the buffer to find the best match
-		for (int i = PITCHFADERSIZE + 1; i < PITCHBUFFERSIZE - PITCHFADERSIZE; ++i)
+		for (int i = pitchFaderSize + 1; i < pitchBufferSize - pitchFaderSize; ++i)
 		{
-			double posDiff1 = audioBuffer1[shape].frames[rPtrInt % PITCHBUFFERSIZE] - audioBuffer1[shape].frames[(rPtrInt + i) % PITCHBUFFERSIZE];
-			double posDiff2 = audioBuffer2[shape].frames[rPtrInt % PITCHBUFFERSIZE] - audioBuffer2[shape].frames[(rPtrInt + i) % PITCHBUFFERSIZE];
+			double posDiff1 = audioBuffer1[shape].frames[rPtrInt % pitchBufferSize] - audioBuffer1[shape].frames[(rPtrInt + i) % pitchBufferSize];
+			double posDiff2 = audioBuffer2[shape].frames[rPtrInt % pitchBufferSize] - audioBuffer2[shape].frames[(rPtrInt + i) % pitchBufferSize];
 			double overlayScore = SQR (posDiff1) + SQR (posDiff2);
 
 			for (int j = 0; j < P_ORDER; ++j)
 			{
 				if (overlayScore > bestOverlayScore) break;
 
-				int jpos = (1 << j);
-				int jptr = rPtrInt + PITCHBUFFERSIZE + i + sig * jpos;
-				double slope21 = audioBuffer1[shape].frames[(jptr + 1) % PITCHBUFFERSIZE] -
-												 audioBuffer1[shape].frames[jptr % PITCHBUFFERSIZE];
-				double slope22 = audioBuffer2[shape].frames[(jptr + 1) % PITCHBUFFERSIZE] -
-												 audioBuffer2[shape].frames[jptr % PITCHBUFFERSIZE];
+				double jpos = double (pitchBufferSize * (1 << j)) / 1000;
+				uint32_t jptr = rPtrInt + pitchBufferSize + i + sig * jpos;
+				double slope21 = audioBuffer1[shape].frames[(jptr + 1) % pitchBufferSize] -
+												 audioBuffer1[shape].frames[jptr % pitchBufferSize];
+				double slope22 = audioBuffer2[shape].frames[(jptr + 1) % pitchBufferSize] -
+												 audioBuffer2[shape].frames[jptr % pitchBufferSize];
 				double slopeDiff1 = slope11[j] - slope21;
 				double slopeDiff2 = slope12[j] - slope22;
 				overlayScore += SQR (slopeDiff1) + SQR (slopeDiff2);
@@ -748,7 +789,7 @@ void BShapr::pitch (const float input1, const float input2, float* output1, floa
 			}
 		}
 
-		newRPtr = fmod (rPtr + bestI + pitchFactor, PITCHBUFFERSIZE);
+		newRPtr = fmod (rPtr + bestI + pitchFactor, pitchBufferSize);
 	}
 
 	audioBuffer1[shape].wPtr1 = newWPtr;
@@ -757,15 +798,18 @@ void BShapr::pitch (const float input1, const float input2, float* output1, floa
 	audioBuffer2[shape].rPtr1 = newRPtr;
 }
 
+// Ring buffer method with least squares ring closure
 void BShapr::delay (const float input1, const float input2, float* output1, float* output2, const float delaytime, const int shape)
 {
-	float param = delaytime * rate / 1000;
-	const uint32_t delayframes = LIM (param, 0, AUDIOBUFFERSIZE);
+	const int audioBufferSize = rate;
+	const int delayBufferSize = rate * DELAYBUFFERTIME / 1000;
+	float param = LIM (delaytime, methodLimits[DELAY].min, methodLimits[DELAY].max) * rate / 1000;
+	const int delayframes = LIM (param, 0, audioBufferSize);
 
-	const uint32_t wPtr = uint32_t (audioBuffer1[shape].wPtr1) % AUDIOBUFFERSIZE;
-	const uint32_t rPtr1 = uint32_t (audioBuffer1[shape].rPtr1) % AUDIOBUFFERSIZE;
-	const uint32_t rPtr2 = uint32_t (audioBuffer1[shape].rPtr2) % AUDIOBUFFERSIZE;
-	const uint32_t diff = (rPtr2 > rPtr1 ? rPtr2 - rPtr1 : rPtr2 + AUDIOBUFFERSIZE - rPtr1);
+	const uint32_t wPtr = uint32_t (audioBuffer1[shape].wPtr1) % audioBufferSize;
+	const uint32_t rPtr1 = uint32_t (audioBuffer1[shape].rPtr1) % audioBufferSize;
+	const uint32_t rPtr2 = uint32_t (audioBuffer1[shape].rPtr2) % audioBufferSize;
+	const int diff = (rPtr2 > rPtr1 ? rPtr2 - rPtr1 : rPtr2 + audioBufferSize - rPtr1);
 
 	// Write to buffers and output
 	audioBuffer1[shape].frames[wPtr] = input1;
@@ -778,28 +822,28 @@ void BShapr::delay (const float input1, const float input2, float* output1, floa
 	uint32_t newRPtr2 = rPtr2;
 
 	// End of block? Find best point to continue.
-	if (diff >= DELAYBUFFERSIZE)
+	if (diff >= delayBufferSize)
 	{
 		double bestOverlayScore = 9999;
-		uint32_t bestI = 0;
+		int bestI = 0;
 
 		// Calulate slopes for the reference sample points
 		double slope11[P_ORDER];
 		double slope12[P_ORDER];
 		for (int j = 0; j < P_ORDER; ++j)
 		{
-			int jpos = (1 << j);
-			int jptr = rPtr2 + AUDIOBUFFERSIZE - jpos;
-			slope11[j] = audioBuffer1[shape].frames[(jptr + 1) % AUDIOBUFFERSIZE] -
-									 audioBuffer1[shape].frames[jptr % AUDIOBUFFERSIZE];
-			slope12[j] = audioBuffer2[shape].frames[(jptr + 1) % AUDIOBUFFERSIZE] -
-									 audioBuffer2[shape].frames[jptr % AUDIOBUFFERSIZE];
+			double jpos = double (delayBufferSize * (1 << j)) / 1000;
+			uint32_t jptr = rPtr2 + audioBufferSize - jpos;
+			slope11[j] = audioBuffer1[shape].frames[(jptr + 1) % audioBufferSize] -
+									 audioBuffer1[shape].frames[jptr % audioBufferSize];
+			slope12[j] = audioBuffer2[shape].frames[(jptr + 1) % audioBufferSize] -
+									 audioBuffer2[shape].frames[jptr % audioBufferSize];
 		}
 
 		// Iterate through the buffer to find the best match
-		for (int i = 0; (i < DELAYBUFFERSIZE) && (i < delayframes); ++i)
+		for (int i = 0; (i < delayBufferSize) && (i < delayframes); ++i)
 		{
-			uint32_t iPtr = (wPtr + 2 * AUDIOBUFFERSIZE - delayframes - i) % AUDIOBUFFERSIZE;
+			int32_t iPtr = (wPtr + 2 * audioBufferSize - delayframes - i) % audioBufferSize;
 			double posDiff1 = audioBuffer1[shape].frames[rPtr2] - audioBuffer1[shape].frames[iPtr];
 			double posDiff2 = audioBuffer2[shape].frames[rPtr2] - audioBuffer2[shape].frames[iPtr];
 			double overlayScore = SQR (posDiff1) + SQR (posDiff2);
@@ -808,12 +852,12 @@ void BShapr::delay (const float input1, const float input2, float* output1, floa
 			{
 				if (overlayScore > bestOverlayScore) break;
 
-				int jpos = (1 << j);
-				int jptr = iPtr + AUDIOBUFFERSIZE - jpos;
-				double slope21 = audioBuffer1[shape].frames[(jptr + 1) % AUDIOBUFFERSIZE] -
-												 audioBuffer1[shape].frames[jptr % AUDIOBUFFERSIZE];
-				double slope22 = audioBuffer2[shape].frames[(jptr + 1) % AUDIOBUFFERSIZE] -
-												 audioBuffer2[shape].frames[jptr % AUDIOBUFFERSIZE];
+				double jpos = double (delayBufferSize * (1 << j)) / 1000;
+				uint32_t jptr = iPtr + audioBufferSize - jpos;
+				double slope21 = audioBuffer1[shape].frames[(jptr + 1) % audioBufferSize] -
+												 audioBuffer1[shape].frames[jptr % audioBufferSize];
+				double slope22 = audioBuffer2[shape].frames[(jptr + 1) % audioBufferSize] -
+												 audioBuffer2[shape].frames[jptr % audioBufferSize];
 				double slopeDiff1 = slope11[j] - slope21;
 				double slopeDiff2 = slope12[j] - slope22;
 				overlayScore += SQR (slopeDiff1) + SQR (slopeDiff2);
@@ -826,16 +870,16 @@ void BShapr::delay (const float input1, const float input2, float* output1, floa
 			}
 		}
 
-		newRPtr1 = (wPtr + 2 * AUDIOBUFFERSIZE - delayframes - bestI) % AUDIOBUFFERSIZE;
+		newRPtr1 = (wPtr + 2 * audioBufferSize - delayframes - bestI) % audioBufferSize;
 		newRPtr2 = newRPtr1;
 	}
 
 	// Write back pointers
-	audioBuffer1[shape].wPtr1 = (wPtr + 1) % AUDIOBUFFERSIZE;
+	audioBuffer1[shape].wPtr1 = (wPtr + 1) % audioBufferSize;
 	audioBuffer2[shape].wPtr1 = audioBuffer1[shape].wPtr1;
 	audioBuffer1[shape].rPtr1 = newRPtr1;
 	audioBuffer2[shape].rPtr1 = newRPtr1;
-	audioBuffer1[shape].rPtr2 = (newRPtr2 + 1) % AUDIOBUFFERSIZE;
+	audioBuffer1[shape].rPtr2 = (newRPtr2 + 1) % audioBufferSize;
 	audioBuffer2[shape].rPtr2 = audioBuffer1[shape].rPtr2;
 }
 
