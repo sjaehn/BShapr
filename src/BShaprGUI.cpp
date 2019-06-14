@@ -51,17 +51,18 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 
 		shapeGui[i].inputSelect = SelectWidget (60, 20, 200 + i * 100, 40, "tool", 100, 40, 2 + i, 1);
 		shapeGui[i].inputAmpDial = BWidgets::DisplayDial (920, 14, 50, 56, "dial", 1.0, -1.0, 1.0, 0, "%1.3f");
-		shapeGui[i].targetListBox = BWidgets::PopupListBox (120, 280, 180, 20, 0, -220, 180, 220, "menu",
+		shapeGui[i].targetListBox = BWidgets::PopupListBox (120, 280, 180, 20, 0, -240, 180, 240, "menu",
 															{{0, "Level"},
-															 {5, "Gain"},
+															 {5, "Amplification"},
 															 {1, "Balance"},
 															 {2, "Width"},
 															 {3, "Low pass filter"},
 															 {6, "Low pass filter (log)"},
 															 {4, "High pass filter"},
 														 	 {7, "High pass filter (log)"},
-														 	 {8, "Pitch"},
-														 	 {9, "Delay"}});
+														 	 {8, "Pitch shift"},
+														 	 {9, "Delay (const. pitch)"},
+														 	 {10, "Doppler delay"}});
 		shapeGui[i].shapeWidget = ShapeWidget (4, 84, 1152, 172, "shape");
 		shapeGui[i].toolSelect = SelectWidget (433, 268, 284, 44, "tool", 44, 44, 5, 1);
 		shapeGui[i].drywetLabel = BWidgets::Label (920, 304, 50, 16, "smlabel", "dry/wet");
@@ -353,8 +354,8 @@ void BShaprGUI::resizeGUI()
 		shapeGui[i].inputSelect.resizeSelection (100 * sz, 40 * sz);
 		RESIZE (shapeGui[i].inputAmpDial, 920, 14, 50, 56, sz);
 		RESIZE (shapeGui[i].targetListBox, 120, 280, 180, 20, sz);
-		shapeGui[i].targetListBox.resizeListBox (180 * sz, 220 * sz);
-		shapeGui[i].targetListBox.moveListBox (0, -220 * sz);
+		shapeGui[i].targetListBox.resizeListBox (180 * sz, 240 * sz);
+		shapeGui[i].targetListBox.moveListBox (0, -240 * sz);
 		RESIZE (shapeGui[i].drywetLabel, 920, 304, 50, 16, sz);
 		RESIZE (shapeGui[i].drywetDial, 920, 264, 50, 50, sz);
 		RESIZE (shapeGui[i].shapeWidget, 4, 84, 1152, 172, sz);

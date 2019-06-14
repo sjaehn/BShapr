@@ -286,7 +286,8 @@ void BShapr::run (uint32_t n_samples)
 
 					// Clear audiobuffers, if needed
 					if ((newValue == BShaprTargetIndex::PITCH) ||
-							(newValue == BShaprTargetIndex::DELAY))
+							(newValue == BShaprTargetIndex::DELAY) ||
+							(newValue == BShaprTargetIndex::DOPPLER))
 					{
 						audioBuffer1[shapeNr].reset ();
 						audioBuffer2[shapeNr].reset ();
@@ -883,6 +884,32 @@ void BShapr::delay (const float input1, const float input2, float* output1, floa
 	audioBuffer2[shape].rPtr2 = audioBuffer1[shape].rPtr2;
 }
 
+// Delay with Doppler effect
+void BShapr::doppler (const float input1, const float input2, float* output1, float* output2, const float delaytime, const int shape)
+{
+	const int audioBufferSize = rate;
+	float param = LIM (delaytime, methodLimits[DELAY].min, methodLimits[DELAY].max) * rate / 1000;
+	const float delayframes = LIM (param, 0, audioBufferSize);
+
+	const uint32_t wPtr = uint32_t (audioBuffer1[shape].wPtr1) % audioBufferSize;
+	const uint32_t rPtrInt = uint32_t (audioBuffer1[shape].rPtr1) % audioBufferSize;
+	const double rPtrFrac = fmod (audioBuffer1[shape].rPtr1, 1);
+
+	// Write to buffers and output
+	audioBuffer1[shape].frames[wPtr] = input1;
+	audioBuffer2[shape].frames[wPtr] = input2;
+	*output1 = (1 - rPtrFrac) * audioBuffer1[shape].frames[rPtrInt] +
+						 rPtrFrac * audioBuffer1[shape].frames[(rPtrInt + 1) % audioBufferSize];
+	*output2 = (1 - rPtrFrac) * audioBuffer2[shape].frames[rPtrInt] +
+						 rPtrFrac * audioBuffer2[shape].frames[(rPtrInt + 1) % audioBufferSize];
+
+	// Update pointers
+	audioBuffer1[shape].wPtr1 = (wPtr + 1) % audioBufferSize;
+	audioBuffer2[shape].wPtr1 = audioBuffer1[shape].wPtr1;
+	audioBuffer1[shape].rPtr1 = fmod (audioBuffer1[shape].wPtr1 + audioBufferSize - delayframes, audioBufferSize);
+	audioBuffer2[shape].rPtr1 = audioBuffer1[shape].rPtr1;
+}
+
 void BShapr::play (uint32_t start, uint32_t end)
 {
 	// Return if halted or bpm == 0
@@ -987,6 +1014,10 @@ void BShapr::play (uint32_t start, uint32_t end)
 
 					case BShaprTargetIndex::DELAY:
 						delay (input1, input2, &wet1, &wet2, iFactor, sh);
+						break;
+
+					case BShaprTargetIndex::DOPPLER:
+						doppler (input1, input2, &wet1, &wet2, iFactor, sh);
 						break;
 				}
 

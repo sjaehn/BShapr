@@ -440,11 +440,10 @@ template<size_t sz> void Shape<sz>::renderBezier (Node& n1, Node& n2)
 
 template<size_t shapesize> double Shape<shapesize>::getMapValue (double x)
 {
-	int mapx = ((int)(x * MAPRES)) % MAPRES;
-	int mapx1 = (mapx + 1) % MAPRES;
-	double xmod = (((int)(x * MAPRES)) % MAPRES) - mapx;
+	double mapx = fmod (x * MAPRES, MAPRES);
+	double xmod = mapx - int (mapx);
 
-	return map[mapx] + (map[mapx1] - map[mapx]) * xmod;
+	return (1 - xmod) * map[int (mapx)] + xmod * map[int (mapx + 1) % MAPRES];
 }
 
 template<size_t sz> double* Shape<sz>::getMap () {return &map[0];}

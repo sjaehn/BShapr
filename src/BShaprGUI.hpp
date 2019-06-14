@@ -80,6 +80,7 @@ const ScaleParameters scaleParameters[MAXEFFECTS] = {{0.05, 0, 1.1, "", ""},
 																										 {0.1, 1.3, 3.5, "10^", "Hz"},
 																										 {0.1, 1.3, 3.5, "10^", "Hz"},
 																										 {0.5, 0, 25, "", "semitones"},
+																										 {0.05, 0, 800, "", "ms"},
 																										 {0.05, 0, 800, "", "ms"}
 																									  };
 

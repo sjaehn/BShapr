@@ -81,13 +81,14 @@ scrolling zooms the display in or out.
 Select a method that will be applied on the input signal by the use of the shape. You can choose between:
 
 * Level
-* Gain
+* Amplification
 * Stereo balance
 * Stereo width
-* Low pass filter
-* High pass filter
-* Pitch shifter
-* Delay
+* Low pass filter (linear or log)
+* High pass filter (linear or log)
+* Pitch shift
+* Delay (const. pitch)
+* Dopller delay
 
 ### Output
 
@@ -97,7 +98,9 @@ the signal will only be used internally.
 ## TODO
 
 * Stereo monitor
-* Additional target effects (any ideas welcome)
+* Additional methods (any ideas welcome)
+* Display additional configuration parameters for methods
+* MIDI trigger
 
 ## See also
 

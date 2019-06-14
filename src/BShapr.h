@@ -118,6 +118,7 @@ private:
 	void highPassFilter (const float input1, const float input2, float* output1, float* output2, const float cutoffFreq, const int shape);
 	void pitch (const float input1, const float input2, float* output1, float* output2, const float semitone, const int shape);
 	void delay (const float input1, const float input2, float* output1, float* output2, const float delaytime, const int shape);
+	void doppler (const float input1, const float input2, float* output1, float* output2, const float delaytime, const int shape);
 	void play(uint32_t start, uint32_t end);
 	void notifyMonitorToGui ();
 	void notifyShapeToGui (int shapeNr);
