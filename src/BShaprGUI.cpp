@@ -136,6 +136,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		if (i >= 1) shapeGui[i].shapeContainer.hide();
 	}
 	applyChildThemes ();
+	setKeyGrab (this);
 
 	// Pack widgets
 	monitorSurface.add (monitorHorizon1);
@@ -412,6 +413,28 @@ void BShaprGUI::onConfigure (BEvents::ExposeEvent* event)
 
 	sz = (width_ / 1200 > height_ / 780 ? height_ / 780 : width_ / 1200);
 	resizeGUI ();
+}
+
+void BShaprGUI::onKeyPressed (BEvents::KeyEvent* event)
+{
+	if ((event) && (event->getKey() == BEvents::KEY_SHIFT))
+	{
+		for (int i = 0; i < MAXSHAPES; ++i)
+		{
+			shapeGui[i].shapeWidget.setScrollable (false);
+		}
+	}
+}
+
+void BShaprGUI::onKeyReleased (BEvents::KeyEvent* event)
+{
+	if ((event) && (event->getKey() == BEvents::KEY_SHIFT))
+	{
+		for (int i = 0; i < MAXSHAPES; ++i)
+		{
+			shapeGui[i].shapeWidget.setScrollable (true);
+		}
+	}
 }
 
 void BShaprGUI::sendGuiOn ()

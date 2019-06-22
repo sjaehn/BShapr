@@ -53,15 +53,15 @@ The user can define up to four different envelope shapes by drawing Bezier curve
 shapes can be connected to different target effects, such as level, balance, or stereo width, and can be
 combined together.
 
-### Monitor
-
-The Monitor in the upper part of the GUI visualizes the input and the output levels. You can change the zoom
-by scrolling the mouse wheel.
-
 ### Sequence size
 
-You can set the lenght of the whole shape sequence between 1 and 16 seconds, beats or bars. Change the value
-by dragging, scrolling or clicking on its up and down arrows and select a base.
+On the bottom of the widget, you can set the lenght of the whole shape sequence between 1 and 16 seconds,
+beats or bars. Change the value by dragging, scrolling or clicking on its up and down arrows and select
+a base.
+
+### MIDI control
+
+Not active yet.
 
 ### Shape selector
 
@@ -80,6 +80,9 @@ or its handles.
 
 However, dragging the background results only in dragging the whole **display** of the envelope. Similarly,
 scrolling zooms the display in or out.
+
+In the background of the shape editor a stereo monitor visualizes the input and the output levels. You can change
+the zoom by pressing <SHIFT> key AND scrolling the mouse wheel.
 
 ### Method
 
@@ -109,5 +112,6 @@ the signal will only be used internally.
 
 ## See also
 
+* Tutorial: https://youtu.be/fjhL_rku2BU
 * Preview: https://www.youtube.com/watch?v=DxYQJ_XJwbU
 * Autotune with B.Shapr: https://youtu.be/c6bUW_dTxGg

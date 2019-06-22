@@ -100,6 +100,8 @@ public:
 	void sendGuiOff ();
 	void sendShape (size_t shapeNr);
 	virtual void onConfigure (BEvents::ExposeEvent* event) override;
+	virtual void onKeyPressed (BEvents::KeyEvent* event) override;
+	virtual void onKeyReleased (BEvents::KeyEvent* event) override;
 	void applyChildThemes ();
 
 	LV2UI_Controller controller;
