@@ -114,7 +114,7 @@ BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 	map(NULL), controlPort(NULL), notifyPort(NULL),
 	audioInput1(NULL), audioInput2(NULL), audioOutput1(NULL), audioOutput2(NULL),
 	rate(samplerate), bpm(120.0f), speed(1), bar (0), barBeat (0), position(0), refFrame(0), beatUnit (4), beatsPerBar (4),
-	ui_on(false), monitorpos(-1), scheduleNotifyStatus (true), message ()
+	ui_on(false), monitorPos(-1), notificationsCount(0), scheduleNotifyStatus (true), message ()
 
 {
 	for (int i = 0; i < MAXSHAPES; ++i)
@@ -127,8 +127,7 @@ BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 		try {audioBuffer2[i].resize (samplerate);}
 		catch (std::bad_alloc& ba) {throw ba;}
 	}
-	notifications.fill (defaultNotification);
-	monitor.fill (defaultMonitorData);
+	notifications.fill ({0, 0, 0, 0, 0});
 	fillFilterBuffer (filter1Buffer1, 0);
 	fillFilterBuffer (filter1Buffer2, 0);
 	fillFilterBuffer (filter2Buffer1, 0);
@@ -496,48 +495,18 @@ void BShapr::run (uint32_t n_samples)
 
 void BShapr::notifyMonitorToGui()
 {
-	int notificationsCount = 0;
-	// Scan monitor and build notifications
-	for (int i = 0; i < MONITORBUFFERSIZE; ++i)
+	if (notificationsCount > 0)
 	{
-		if (monitor[i].ready)
-		{
-			// Copy data monitor -> notifications
-			if (notificationsCount < NOTIFYBUFFERSIZE - 1)
-			{
-				notifications[notificationsCount].position = i;
-				notifications[notificationsCount].inputMin = monitor[i].inputMin;
-				notifications[notificationsCount].inputMax = monitor[i].inputMax;
-				notifications[notificationsCount].outputMin = monitor[i].outputMin;
-				notifications[notificationsCount].outputMax = monitor[i].outputMax;
-				notificationsCount++;
-			}
+		if (notificationsCount > NOTIFYBUFFERSIZE) notificationsCount = NOTIFYBUFFERSIZE;
+		LV2_Atom_Forge_Frame frame;
+		lv2_atom_forge_frame_time(&forge, 0);
+		lv2_atom_forge_object(&forge, &frame, 0, urids.notify_monitorEvent);
+		lv2_atom_forge_key(&forge, urids.notify_monitor);
+		lv2_atom_forge_vector(&forge, sizeof(float), urids.atom_Float, (uint32_t) (5 * notificationsCount), &notifications);
+		lv2_atom_forge_pop(&forge, &frame);
 
-			// Reset monitor data
-			monitor[i].ready = false;
-			monitor[i].inputMin = 0.0;
-			monitor[i].inputMax = 0.0;
-			monitor[i].outputMin = 0.0;
-			monitor[i].outputMax = 0.0;
-		}
+		notificationsCount = 0;
 	}
-
-	// And build one closing notification block for submission of current position (horizon)
-	notifications[notificationsCount].position = monitorpos;
-	notifications[notificationsCount].inputMin = monitor[monitorpos].inputMin;
-	notifications[notificationsCount].inputMax = monitor[monitorpos].inputMax;
-	notifications[notificationsCount].outputMin = monitor[monitorpos].outputMin;
-	notifications[notificationsCount].outputMax = monitor[monitorpos].outputMax;
-
-	// Send notifications
-	LV2_Atom_Forge_Frame frame;
-	lv2_atom_forge_frame_time(&forge, 0);
-	lv2_atom_forge_object(&forge, &frame, 0, urids.notify_monitorEvent);
-	lv2_atom_forge_key(&forge, urids.notify_monitor);
-	lv2_atom_forge_vector(&forge, sizeof(float), urids.atom_Float, (uint32_t) (5 * notificationsCount), &notifications);
-	lv2_atom_forge_pop(&forge, &frame);
-
-	notificationsCount = 0;
 }
 
 void BShapr::notifyShapeToGui (int shapeNr)
@@ -1036,26 +1005,21 @@ void BShapr::play (uint32_t start, uint32_t end)
 		if (ui_on)
 		{
 			// Calculate position in monitor
-			int newmonitorpos = pos * MONITORBUFFERSIZE;
+			int newMonitorPos = pos * MONITORBUFFERSIZE;
 
 			// Position changed? => Ready to send
-			if (newmonitorpos != monitorpos)
+			if (newMonitorPos != monitorPos)
 			{
-				if (monitorpos >= 0) monitor[monitorpos].ready = true;
-				monitorpos = newmonitorpos;
+				uint nr = notificationsCount % NOTIFYBUFFERSIZE;
+				notifications[nr].position = newMonitorPos;
+				notifications[nr].input1 = audioInput1[i];
+				notifications[nr].output1 = output1;
+				notifications[nr].input2 = audioInput2[i];
+				notifications[nr].output2 = output2;
+
+				monitorPos = newMonitorPos;
+				++notificationsCount;
 			}
-
-			// Get max input and output values for a block
-			if (output1 < monitor[monitorpos].outputMin) monitor[monitorpos].outputMin = output1;
-			if (output1 > monitor[monitorpos].outputMax) monitor[monitorpos].outputMax = output1;
-			if (output2 < monitor[monitorpos].outputMin) monitor[monitorpos].outputMin = output2;
-			if (output2 > monitor[monitorpos].outputMax) monitor[monitorpos].outputMax = output2;
-			if (audioInput1[i] < monitor[monitorpos].inputMin) monitor[monitorpos].inputMin = audioInput1[i];
-			if (audioInput1[i] > monitor[monitorpos].inputMax) monitor[monitorpos].inputMax = audioInput1[i];
-			if (audioInput2[i] < monitor[monitorpos].inputMin) monitor[monitorpos].inputMin = audioInput2[i];
-			if (audioInput2[i] > monitor[monitorpos].inputMax) monitor[monitorpos].inputMax = audioInput2[i];
-
-			monitor[monitorpos].ready = false;
 		}
 
 		// Store in audio out

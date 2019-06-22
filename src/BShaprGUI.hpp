@@ -26,6 +26,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <exception>
+#include <tuple>
 #include <lv2/lv2plug.in/ns/lv2core/lv2.h>
 #include <lv2/lv2plug.in/ns/extensions/ui/ui.h>
 #include <lv2/lv2plug.in/ns/ext/atom/atom.h>
@@ -62,14 +63,14 @@
 
 #define RESIZE(widget, x, y, w, h, sz) widget.moveTo ((x) * (sz), (y) * (sz)); widget.resize ((w) * (sz), (h) * (sz));
 
-typedef struct
+struct ScaleParameters
 {
 	double anchorYPos;
 	double anchorValue;
 	double ratio;
 	std::string prefix;
 	std::string unit;
-} ScaleParameters;
+};
 
 const ScaleParameters scaleParameters[MAXEFFECTS] = {{0.05, 0, 1.1, "", ""},
 																										 {0.5, 0, 2.2, "", ""},
@@ -114,10 +115,10 @@ public:
 private:
 	void resizeGUI ();
 	void calculateXSteps ();
-	bool init_mainMonitor ();
-	void destroy_mainMonitor ();
-	void add_monitor_data (BShaprNotifications* notifications, uint32_t notificationsCount, double& end);
-	void redrawMainMonitor ();
+	void init_mainMonitor ();
+	std::tuple<int, int> add_monitor_data (BShaprNotifications* notifications, uint32_t notificationsCount);
+	void redrawMainMonitor (int start, int end);
+	void drawData (cairo_t* cr, double x0, double y0, double width, double height, std::array<float, MONITORBUFFERSIZE>& data, int start, int end);
 
 	// Controllers
 	std::array<BWidgets::ValueWidget*, NR_CONTROLLERS> controllerWidgets;
@@ -154,21 +155,13 @@ private:
 
 	std::array<ShapeGui, MAXSHAPES> shapeGui;
 
-
-	cairo_surface_t* surface;
-	cairo_t* cr1;
-	cairo_t* cr2;
-	cairo_t* cr3;
-	cairo_t* cr4;
-	cairo_pattern_t* pat1;
-	cairo_pattern_t* pat2;
-	cairo_pattern_t* pat3;
-	cairo_pattern_t* pat4;
-	cairo_pattern_t* pat5;
-
 	float shapeBuffer[MAXNODES * 7];
 
-	std::array<BShaprNotifications, MONITORBUFFERSIZE> mainMonitorData;
+	std::array<float, MONITORBUFFERSIZE> input1Data;
+	std::array<float, MONITORBUFFERSIZE> output1Data;
+	std::array<float, MONITORBUFFERSIZE> input2Data;
+	std::array<float, MONITORBUFFERSIZE> output2Data;
+
 	double horizonPos;
 	double monitorScale;
 	double minorXSteps;
@@ -192,8 +185,8 @@ private:
 	BColors::ColorSet clickColors = {{{0, 0, 0, 1.0}, {1, 1, 1, 1.0}, {0, 0, 0, 1.0}, {0, 0, 0, 0.0}}};
 	BColors::Color ink = {0.0, 0.75, 0.2, 1.0};
 	BStyles::Fill widgetBg = BStyles::noFill;
-	BStyles::Fill tabBg = BStyles::Fill (BColors::Color (0.5625, 0, 0.4375, 0.375));
-	BStyles::Fill activeTabBg = BStyles::Fill (BColors::Color (0.5625, 0, 0.4375, 0.75));
+	BStyles::Fill tabBg = BStyles::Fill (BColors::Color (0.5, 0, 0.5, 0.375));
+	BStyles::Fill activeTabBg = BStyles::Fill (BColors::Color (0.5, 0, 0.5, 0.75));
 	BStyles::Font defaultFont = BStyles::Font ("Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL, 12.0,
 										       									 BStyles::TEXT_ALIGN_CENTER, BStyles::TEXT_VALIGN_MIDDLE);
  	BStyles::Font smFont = BStyles::Font ("Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL, 10.0,
@@ -220,7 +213,7 @@ private:
 							 			 {"bgcolors", STYLEPTR (&BColors::whites)}}},
 		{"monitor", 		{{"background", STYLEPTR (&BStyles::blackFill)},
 							 			 {"border", STYLEPTR (&BStyles::noBorder)}}},
-		{"shape",	 		{{"background", STYLEPTR (&BStyles::blackFill)},
+		{"shape",	 		{{"background", STYLEPTR (&BStyles::noFill)},
 							 		 {"border", STYLEPTR (&BStyles::noBorder)},
 							 	 	 {"fgcolors", STYLEPTR (&BColors::whites)},
 									 {"symbolcolors", STYLEPTR (&fgColors)},

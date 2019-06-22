@@ -88,7 +88,7 @@ Select a method that will be applied on the input signal by the use of the shape
 * High pass filter (linear or log)
 * Pitch shift
 * Delay (const. pitch)
-* Dopller delay
+* Doppler delay
 
 ### Output
 

@@ -23,8 +23,8 @@
 
 #include "Node.hpp"
 
-#define NOTIFYBUFFERSIZE 256
-#define MONITORBUFFERSIZE 256
+#define NOTIFYBUFFERSIZE 1024
+#define MONITORBUFFERSIZE 1024
 #define MAXNODES 64
 #define MAXSHAPES 4
 #define MAXEFFECTS 11
@@ -60,16 +60,14 @@ typedef enum
 	CHANGE	= 2
 } NodeOperationType;
 
-typedef struct
+struct  BShaprNotifications
 {
 	float position;
-	float inputMin;
-	float inputMax;
-	float outputMin;
-	float outputMax;
-} BShaprNotifications;
-
-const BShaprNotifications defaultNotification = {0.0, 0.0, 0.0, 0.0, 0.0};
+	float input1;
+	float output1;
+	float input2;
+	float output2;
+};
 
 struct Limit
 {

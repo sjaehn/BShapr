@@ -56,18 +56,6 @@ const Limit shapeControllerLimits [SH_SIZE]		= {{0, 6, 1},
 																							 	 {0, 1, 1},
 																							 	 {0, 1, 0}};
 
-struct BShaprMonitor_t
-{
-	int count;
-	bool ready;
-	double inputMin;
-	double inputMax;
-	double outputMin;
-	double outputMax;
-};
-
-BShaprMonitor_t defaultMonitorData = {0, false, 0.0, 0.0};
-
 struct AudioBuffer
 {
 	AudioBuffer ();
@@ -173,9 +161,9 @@ private:
 	// Internals
 	bool ui_on;
 	Message message;
-	int monitorpos;
+	int monitorPos;
+	uint notificationsCount;
 	std::array<BShaprNotifications, NOTIFYBUFFERSIZE> notifications;
-	std::array<BShaprMonitor_t, MONITORBUFFERSIZE> monitor;
 	bool scheduleNotifyShapes[MAXSHAPES];
 	bool scheduleNotifyStatus;
 
