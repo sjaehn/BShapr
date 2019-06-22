@@ -16,7 +16,7 @@ BShaprGUI.so: ./src/BShaprGUI.cpp
 	mkdir -p $(BUNDLE)
 	$(CXX) $< $(TK) -o $(BUNDLE)/$@ -std=c++11 -shared -fvisibility=hidden -DPUGL_HAVE_CAIRO -fPIC -DPIC `pkg-config --cflags --libs lv2 x11 cairo`
 
-install: $(BUNDLE)
+install: 
 	mkdir -p $(INSTALL_DIR)
 	rm -rf $(INSTALL_DIR)/$(BUNDLE)
 	cp -R $(BUNDLE) $(INSTALL_DIR)
