@@ -767,6 +767,7 @@ void BShaprGUI::redrawMainMonitor (int start, int end)
 void BShaprGUI::drawData (cairo_t* cr, double x0, double y0, double width, double height, std::array<float, MONITORBUFFERSIZE>& data, int start, int end)
 {
 	cairo_save (cr);
+	cairo_set_line_width (cr, 0);
 	cairo_rectangle (cr, x0, y0, width, height);
 	cairo_clip (cr);
 
