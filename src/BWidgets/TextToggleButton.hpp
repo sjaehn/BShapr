@@ -56,6 +56,12 @@ public:
 	TextToggleButton& operator= (const TextToggleButton& that);
 
 	/**
+	 * Pattern cloning. Creates a new instance of the widget and copies all
+	 * its properties.
+	 */
+	virtual Widget* clone () const override;
+
+	/**
 	 * Resizes the widget and its predefined child, redraw and emits a
 	 * BEvents::ExposeEvent if the widget is visible.
 	 * @param width New widgets width
@@ -100,8 +106,8 @@ public:
 	 * @param name Name of the BStyles::StyleSet within the theme to be
 	 * 		  	   applied.
 	 */
-	virtual void applyTheme (BStyles::Theme& theme);
-	virtual void applyTheme (BStyles::Theme& theme, const std::string& name);
+	virtual void applyTheme (BStyles::Theme& theme) override;
+	virtual void applyTheme (BStyles::Theme& theme, const std::string& name) override;
 
 protected:
 	Label buttonLabel;

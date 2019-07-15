@@ -22,17 +22,23 @@
 
 BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features, PuglNativeWindow parentWindow) :
 	Window (1200, 780, "B.Shapr", parentWindow, true),
-	sz (1.0), horizonPos (0), monitorScale (1), beatsPerBar (4.0), beatUnit (4), minorXSteps (1.0), majorXSteps (1.0),
-	pluginPath (bundlePath ? std::string (bundlePath) : std::string ("")), controller (NULL), write_function (NULL), map (NULL),
-	bgImageSurface (nullptr),
+	controller (NULL), write_function (NULL),
+	beatsPerBar (4.0), beatUnit (4),
 
 	mContainer (0, 0, 1200, 780, "widget"),
 	messageLabel (600, 45, 600, 20, "label", ""),
 	baseValueSelect (480, 730, 100, 20, "select", 1.0, 1.0, 16.0, 0.01),
-	baseListBox (620, 730, 100, 20, 0, -80, 100, 80, "menu", {{0, "Seconds"}, {1, "Beats"}, {2, "Bars"}}),
+	baseListBox (620, 730, 100, 20, 0, -80, 100, 80, "menu", BItems::ItemList ({{0, "Seconds"}, {1, "Beats"}, {2, "Bars"}})),
 	monitorSurface (24, 214, 1152, 352, "monitor"),
 	monitorHorizon1 (0, 0, 64, 352, "horizon"),
-	monitorHorizon2 (-1152, 0, 64, 352, "horizon")
+	monitorHorizon2 (-1152, 0, 64, 352, "horizon"),
+
+	horizonPos (0), monitorScale (1), minorXSteps (1.0), majorXSteps (1.0),
+	pluginPath (bundlePath ? std::string (bundlePath) : std::string ("")),
+	sz (1.0),
+	bgImageSurface (nullptr), forge (), urids (), map (NULL)
+
+
 
 {
 	// Init shapes
@@ -49,26 +55,27 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		}
 
 		shapeGui[i].inputSelect = SelectWidget (100, 20, 200 + i * 100, 40, "tool", 100, 40, 2 + i, 1);
-		shapeGui[i].inputAmpDial = BWidgets::DisplayDial (330 + shapeGui[i].inputShapeLabelIcons.size() * 100, 14, 50, 56, "dial", 1.0, -1.0, 1.0, 0, "%1.3f");
+		shapeGui[i].inputAmpDial = BWidgets::DialValue (330 + shapeGui[i].inputShapeLabelIcons.size() * 100, 14, 50, 56, "dial", 1.0, -1.0, 1.0, 0, "%1.3f");
 		shapeGui[i].targetListBox = BWidgets::PopupListBox (800, 460, 180, 20, 0, -240, 180, 240, "menu",
-															{{0, "Level"},
-															 {5, "Amplification"},
-															 {1, "Balance"},
-															 {2, "Width"},
-															 {3, "Low pass filter"},
-															 {6, "Low pass filter (log)"},
-															 {4, "High pass filter"},
-														 	 {7, "High pass filter (log)"},
-														 	 {8, "Pitch shift"},
-														 	 {9, "Delay (const. pitch)"},
-														 	 {10, "Doppler delay"}});
+								    BItems::ItemList
+									({{0, "Level"},
+									  {5, "Amplification"},
+									  {1, "Balance"},
+									  {2, "Width"},
+									  {3, "Low pass filter"},
+									  {6, "Low pass filter (log)"},
+									  {4, "High pass filter"},
+								 	  {7, "High pass filter (log)"},
+								 	  {8, "Pitch shift"},
+								 	  {9, "Delay (const. pitch)"},
+								 	  {10, "Doppler delay"}}));
 		shapeGui[i].shapeWidget = ShapeWidget (4, 84, 1152, 352, "shape");
 		shapeGui[i].toolSelect = SelectWidget (333, 448, 284, 44, "tool", 44, 44, 5, 1);
 		shapeGui[i].drywetLabel = BWidgets::Label (1020, 484, 50, 16, "smlabel", "dry/wet");
 		shapeGui[i].drywetDial = BWidgets::Dial (1020, 444, 50, 50, "dial", 1.0, 0.0, 1.0, 0);
 		shapeGui[i].shapeLabelIcon = BWidgets::ImageIcon (10, 460, 160, 20, "widget", pluginPath + "Shape" + std::to_string (i + 1) + ".png");
 		shapeGui[i].outputSelect = SelectWidget (100, 520, 100, 40, "tool", 100, 40, 1, 1);
-		shapeGui[i].outputAmpDial = BWidgets::DisplayDial (230, 514, 50, 56, "dial", 1.0, 0.0, 1.0, 0, "%1.3f");
+		shapeGui[i].outputAmpDial = BWidgets::DialValue (230, 514, 50, 56, "dial", 1.0, 0.0, 1.0, 0, "%1.3f");
 
 		shapeGui[i].shapeContainer.rename ("widget");
 		shapeGui[i].tabIcon.rename ("tab");
@@ -119,12 +126,12 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 
 	// Configure widgets
 	calculateXSteps ();
-	mContainer.loadImage (pluginPath + BG_FILE);
+	mContainer.loadImage (BColors::NORMAL, pluginPath + BG_FILE);
 	monitorSurface.setScrollable (true);
 	shapeGui[0].tabIcon.rename ("activetab");
-	for (int i = 0; i < MAXSHAPES; ++i)
+	for (uint i = 0; i < MAXSHAPES; ++i)
 	{
-		for (int j = 0; j < shapeGui[i].inputShapeLabelIcons.size(); ++j) shapeGui[i].inputShapeLabelIcons[j].setClickable (false);
+		for (uint j = 0; j < shapeGui[i].inputShapeLabelIcons.size(); ++j) shapeGui[i].inputShapeLabelIcons[j].setClickable (false);
 		shapeGui[i].shapeWidget.setTool (ToolType::POINT_NODE_TOOL);
 		shapeGui[i].shapeWidget.setLowerLimit (methodLimits[0].min);
 		shapeGui[i].shapeWidget.setHigherLimit (methodLimits[0].max);
@@ -142,10 +149,10 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	monitorSurface.add (monitorHorizon1);
 	monitorSurface.add (monitorHorizon2);
 	mContainer.add (monitorSurface);
-	for (int i = 0; i < MAXSHAPES; ++i)
+	for (uint i = 0; i < MAXSHAPES; ++i)
 	{
 		mContainer.add (shapeGui[i].tabIcon);
-		for (int j = 0; j < shapeGui[i].inputShapeLabelIcons.size(); ++j) shapeGui[i].shapeContainer.add (shapeGui[i].inputShapeLabelIcons[j]);
+		for (uint j = 0; j < shapeGui[i].inputShapeLabelIcons.size(); ++j) shapeGui[i].shapeContainer.add (shapeGui[i].inputShapeLabelIcons[j]);
 		shapeGui[i].shapeContainer.add (shapeGui[i].inputSelect);
 		shapeGui[i].shapeContainer.add (shapeGui[i].inputAmpDial);
 		shapeGui[i].shapeContainer.add (shapeGui[i].targetListBox);
@@ -281,7 +288,7 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 							shapeGui[shapeNr].shapeWidget.setValueEnabled (false);
 							shapeGui[shapeNr].shapeWidget.clearShape ();
 							float* data = (float*)(&vec->body + 1);
-							for (int nodeNr = 0; (nodeNr < vecSize) && (nodeNr < MAXNODES); ++nodeNr)
+							for (uint nodeNr = 0; (nodeNr < vecSize) && (nodeNr < MAXNODES); ++nodeNr)
 							{
 								Node node (&data[nodeNr * 7]);
 								shapeGui[shapeNr].shapeWidget.appendNode (node);
@@ -386,11 +393,11 @@ void BShaprGUI::applyChildThemes ()
 	baseValueSelect.applyTheme (theme);
 	baseListBox.applyTheme (theme);
 	monitorSurface.applyTheme (theme);
-	for (int i = 0; i < MAXSHAPES; ++i)
+	for (uint i = 0; i < MAXSHAPES; ++i)
 	{
 		shapeGui[i].shapeContainer.applyTheme (theme);
 		shapeGui[i].tabIcon.applyTheme (theme);
-		for (int j = 0; j < shapeGui[i].inputShapeLabelIcons.size(); ++j) shapeGui[i].inputShapeLabelIcons[j].applyTheme (theme);
+		for (uint j = 0; j < shapeGui[i].inputShapeLabelIcons.size(); ++j) shapeGui[i].inputShapeLabelIcons[j].applyTheme (theme);
 		shapeGui[i].inputSelect.applyTheme (theme);
 		shapeGui[i].inputAmpDial.applyTheme (theme);
 		shapeGui[i].inputAmpDial.getDisplayLabel()->setTextColors (lbColors);
@@ -467,7 +474,7 @@ void BShaprGUI::sendShape (size_t shapeNr)
 	lv2_atom_forge_set_buffer(&forge, obj_buf, sizeof(obj_buf));
 
 	// Load shapeBuffer
-	for (int i = 0; i < size; ++i)
+	for (uint i = 0; i < size; ++i)
 	{
 		Node node = shapeGui[shapeNr].shapeWidget.getNode (i);
 		shapeBuffer[i * 7 + 0] = (float)node.nodeType;

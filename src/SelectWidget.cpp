@@ -24,7 +24,8 @@ SelectWidget::SelectWidget () : SelectWidget (0, 0, 0, 0, "tool", 0, 0, 0, 0) {}
 
 SelectWidget::SelectWidget (const double  x, const double y, const double width, const double height, const std::string& name,
 							const double selectionWidth, const double selectionHeight, const double nrTools, const double value) :
-	RangeWidget (x, y, width, height, name, value, 0, nrTools, 1), nrTools (nrTools), bgColors (BColors::greys),
+	RangeWidget (x, y, width, height, name, value, 0, nrTools, 1),
+	bgColors (BColors::greys), nrTools (nrTools), 
 	selectionWidth (selectionWidth), selectionHeight (selectionHeight) {}
 
 void SelectWidget::resizeSelection (const double width, const double height)

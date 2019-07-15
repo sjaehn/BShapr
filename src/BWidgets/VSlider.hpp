@@ -58,6 +58,12 @@ public:
 	VSlider& operator= (const VSlider& that);
 
 	/**
+	 * Pattern cloning. Creates a new instance of the widget and copies all
+	 * its properties.
+	 */
+	virtual Widget* clone () const override;
+
+	/**
 	 * Calls a redraw of the widget and calls postRedisplay () if the the
 	 * Widget is visible.
 	 * This method should be called if the widgets properties are indirectly
@@ -76,8 +82,8 @@ public:
 	 * @param name Name of the BStyles::StyleSet within the theme to be
 	 * 		  	   applied.
 	 */
-	virtual void applyTheme (BStyles::Theme& theme);
-	virtual void applyTheme (BStyles::Theme& theme, const std::string& name);
+	virtual void applyTheme (BStyles::Theme& theme) override;
+	virtual void applyTheme (BStyles::Theme& theme, const std::string& name) override;
 
 protected:
 	virtual void updateCoords () override;

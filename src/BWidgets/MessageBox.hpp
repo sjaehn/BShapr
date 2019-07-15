@@ -68,6 +68,12 @@ public:
 	 */
 	MessageBox& operator= (const MessageBox& that);
 
+	/**
+	 * Pattern cloning. Creates a new instance of the widget and copies all
+	 * its properties.
+	 */
+	virtual Widget* clone () const override;
+
 	//TODO virtual void setWidth (const double width) override;
 
 	//TODO virtual void setHeight (const double height) override;
@@ -164,8 +170,8 @@ public:
 	 * @param name Name of the BStyles::StyleSet within the theme to be
 	 * 		  	   applied.
 	 */
-	virtual void applyTheme (BStyles::Theme& theme);
-	virtual void applyTheme (BStyles::Theme& theme, const std::string& name);
+	virtual void applyTheme (BStyles::Theme& theme) override;
+	virtual void applyTheme (BStyles::Theme& theme, const std::string& name) override;
 
 protected:
 	void rearrangeButtons ();

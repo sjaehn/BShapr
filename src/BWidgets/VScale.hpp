@@ -60,6 +60,12 @@ public:
 	VScale& operator= (const VScale& that);
 
 	/**
+	 * Pattern cloning. Creates a new instance of the widget and copies all
+	 * its properties.
+	 */
+	virtual Widget* clone () const override;
+
+	/**
 	 * Changes the value of the widget and keeps it within the defined range.
 	 * Passes the value to its predefined child widgets.
 	 * Emits a value changed event and (if visible) an expose event.
@@ -86,8 +92,8 @@ public:
 	 * @param name Name of the BStyles::StyleSet within the theme to be
 	 * 		  	   applied.
 	 */
-	virtual void applyTheme (BStyles::Theme& theme);
-	virtual void applyTheme (BStyles::Theme& theme, const std::string& name);
+	virtual void applyTheme (BStyles::Theme& theme) override;
+	virtual void applyTheme (BStyles::Theme& theme, const std::string& name) override;
 
 	/**
 	 * Handles the BEvents::BUTTON_PRESS_EVENT to move the slider.

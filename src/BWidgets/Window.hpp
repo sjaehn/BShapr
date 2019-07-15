@@ -22,6 +22,7 @@
 #define BWIDGETS_DEFAULT_WINDOW_BACKGROUND BStyles::blackFill
 
 #include <chrono>
+#include <deque>
 #include "Widget.hpp"
 #include "FocusWidget.hpp"
 
@@ -42,13 +43,16 @@ class Window : public Widget
 {
 public:
 	Window ();
-	Window (const double width, const double height, const std::string& title, PuglNativeWindow nativeWindow, bool resizable = false);
+	Window (const double width, const double height, const std::string& title,
+		PuglNativeWindow nativeWindow, bool resizable = false);
 
 	Window (const Window& that) = delete;	// Only one window in this version
 
 	~Window ();
 
 	Window& operator= (const Window& that) = delete;	// Only one Window in this version
+
+	virtual Widget* clone () = delete;			// Only one Window in this version
 
 	/**
 	 * Gets in contact to the host system via Pugl
@@ -210,7 +214,7 @@ protected:
 
 	std::vector<KeyGrab> keyGrabStack;
 
-	std::vector<BEvents::Event*> eventQueue;
+	std::deque<BEvents::Event*> eventQueue;
 };
 
 }

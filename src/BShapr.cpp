@@ -111,10 +111,12 @@ MessageNr Message::loadMessage ()
 bool Message::isScheduled () {return scheduled;}
 
 BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
-	map(NULL), controlPort(NULL), notifyPort(NULL),
+	map(NULL),
+	rate(samplerate), bpm(120.0f), speed(1), bar (0), barBeat (0), beatsPerBar (4), beatUnit (4),
+	position(0), refFrame(0),
 	audioInput1(NULL), audioInput2(NULL), audioOutput1(NULL), audioOutput2(NULL),
-	rate(samplerate), bpm(120.0f), speed(1), bar (0), barBeat (0), position(0), refFrame(0), beatUnit (4), beatsPerBar (4),
-	ui_on(false), monitorPos(-1), notificationsCount(0), scheduleNotifyStatus (true), message ()
+	urids (), controlPort(NULL), notifyPort(NULL), forge (), notify_frame (),
+	ui_on(false), message (), monitorPos(-1), notificationsCount(0), scheduleNotifyStatus (true)
 
 {
 	for (int i = 0; i < MAXSHAPES; ++i)
@@ -345,7 +347,7 @@ void BShapr::run (uint32_t n_samples)
 						{
 							shapes[shapeNr].clearShape ();
 							float* data = (float*)(&vec->body + 1);
-							for (int nodeNr = 0; (nodeNr < vecSize) && (nodeNr < MAXNODES); ++nodeNr)
+							for (uint nodeNr = 0; (nodeNr < vecSize) && (nodeNr < MAXNODES); ++nodeNr)
 							{
 								Node node (&data[nodeNr * 7]);
 								shapes[shapeNr].appendNode (node);
@@ -448,7 +450,7 @@ void BShapr::run (uint32_t n_samples)
 				}
 
 				// Bar position changed
-				if (oBar && (oBar->type == urids.atom_Long) && (bar != ((LV2_Atom_Long*)oBar)->body))
+				if (oBar && (oBar->type == urids.atom_Long) && (bar != ((uint64_t)((LV2_Atom_Long*)oBar)->body)))
 				{
 					bar = ((LV2_Atom_Long*)oBar)->body;
 					scheduleUpdatePosition = true;
@@ -514,7 +516,7 @@ void BShapr::notifyShapeToGui (int shapeNr)
 	size_t size = shapes[shapeNr].size ();
 
 	// Load shapeBuffer
-	for (int i = 0; i < size; ++i)
+	for (uint i = 0; i < size; ++i)
 	{
 		Node node = shapes[shapeNr].getNode (i);
 		shapeBuffer[i * 7] = (float)node.nodeType;
@@ -1033,9 +1035,9 @@ LV2_State_Status BShapr::state_save (LV2_State_Store_Function store, LV2_State_H
 {
 	char shapesDataString[0x8010] = "Shape data:\n";
 
-	for (int sh = 0; sh < MAXSHAPES; ++sh)
+	for (uint sh = 0; sh < MAXSHAPES; ++sh)
 	{
-		for (int nd = 0; nd < shapes[sh].size (); ++nd)
+		for (uint nd = 0; nd < shapes[sh].size (); ++nd)
 		{
 			char valueString[128];
 			Node node = shapes[sh].getNode (nd);

@@ -28,12 +28,12 @@
 
 enum ToolType
 {
-	NO_TOOL											= 0,
-	POINT_NODE_TOOL							= 1,
-	AUTO_SMOOTH_NODE_TOOL				= 2,
+	NO_TOOL				= 0,
+	POINT_NODE_TOOL			= 1,
+	AUTO_SMOOTH_NODE_TOOL		= 2,
 	SYMMETRIC_SMOOTH_NODE_TOOL	= 3,
-	CORNER_NODE_TOOL						= 4,
-	DELETE_TOOL									= 5
+	CORNER_NODE_TOOL		= 4,
+	DELETE_TOOL			= 5
 };
 
 class ShapeWidget : public Shape<MAXNODES>, public BWidgets::ValueWidget
@@ -41,9 +41,9 @@ class ShapeWidget : public Shape<MAXNODES>, public BWidgets::ValueWidget
 public:
 	ShapeWidget ();
 	ShapeWidget (const double x, const double y, const double width, const double height, const std::string& name);
-	ShapeWidget (const ShapeWidget& that);
+	//ShapeWidget (const ShapeWidget& that);
 
-	ShapeWidget& operator= (const ShapeWidget& that);
+	//ShapeWidget& operator= (const ShapeWidget& that);
 
 	void setTool (const ToolType tool);
 	void setValueEnabled (const bool status);

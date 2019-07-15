@@ -25,20 +25,30 @@
 ShapeWidget::ShapeWidget () : ShapeWidget (0, 0, 0, 0, "") {}
 
 ShapeWidget::ShapeWidget (const double x, const double y, const double width, const double height, const std::string& name) :
-		ValueWidget (x, y, width, height, name, 0), Shape (), tool (NO_TOOL), scaleAnchorYPos (0), scaleAnchorValue (0), scaleRatio (1),
-		minorXSteps (1), majorXSteps (1), prefix (""), unit (""),
-		activeNode (-1), activeHandle (-1), selected (false), dragged (false), valueEnabled (false),
+		Shape (), ValueWidget (x, y, width, height, name, 0),
+		tool (NO_TOOL), activeNode (-1), activeHandle (-1),
+		selected (false), dragged (false), valueEnabled (false),
+		scaleAnchorYPos (0), scaleAnchorValue (0), scaleRatio (1),
+		minorXSteps (1), majorXSteps (1),
 		loLimit (-1000000), hiLimit (1000000), hardLoLimit (false), hardHiLimit (false),
+		prefix (""), unit (""),
 		fgColors (BColors::reds), bgColors (BColors::darks), lbfont (BWIDGETS_DEFAULT_FONT)
 {
 	setDraggable (true);
 	setScrollable (true);
 }
 
+/*
 ShapeWidget::ShapeWidget (const ShapeWidget& that):
-		ValueWidget (that), Shape (that), tool (that.tool), scaleAnchorYPos (that.scaleAnchorYPos),
-		scaleAnchorValue (that.scaleAnchorValue), scaleRatio (that.scaleRatio), activeNode (that.activeNode),
-		activeHandle (that.activeHandle), dragged (that.dragged), selected (that.selected), valueEnabled (that.valueEnabled) {}
+		Shape (that), ValueWidget (that),
+		tool (that.tool),  activeNode (that.activeNode), activeHandle (that.activeHandle),
+		selected (that.selected), dragged (that.dragged), valueEnabled (that.valueEnabled),
+		scaleAnchorYPos (that.scaleAnchorYPos),
+		scaleAnchorValue (that.scaleAnchorValue), scaleRatio (that.scaleRatio),
+		minorXSteps (that.minorXSteps), majorXSteps (that.majorXSteps),
+		loLimit (-1000000), hiLimit (1000000), hardLoLimit (false), hardHiLimit (false),
+		prefix (""), unit (""),
+		fgColors (BColors::reds), bgColors (BColors::darks), lbfont (BWIDGETS_DEFAULT_FONT) {}
 
 ShapeWidget& ShapeWidget::operator= (const ShapeWidget& that)
 {
@@ -55,6 +65,7 @@ ShapeWidget& ShapeWidget::operator= (const ShapeWidget& that)
 	valueEnabled = that.valueEnabled;
 	return *this;
 }
+*/
 
 void ShapeWidget::setTool (const ToolType tool) {this->tool = tool;}
 
@@ -184,11 +195,11 @@ void ShapeWidget::onButtonPressed (BEvents::PointerEvent* event)
 		// Point => Select
 		activeHandle = -1;
 		activeNode = -1;
-		for (int i = 0; i < nodes.size; ++i)
+		for (uint i = 0; i < nodes.size; ++i)
 		{
 			px = x0 + w * nodes[i].point.x;
 			py = y0 + h - h * (nodes[i].point.y - ymin) / (ymax - ymin);
-			if ((event->getX() >= px - 6) &&									// Within the point position
+			if ((event->getX() >= px - 6) &&	// Within the point position
 				(event->getX() <= px + 6) &&
 				(event->getY() >= py - 6) &&
 				(event->getY() <= py + 6))
@@ -211,7 +222,7 @@ void ShapeWidget::onButtonReleased (BEvents::PointerEvent* event)
 		double w = getEffectiveWidth ();
 		double h = getEffectiveHeight ();
 		double ymin = scaleAnchorValue - scaleRatio * scaleAnchorYPos;
-		double ymax = ymin + scaleRatio;
+		//double ymax = ymin + scaleRatio;
 		double px = (event->getX () - x0) / w;
 		double py = (y0 + h - event->getY ()) / h * scaleRatio + ymin;
 
@@ -247,13 +258,15 @@ void ShapeWidget::onButtonReleased (BEvents::PointerEvent* event)
 					insertNode (node);
 				}
 				break;
+
+				default: break;
 			}
 		}
 
 		// Perform node actions
 		if (tool == ToolType::DELETE_TOOL)
 		{
-			if ((activeNode >= 1) && (activeNode < nodes.size - 1)) deleteNode (activeNode);
+			if ((activeNode >= 1) && (activeNode < ((int)nodes.size) - 1)) deleteNode (activeNode);
 			activeNode = -1;
 			update ();
 		}
@@ -271,12 +284,12 @@ void ShapeWidget::onPointerDragged (BEvents::PointerEvent* event)
 		double w = getEffectiveWidth ();
 		double h = getEffectiveHeight ();
 		double ymin = scaleAnchorValue - scaleRatio * scaleAnchorYPos;
-		double ymax = ymin + scaleRatio;
+		//double ymax = ymin + scaleRatio;
 		double px = (event->getX () - x0) / w;
 		double py = (y0 + h - event->getY ()) / h * scaleRatio + ymin;
 
 		// Node or handle dragged
-		if ((activeNode >= 0) && (activeNode < nodes.size))
+		if ((activeNode >= 0) && (activeNode < ((int)nodes.size)))
 		{
 			// Drag right handle
 			if (activeHandle == 2)
@@ -512,7 +525,7 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 		cairo_pattern_destroy (pat);
 
 		// Draw nodes
-		for (int i = 0; i < nodes.size; ++i)
+		for (uint i = 0; i < nodes.size; ++i)
 		{
 			double xp = nodes[i].point.x;
 			double yp = nodes[i].point.y;
@@ -528,7 +541,7 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 
 			else cairo_rectangle (cr, x0 + xp * w - 6, y0 + h - h * (yp - ymin) / (ymax - ymin) - 6, 12, 12);
 
-			if (i == activeNode)
+			if (((int)i) == activeNode)
 			{
 				cairo_set_source_rgba (cr, CAIRO_RGBA (activeNodeColor));
 				cairo_set_line_width (cr, 2);

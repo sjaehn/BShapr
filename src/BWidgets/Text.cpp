@@ -50,6 +50,8 @@ Text& Text::operator= (const Text& that)
 	return *this;
 }
 
+Widget* Text::clone () const {return new Text (*this);}
+
 void Text::setText (const std::string& text)
 {
 	if (text != textString)
@@ -134,7 +136,7 @@ double Text::getTextBlockHeight (std::vector<std::string> textBlock)
 
 	for (std::string textline : textBlock)
 	{
-		cairo_text_extents_t ext = textFont.getTextExtents(cr, textline.c_str ());
+		//cairo_text_extents_t ext = textFont.getTextExtents(cr, textline.c_str ());
 		blockheight += (textFont.getFontSize () * textFont.getLineSpacing ());
 	}
 

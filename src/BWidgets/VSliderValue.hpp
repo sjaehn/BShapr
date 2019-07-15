@@ -1,4 +1,4 @@
-/* DisplayVSlider.hpp
+/* VSliderValue.hpp
  * Copyright (C) 2018  Sven Jähnichen
  *
  * This program is free software: you can redistribute it and/or modify
@@ -15,28 +15,28 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-#ifndef BWIDGETS_DISPLAYVSLIDER_HPP_
-#define BWIDGETS_DISPLAYVSLIDER_HPP_
+#ifndef BWIDGETS_VSLIDERVALUE_HPP_
+#define BWIDGETS_VSLIDERVALUE_HPP_
 
 #include "Label.hpp"
 #include "VSlider.hpp"
 
-#define BWIDGETS_DEFAULT_DISPLAYVSLIDER_WIDTH 24.0
-#define BWIDGETS_DEFAULT_DISPLAYVSLIDER_HEIGHT BWIDGETS_DEFAULT_VSLIDER_HEIGHT
+#define BWIDGETS_DEFAULT_VSLIDERVALUE_WIDTH 24.0
+#define BWIDGETS_DEFAULT_VSLIDERVALUE_HEIGHT BWIDGETS_DEFAULT_VSLIDER_HEIGHT
 
 namespace BWidgets
 {
 
 /**
- * Class BWidgets::DisplayVSlider
+ * Class BWidgets::VSliderValue
  *
  * Composite BWidgets::VSlider widget that additionally displays the value.
  */
-class DisplayVSlider : public VSlider
+class VSliderValue : public VSlider
 {
 public:
-	DisplayVSlider ();
-	DisplayVSlider (const double x, const double y, const double width, const double height, const std::string& name,
+	VSliderValue ();
+	VSliderValue (const double x, const double y, const double width, const double height, const std::string& name,
 			  	  	  	  	 const double value, const double min, const double max, const double step,
 							 const std::string& valueFormat);
 
@@ -45,9 +45,9 @@ public:
 	 * source slider.
 	 * @param that Source slider
 	 */
-	DisplayVSlider (const DisplayVSlider& that);
+	VSliderValue (const VSliderValue& that);
 
-	~DisplayVSlider ();
+	~VSliderValue ();
 
 	/**
 	 * Assignment. Copies the slider properties from a source slider and keeps
@@ -55,7 +55,13 @@ public:
 	 * if the widget is visible and a value changed event.
 	 * @param that Source slider
 	 */
-	DisplayVSlider& operator= (const DisplayVSlider& that);
+	VSliderValue& operator= (const VSliderValue& that);
+
+	/**
+	 * Pattern cloning. Creates a new instance of the widget and copies all
+	 * its properties.
+	 */
+	virtual Widget* clone () const override;
 
 	/**
 	 * Changes the value of the widget and keeps it within the defined range.
@@ -104,8 +110,8 @@ public:
 	 * @param name Name of the BStyles::StyleSet within the theme to be
 	 * 		  	   applied.
 	 */
-	virtual void applyTheme (BStyles::Theme& theme);
-	virtual void applyTheme (BStyles::Theme& theme, const std::string& name);
+	virtual void applyTheme (BStyles::Theme& theme) override;
+	virtual void applyTheme (BStyles::Theme& theme, const std::string& name) override;
 
 protected:
 	virtual void updateCoords () override;
@@ -121,4 +127,4 @@ protected:
 
 }
 
-#endif /* BWIDGETS_DISPLAYVSLIDER_HPP_ */
+#endif /* BWIDGETS_VSLIDERVALUE_HPP_ */

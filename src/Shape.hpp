@@ -147,7 +147,7 @@ template<size_t sz> bool Shape<sz>::insertNode (size_t pos, Node& node)
 	if ((pos + 1 < nodes.size) && (!validateNode (pos + 1))) return false;
 
 	// Update map
-	for (int i = (pos >= 2 ? pos - 2 : 0); (i <= pos + 1) && (i < nodes.size - 1); ++ i) renderBezier (nodes[i], nodes[i + 1]);
+	for (uint i = (pos >= 2 ? pos - 2 : 0); (i <= pos + 1) && (i + 1 < nodes.size); ++ i) renderBezier (nodes[i], nodes[i + 1]);
 	return true;
 }
 
@@ -155,7 +155,7 @@ template<size_t sz> bool Shape<sz>::insertNode (Node& node)
 {
 	// Find position
 	size_t pos = nodes.size;
-	for (int i = 0; i < nodes.size; ++i)
+	for (uint i = 0; i < nodes.size; ++i)
 	{
 		if (node.point.x < nodes[i].point.x)
 		{
@@ -185,7 +185,7 @@ template<size_t sz> bool Shape<sz>::changeNode (size_t pos, Node& node)
 	if ((pos + 1 < nodes.size) && (!validateNode (pos + 1))) return false;
 
 	// Update map
-	for (int i = (pos >= 2 ? pos - 2 : 0); (i <= pos + 1) && (i < nodes.size - 1); ++i) renderBezier (nodes[i], nodes[i + 1]);
+	for (uint i = (pos >= 2 ? pos - 2 : 0); (i <= pos + 1) && (i + 1 < nodes.size); ++i) renderBezier (nodes[i], nodes[i + 1]);
 
 	return true;
 }
@@ -202,7 +202,7 @@ template<size_t sz> bool Shape<sz>::deleteNode (size_t pos)
 	if (!validateNode (pos)) return false;
 
 	// Update map
-	for (int i = (pos >= 2 ? pos - 2 : 0); (i <= pos) && (i < nodes.size - 1); ++ i) renderBezier (nodes[i], nodes[i + 1]);
+	for (uint i = (pos >= 2 ? pos - 2 : 0); (i <= pos) && (i + 1 < nodes.size); ++ i) renderBezier (nodes[i], nodes[i + 1]);
 	return true;
 }
 
@@ -375,13 +375,13 @@ template<size_t sz> bool Shape<sz>::validateShape ()
 
 	// Validate nodes
 	bool status = true;
-	for (int i = 0; i < nodes.size; ++i)
+	for (uint i = 0; i < nodes.size; ++i)
 	{
 		if (!validateNode (i)) status = false;
 	}
 
 	// Update map
-	for (int i = 0; i < nodes.size - 1; ++i) renderBezier (nodes[i], nodes[i+1]);
+	for (uint i = 0; i + 1 < nodes.size; ++i) renderBezier (nodes[i], nodes[i+1]);
 
 	return status;
 }

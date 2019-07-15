@@ -40,7 +40,7 @@
 #include "BWidgets/ImageIcon.hpp"
 #include "BWidgets/Label.hpp"
 #include "BWidgets/Dial.hpp"
-#include "BWidgets/DisplayDial.hpp"
+#include "BWidgets/DialValue.hpp"
 #include "BWidgets/PopupListBox.hpp"
 #include "ShapeWidget.hpp"
 #include "ValueSelect.hpp"
@@ -72,23 +72,28 @@ struct ScaleParameters
 	std::string unit;
 };
 
-const ScaleParameters scaleParameters[MAXEFFECTS] = {{0.05, 0, 1.1, "", ""},
-																										 {0.5, 0, 2.2, "", ""},
-																										 {0.05, 0, 2.2, "", ""},
-																										 {0, 0, 5050, "", "Hz"},
-																										 {0, 0, 810, "", "Hz"},
-																										 {0.75, 0, 90, "", "dB"},
-																										 {0.1, 1.3, 3.5, "10^", "Hz"},
-																										 {0.1, 1.3, 3.5, "10^", "Hz"},
-																										 {0.5, 0, 25, "", "semitones"},
-																										 {0.05, 0, 800, "", "ms"},
-																										 {0.05, 0, 800, "", "ms"}
-																									  };
+const ScaleParameters scaleParameters[MAXEFFECTS] =
+{
+	{0.05, 0, 1.1, "", ""},
+	{0.5, 0, 2.2, "", ""},
+	{0.05, 0, 2.2, "", ""},
+	{0, 0, 5050, "", "Hz"},
+	{0, 0, 810, "", "Hz"},
+	{0.75, 0, 90, "", "dB"},
+	{0.1, 1.3, 3.5, "10^", "Hz"},
+	{0.1, 1.3, 3.5, "10^", "Hz"},
+	{0.5, 0, 25, "", "semitones"},
+	{0.05, 0, 800, "", "ms"},
+	{0.05, 0, 800, "", "ms"}
+};
 
-const std::string messageStrings[MAXMESSAGES] = {"",
-																								 "Msg: Jack transport off or halted. Plugin halted.",
-																							 	 "Msg: Orphan active shape. Select an input for this shape!",
-																							 	 "Msg: Orphan active shape. Select an output for this or a connected shape!"};
+const std::string messageStrings[MAXMESSAGES] =
+{
+	"",
+	"Msg: Jack transport off or halted. Plugin halted.",
+	"Msg: Orphan active shape. Select an input for this shape!",
+	"Msg: Orphan active shape. Select an output for this or a connected shape!"
+};
 
 class BShaprGUI : public BWidgets::Window
 {
@@ -144,8 +149,8 @@ private:
 		BWidgets::ImageIcon tabIcon;
 		std::vector<BWidgets::ImageIcon> inputShapeLabelIcons;
 		SelectWidget inputSelect;
-		BWidgets::DisplayDial inputAmpDial;
-		BWidgets::DisplayDial outputAmpDial;
+		BWidgets::DialValue inputAmpDial;
+		BWidgets::DialValue outputAmpDial;
 		BWidgets::PopupListBox targetListBox;
 		BWidgets::Label drywetLabel;
 		BWidgets::Dial drywetDial;
