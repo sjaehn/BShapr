@@ -26,7 +26,7 @@
 #include <cstdlib>
 #include <cmath>
 #include <exception>
-#include <tuple>
+#include <utility>
 #include <lv2/lv2plug.in/ns/lv2core/lv2.h>
 #include <lv2/lv2plug.in/ns/extensions/ui/ui.h>
 #include <lv2/lv2plug.in/ns/ext/atom/atom.h>
@@ -45,6 +45,7 @@
 #include "ShapeWidget.hpp"
 #include "ValueSelect.hpp"
 #include "HorizonWidget.hpp"
+#include "MonitorWidget.hpp"
 #include "definitions.h"
 #include "ports.h"
 #include "urids.h"
@@ -122,10 +123,9 @@ public:
 private:
 	void resizeGUI ();
 	void calculateXSteps ();
-	void init_mainMonitor ();
-	std::tuple<int, int> add_monitor_data (BShaprNotifications* notifications, uint32_t notificationsCount);
-	void redrawMainMonitor (int start, int end);
-	void drawData (cairo_t* cr, double x0, double y0, double width, double height, std::array<float, MONITORBUFFERSIZE>& data, int start, int end);
+	void initMonitors ();
+	std::pair<int, int> translateNotification (BShaprNotifications* notifications, uint32_t notificationsCount);
+	void updateMonitors (int start, int end);
 
 	// Controllers
 	std::array<BWidgets::ValueWidget*, NR_CONTROLLERS> controllerWidgets;
@@ -139,9 +139,13 @@ private:
 	BWidgets::Label messageLabel;
 	ValueSelect baseValueSelect;
 	BWidgets::PopupListBox baseListBox;
-	BWidgets::DrawingSurface monitorSurface;
+	BWidgets::Widget monitorContainer;
 	HorizonWidget monitorHorizon1;
 	HorizonWidget monitorHorizon2;
+	MonitorWidget input1Monitor;
+	MonitorWidget output1Monitor;
+	MonitorWidget input2Monitor;
+	MonitorWidget output2Monitor;
 
 	typedef struct
 	{
@@ -164,11 +168,6 @@ private:
 
 	float shapeBuffer[MAXNODES * 7];
 
-	std::array<float, MONITORBUFFERSIZE> input1Data;
-	std::array<float, MONITORBUFFERSIZE> output1Data;
-	std::array<float, MONITORBUFFERSIZE> input2Data;
-	std::array<float, MONITORBUFFERSIZE> output2Data;
-
 	double horizonPos;
 	double monitorScale;
 	double minorXSteps;
@@ -190,73 +189,79 @@ private:
 	BColors::ColorSet bgColors = {{{0.15, 0.15, 0.15, 1.0}, {0.3, 0.3, 0.3, 1.0}, {0.05, 0.05, 0.05, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
 	BColors::ColorSet lbColors = {{{0, 0, 0, 1.0}, {0, 0, 0, 1.0}, {0, 0, 0, 1.0}, {0, 0, 0, 0.0}}};
 	BColors::ColorSet clickColors = {{{0, 0, 0, 1.0}, {1, 1, 1, 1.0}, {0, 0, 0, 1.0}, {0, 0, 0, 0.0}}};
+	BColors::ColorSet ink1 = {{{0.75, 0.0, 1.0, 1.0}, {0.9, 0.5, 1.0, 1.0}, {0.1, 0.0, 0.25, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
+	BColors::ColorSet ink2 = {{{1.0, 0.0, 0.75, 1.0}, {1.0, 0.5, 0.9, 1.0}, {0.25, 0.0, 0.1, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
 	BColors::Color ink = {0.0, 0.75, 0.2, 1.0};
 	BStyles::Fill widgetBg = BStyles::noFill;
 	BStyles::Fill tabBg = BStyles::Fill (BColors::Color (0.5, 0, 0.5, 0.375));
 	BStyles::Fill activeTabBg = BStyles::Fill (BColors::Color (0.5, 0, 0.5, 0.75));
 	BStyles::Font defaultFont = BStyles::Font ("Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL, 12.0,
-										       									 BStyles::TEXT_ALIGN_CENTER, BStyles::TEXT_VALIGN_MIDDLE);
+						   BStyles::TEXT_ALIGN_CENTER, BStyles::TEXT_VALIGN_MIDDLE);
  	BStyles::Font smFont = BStyles::Font ("Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL, 10.0,
- 										       									 BStyles::TEXT_ALIGN_CENTER, BStyles::TEXT_VALIGN_MIDDLE);
+ 					      BStyles::TEXT_ALIGN_CENTER, BStyles::TEXT_VALIGN_MIDDLE);
 	BStyles::Font lfLabelFont = BStyles::Font ("Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL, 12.0,
-											   										 BStyles::TEXT_ALIGN_LEFT, BStyles::TEXT_VALIGN_MIDDLE);
+						   BStyles::TEXT_ALIGN_LEFT, BStyles::TEXT_VALIGN_MIDDLE);
 	BStyles::StyleSet defaultStyles = {"default", {{"background", STYLEPTR (&BStyles::noFill)},
-												   {"border", STYLEPTR (&BStyles::noBorder)}}};
-	BStyles::StyleSet labelStyles = {"labels", 	  {{"background", STYLEPTR (&BStyles::noFill)},
-												   {"border", STYLEPTR (&BStyles::noBorder)},
-												   {"textcolors", STYLEPTR (&txColors)},
-												   {"font", STYLEPTR (&lfLabelFont)}}};
+						       {"border", STYLEPTR (&BStyles::noBorder)}}};
+	BStyles::StyleSet labelStyles = {"labels", {{"background", STYLEPTR (&BStyles::noFill)},
+						   {"border", STYLEPTR (&BStyles::noBorder)},
+						   {"textcolors", STYLEPTR (&txColors)},
+						   {"font", STYLEPTR (&lfLabelFont)}}};
 
 	BStyles::Theme theme = BStyles::Theme ({
 		defaultStyles,
 		{"B.Shapr", 		{{"background", STYLEPTR (&BStyles::blackFill)},
-							 			 {"border", STYLEPTR (&BStyles::noBorder)}}},
-		{"widget", 			{{"uses", STYLEPTR (&defaultStyles)}}},
-		{"tab", 				{{"background", STYLEPTR (&tabBg)},
-							 			 {"border", STYLEPTR (&BStyles::noBorder)}}},
-		{"activetab", 	{{"background", STYLEPTR (&activeTabBg)},
-							 			 {"border", STYLEPTR (&BStyles::noBorder)}}},
-		{"tool", 				{{"uses", STYLEPTR (&defaultStyles)},
-							 			 {"bgcolors", STYLEPTR (&BColors::whites)}}},
-		{"monitor", 		{{"background", STYLEPTR (&BStyles::blackFill)},
-							 			 {"border", STYLEPTR (&BStyles::noBorder)}}},
-		{"shape",	 		{{"background", STYLEPTR (&BStyles::noFill)},
-							 		 {"border", STYLEPTR (&BStyles::noBorder)},
-							 	 	 {"fgcolors", STYLEPTR (&BColors::whites)},
-									 {"symbolcolors", STYLEPTR (&fgColors)},
-									 {"font", STYLEPTR (&lfLabelFont)},
-									 {"bgcolors", STYLEPTR (&bgColors)}}},
-		{"dial", 			{{"uses", STYLEPTR (&defaultStyles)},
-									 {"fgcolors", STYLEPTR (&fgColors)},
-									 {"bgcolors", STYLEPTR (&bgColors)},
-									 {"textcolors", STYLEPTR (&fgColors)},
-									 {"font", STYLEPTR (&defaultFont)}}},
+					 {"border", STYLEPTR (&BStyles::noBorder)}}},
+		{"widget", 		{{"uses", STYLEPTR (&defaultStyles)}}},
+		{"tab", 		{{"background", STYLEPTR (&tabBg)},
+					 {"border", STYLEPTR (&BStyles::noBorder)}}},
+		{"activetab", 		{{"background", STYLEPTR (&activeTabBg)},
+					 {"border", STYLEPTR (&BStyles::noBorder)}}},
+		{"tool", 		{{"uses", STYLEPTR (&defaultStyles)},
+					 {"bgcolors", STYLEPTR (&BColors::whites)}}},
+		{"monitor.in", 		{{"background", STYLEPTR (&BStyles::blackFill)},
+					 {"border", STYLEPTR (&BStyles::noBorder)},
+				 	 {"fgcolors", STYLEPTR (&ink1)}}},
+		{"monitor.out", 	{{"background", STYLEPTR (&BStyles::blackFill)},
+					 {"border", STYLEPTR (&BStyles::noBorder)},
+				 	 {"fgcolors", STYLEPTR (&ink2)}}},
+		{"shape",	 	{{"background", STYLEPTR (&BStyles::noFill)},
+			 		 {"border", STYLEPTR (&BStyles::noBorder)},
+			 	 	 {"fgcolors", STYLEPTR (&BColors::whites)},
+					 {"symbolcolors", STYLEPTR (&fgColors)},
+					 {"font", STYLEPTR (&lfLabelFont)},
+					 {"bgcolors", STYLEPTR (&bgColors)}}},
+		{"dial", 		{{"uses", STYLEPTR (&defaultStyles)},
+					 {"fgcolors", STYLEPTR (&fgColors)},
+					 {"bgcolors", STYLEPTR (&bgColors)},
+					 {"textcolors", STYLEPTR (&fgColors)},
+					 {"font", STYLEPTR (&defaultFont)}}},
 		{"label", 		{{"uses", STYLEPTR (&labelStyles)}}},
 		{"smlabel",	 	{{"uses", STYLEPTR (&defaultStyles)},
-									 {"textcolors", STYLEPTR (&fgColors)},
-									 {"font", STYLEPTR (&smFont)}}},
+					 {"textcolors", STYLEPTR (&fgColors)},
+					 {"font", STYLEPTR (&smFont)}}},
 		{"select",	 	{{"uses", STYLEPTR (&defaultStyles)}}},
 		{"select/label",	{{"uses", STYLEPTR (&defaultStyles)},
-									 {"textcolors", STYLEPTR (&BColors::whites)},
-									 {"font", STYLEPTR (&defaultFont)}}},
+					 {"textcolors", STYLEPTR (&BColors::whites)},
+					 {"font", STYLEPTR (&defaultFont)}}},
 		{"select/click",	{{"uses", STYLEPTR (&defaultStyles)},
-									 {"bgcolors", STYLEPTR (&clickColors)}}},
-		{"menu",	 		{{"border", STYLEPTR (&BStyles::greyBorder1pt)},
-									 {"background", STYLEPTR (&BStyles::grey20Fill)}}},
+					 {"bgcolors", STYLEPTR (&clickColors)}}},
+		{"menu",	 	{{"border", STYLEPTR (&BStyles::greyBorder1pt)},
+					 {"background", STYLEPTR (&BStyles::grey20Fill)}}},
 		{"menu/item",	{{"uses", STYLEPTR (&defaultStyles)},
-									 {"textcolors", STYLEPTR (&BColors::whites)},
-									 {"font", STYLEPTR (&lfLabelFont)}}},
+					 {"textcolors", STYLEPTR (&BColors::whites)},
+					 {"font", STYLEPTR (&lfLabelFont)}}},
 		{"menu/button",	 	{{"border", STYLEPTR (&BStyles::greyBorder1pt)},
-							 		 {"background", STYLEPTR (&BStyles::grey20Fill)},
-									 {"bgcolors", STYLEPTR (&BColors::darks)}}},
+			 		 {"background", STYLEPTR (&BStyles::grey20Fill)},
+					 {"bgcolors", STYLEPTR (&BColors::darks)}}},
 		{"menu/listbox",	{{"border", STYLEPTR (&BStyles::greyBorder1pt)},
-									 {"background", STYLEPTR (&BStyles::grey20Fill)}}},
+					 {"background", STYLEPTR (&BStyles::grey20Fill)}}},
 		{"menu/listbox/item",	{{"uses", STYLEPTR (&defaultStyles)},
-									 {"textcolors", STYLEPTR (&BColors::whites)},
-									 {"font", STYLEPTR (&lfLabelFont)}}},
-		{"menu/listbox//button",	{{"border", STYLEPTR (&BStyles::greyBorder1pt)},
-									 {"background", STYLEPTR (&BStyles::grey20Fill)},
-							 	 	 {"bgcolors", STYLEPTR (&BColors::darks)}}}
+					 {"textcolors", STYLEPTR (&BColors::whites)},
+					 {"font", STYLEPTR (&lfLabelFont)}}},
+		{"menu/listbox//button",{{"border", STYLEPTR (&BStyles::greyBorder1pt)},
+					 {"background", STYLEPTR (&BStyles::grey20Fill)},
+			 	 	 {"bgcolors", STYLEPTR (&BColors::darks)}}}
 	});
 };
 

@@ -29,16 +29,18 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	messageLabel (600, 45, 600, 20, "label", ""),
 	baseValueSelect (480, 730, 100, 20, "select", 1.0, 1.0, 16.0, 0.01),
 	baseListBox (620, 730, 100, 20, 0, -80, 100, 80, "menu", BItems::ItemList ({{0, "Seconds"}, {1, "Beats"}, {2, "Bars"}})),
-	monitorSurface (24, 214, 1152, 352, "monitor"),
+	monitorContainer (24, 214, 1152, 352, "monitor"),
 	monitorHorizon1 (0, 0, 64, 352, "horizon"),
 	monitorHorizon2 (-1152, 0, 64, 352, "horizon"),
+	input1Monitor (0, 0, 1152, 176, "monitor.in"),
+	output1Monitor (0, 0, 1152, 176, "monitor.out"),
+	input2Monitor (0, 176, 1152, 176, "monitor.in"),
+	output2Monitor (0, 176, 1152, 176, "monitor.out"),
 
 	horizonPos (0), monitorScale (1), minorXSteps (1.0), majorXSteps (1.0),
 	pluginPath (bundlePath ? std::string (bundlePath) : std::string ("")),
 	sz (1.0),
 	bgImageSurface (nullptr), forge (), urids (), map (NULL)
-
-
 
 {
 	// Init shapes
@@ -92,7 +94,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	}
 
 	// Init main monitor
-	init_mainMonitor ();
+	initMonitors ();
 
 	// Link controllers
 	controllerWidgets[BASE] = (BWidgets::ValueWidget*) &baseListBox;
@@ -110,7 +112,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	// Set callbacks
 	baseValueSelect.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 	baseListBox.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
-	monitorSurface.setCallbackFunction (BEvents::EventType::WHEEL_SCROLL_EVENT, BShaprGUI::wheelScrolledCallback);
+	monitorContainer.setCallbackFunction (BEvents::EventType::WHEEL_SCROLL_EVENT, BShaprGUI::wheelScrolledCallback);
 	for (int i = 0; i < MAXSHAPES; ++i)
 	{
 		shapeGui[i].tabIcon.setCallbackFunction (BEvents::EventType::BUTTON_PRESS_EVENT, BShaprGUI::tabClickedCallback);
@@ -127,7 +129,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	// Configure widgets
 	calculateXSteps ();
 	mContainer.loadImage (BColors::NORMAL, pluginPath + BG_FILE);
-	monitorSurface.setScrollable (true);
+	monitorContainer.setScrollable (true);
 	shapeGui[0].tabIcon.rename ("activetab");
 	for (uint i = 0; i < MAXSHAPES; ++i)
 	{
@@ -146,9 +148,13 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	setKeyGrab (this);
 
 	// Pack widgets
-	monitorSurface.add (monitorHorizon1);
-	monitorSurface.add (monitorHorizon2);
-	mContainer.add (monitorSurface);
+	monitorContainer.add (input1Monitor);
+	monitorContainer.add (output1Monitor);
+	monitorContainer.add (input2Monitor);
+	monitorContainer.add (output2Monitor);
+	monitorContainer.add (monitorHorizon1);
+	monitorContainer.add (monitorHorizon2);
+	mContainer.add (monitorContainer);
 	for (uint i = 0; i < MAXSHAPES; ++i)
 	{
 		mContainer.add (shapeGui[i].tabIcon);
@@ -219,15 +225,15 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 						BShaprNotifications* notifications = (BShaprNotifications*) (&vec->body + 1);
 						if (notificationsCount > 0)
 						{
-							std::tuple<int, int> pos = add_monitor_data (notifications, notificationsCount);
-							int p1 = LIMIT (std::get<0> (pos), 0, MONITORBUFFERSIZE - 1);
-							int p2 = LIMIT (std::get<1> (pos), 0, MONITORBUFFERSIZE - 1);
+							std::pair<int, int> pos = translateNotification (notifications, notificationsCount);
+							int p1 = LIMIT (pos.first, 0, MONITORBUFFERSIZE - 1);
+							int p2 = LIMIT (pos.second, 0, MONITORBUFFERSIZE - 1);
 
-							if (p1 <= p2) redrawMainMonitor (p1, p2);
+							if (p1 <= p2) updateMonitors (p1, p2);
 							else
 							{
-								redrawMainMonitor (p1, MONITORBUFFERSIZE - 1);
-								redrawMainMonitor (0, p2);
+								updateMonitors (p1, MONITORBUFFERSIZE - 1);
+								updateMonitors (0, p2);
 							}
 						}
 					}
@@ -252,8 +258,7 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 			else if (obj->body.otype == urids.notify_statusEvent)
 			{
 				const LV2_Atom *oBpb = NULL, *oBu = NULL;
-				lv2_atom_object_get(obj, urids.time_beatsPerBar, &oBpb,
-					 											 urids.time_beatUnit, &oBu, 0);
+				lv2_atom_object_get(obj, urids.time_beatsPerBar, &oBpb, urids.time_beatUnit, &oBu, 0);
 				if (oBpb && (oBpb->type == urids.atom_Float))
 				{
 					beatsPerBar = ((LV2_Atom_Float*)oBpb)->body;
@@ -348,9 +353,13 @@ void BShaprGUI::resizeGUI()
 	RESIZE (baseListBox, 620, 730, 100, 20, sz);
 	baseListBox.resizeListBox (100 * sz, 80 * sz);
 	baseListBox.moveListBox (0, -80 * sz);
-	RESIZE (monitorSurface, 24, 214, 352, 172, sz);
-	RESIZE (monitorHorizon1, monitorHorizon1.getX(), 0, 64, 172, sz);
-	RESIZE (monitorHorizon2, monitorHorizon1.getX(), 0, 64, 172, sz);
+	RESIZE (monitorContainer, 24, 214, 1152, 352, sz);
+	RESIZE (monitorHorizon1, monitorHorizon1.getX(), 0, 64, 352, sz);
+	RESIZE (monitorHorizon2, monitorHorizon1.getX(), 0, 64, 352, sz);
+	RESIZE (input1Monitor, 0, 0, 1152, 176, sz);
+	RESIZE (output1Monitor, 0, 0, 1152, 176, sz);
+	RESIZE (input2Monitor, 0, 176, 1152, 176, sz);
+	RESIZE (output2Monitor, 0, 176, 1152, 176, sz);
 	for (int i = 0; i < MAXSHAPES; ++i)
 	{
 		RESIZE (shapeGui[i].tabIcon, 20 + i * 120, 90, 119, 40, sz);
@@ -378,8 +387,8 @@ void BShaprGUI::resizeGUI()
 	}
 
 	// Update monitor, const std::string& name
-	init_mainMonitor ();
-	redrawMainMonitor (0, MONITORBUFFERSIZE - 1);
+	initMonitors ();
+	updateMonitors (0, MONITORBUFFERSIZE - 1);
 
 	// Apply changes
 	applyChildThemes ();
@@ -392,7 +401,11 @@ void BShaprGUI::applyChildThemes ()
 	messageLabel.applyTheme (theme);
 	baseValueSelect.applyTheme (theme);
 	baseListBox.applyTheme (theme);
-	monitorSurface.applyTheme (theme);
+	monitorContainer.applyTheme (theme);
+	input1Monitor.applyTheme (theme);
+	output1Monitor.applyTheme (theme);
+	input2Monitor.applyTheme (theme);
+	output2Monitor.applyTheme (theme);
 	for (uint i = 0; i < MAXSHAPES; ++i)
 	{
 		shapeGui[i].shapeContainer.applyTheme (theme);
@@ -669,6 +682,10 @@ void BShaprGUI::wheelScrolledCallback (BEvents::Event* event)
 
 			ui->monitorScale += 0.01 * we->getDeltaY ();
 			if (ui->monitorScale < 0.01) ui->monitorScale = 0.01;
+			ui->input1Monitor.setZoom (ui->monitorScale);
+			ui->output1Monitor.setZoom (ui->monitorScale);
+			ui->input2Monitor.setZoom (ui->monitorScale);
+			ui->output2Monitor.setZoom (ui->monitorScale);
 		}
 	}
 }
@@ -699,95 +716,45 @@ void BShaprGUI::calculateXSteps ()
 	}
 }
 
-void BShaprGUI::init_mainMonitor ()
+void BShaprGUI::initMonitors ()
 {
-	//Initialize mainMonitor
-	input1Data.fill (0);
-	output1Data.fill (0);
-	input2Data.fill (0);
-	output2Data.fill (0);
+	input1Monitor.clear ();
+	output1Monitor.clear ();
+	input2Monitor.clear ();
+	output2Monitor.clear ();
 	horizonPos = 0;
 }
 
-std::tuple<int, int> BShaprGUI::add_monitor_data (BShaprNotifications* notifications, uint32_t notificationsCount)
+std::pair<int, int> BShaprGUI::translateNotification (BShaprNotifications* notifications, uint32_t notificationsCount)
 {
-	if (notificationsCount == 0) return std::make_tuple (0, 0);
+	if (notificationsCount == 0) return std::make_pair (0, 0);
 
 	int startpos = notifications[0].position;
 	int monitorpos = startpos;
 	for (uint i = 0; i < notificationsCount; ++i)
 	{
-		monitorpos = notifications[i].position;
-		if (monitorpos >= MONITORBUFFERSIZE) monitorpos = MONITORBUFFERSIZE;
-		if (monitorpos < 0) monitorpos = 0;
+		monitorpos = LIMIT (notifications[i].position, 0, MONITORBUFFERSIZE - 1);
 
-		input1Data[monitorpos] = notifications[i].input1;
-		output1Data[monitorpos] = notifications[i].output1;
-		input2Data[monitorpos] = notifications[i].input2;
-		output2Data[monitorpos] = notifications[i].output2;
+		input1Monitor.addData (monitorpos, notifications[i].input1);
+		output1Monitor.addData (monitorpos, notifications[i].output1);
+		input2Monitor.addData (monitorpos, notifications[i].input2);
+		output2Monitor.addData (monitorpos, notifications[i].output2);
 
 		horizonPos = double (monitorpos) / MONITORBUFFERSIZE;
 	}
-	return std::make_tuple (startpos, monitorpos);
+	return std::make_pair (startpos, monitorpos);
 }
 
-void BShaprGUI::redrawMainMonitor (int start, int end)
+void BShaprGUI::updateMonitors (int start, int end)
 {
-	double width = monitorSurface.getEffectiveWidth ();
-	double height = monitorSurface.getEffectiveHeight ();
+	input1Monitor.redrawRange (start, end);
+	output1Monitor.redrawRange (start, end);
+	input2Monitor.redrawRange (start, end);
+	output2Monitor.redrawRange (start, end);
 
-	cairo_t* cr = cairo_create (monitorSurface.getDrawingSurface ());
-	if (cairo_status (cr) != CAIRO_STATUS_SUCCESS) return;
-
-	cairo_set_line_width (cr, 0);
-
-	// Limit area
-	cairo_rectangle (cr, width * double (start) / (MONITORBUFFERSIZE - 1) - 1, 0, width * double (end - start) / (MONITORBUFFERSIZE - 1) + 2, height);
-	cairo_clip (cr);
-
-	// Clear background
-	cairo_set_source_rgba (cr, CAIRO_BG_COLOR);
-	cairo_rectangle (cr, width * double (start) / (MONITORBUFFERSIZE - 1), 0, width * double (end - start) / (MONITORBUFFERSIZE - 1), height);
-	cairo_fill (cr);
-
-	// Draw MinMax curves
-	cairo_set_source_rgba (cr, CAIRO_INK1, 1.0);
-	drawData (cr, 0, 0, width, 0.5 * height, input1Data, start, end);
-
-	cairo_set_source_rgba (cr, CAIRO_INK2, 1.0);
-	drawData (cr, 0, 0, width, 0.5 * height, output1Data, start, end);
-
-	cairo_set_source_rgba (cr, CAIRO_INK1, 1.0);
-	drawData (cr, 0, 0.5 * height, width, 0.5 * height, input2Data, start, end);
-
-	cairo_set_source_rgba (cr, CAIRO_INK2, 1.0);
-	drawData (cr, 0, 0.5 * height, width, 0.5 * height, output2Data, start, end);
-
-	cairo_destroy (cr);
-
+	double width = monitorContainer.getEffectiveWidth ();
 	monitorHorizon1.moveTo (horizonPos * width, 0);
 	monitorHorizon2.moveTo ((horizonPos - 1) * width, 0);
-
-	monitorSurface.update ();
-}
-
-void BShaprGUI::drawData (cairo_t* cr, double x0, double y0, double width, double height, std::array<float, MONITORBUFFERSIZE>& data, int start, int end)
-{
-	cairo_save (cr);
-	cairo_set_line_width (cr, 0);
-	cairo_rectangle (cr, x0, y0, width, height);
-	cairo_clip (cr);
-
-	cairo_set_line_width (cr, 1.5);
-	int p0 = (start > 0 ? start - 1 : 0);
-	cairo_move_to (cr, x0 + width * double (p0) / (MONITORBUFFERSIZE - 1), y0 + height * (0.5  - (0.4 * LIMIT ((data[p0] / monitorScale), -1, 1))));
-	for (int i = start; (i < MONITORBUFFERSIZE) && (i <= end); ++i)
-	{
-		cairo_line_to (cr, x0 + width * double (i) / (MONITORBUFFERSIZE - 1), y0 + height * (0.5  - (0.4 * LIMIT ((data[i] / monitorScale), -1, 1))));
-	}
-	cairo_stroke (cr);
-
-	cairo_restore (cr);
 }
 
 LV2UI_Handle instantiate (const LV2UI_Descriptor *descriptor, const char *plugin_uri, const char *bundle_path,

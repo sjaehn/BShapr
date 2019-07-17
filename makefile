@@ -28,6 +28,7 @@ FILES = manifest.ttl BShapr.ttl surface.png Shape1.png Shape2.png Shape3.png Sha
 B_FILES = $(addprefix $(BUNDLE)/, $(FILES))
 
 GUI_INCL = \
+	src/MonitorWidget.cpp \
 	src/SelectWidget.cpp \
 	src/ValueSelect.cpp \
 	src/DownClick.cpp \
@@ -55,6 +56,7 @@ GUI_INCL = \
 	src/BWidgets/ValueWidget.cpp \
 	src/BWidgets/Knob.cpp \
 	src/BWidgets/ImageIcon.cpp \
+	src/BWidgets/Icon.cpp \
 	src/BWidgets/Label.cpp \
 	src/BWidgets/FocusWidget.cpp \
 	src/BWidgets/Window.cpp \
