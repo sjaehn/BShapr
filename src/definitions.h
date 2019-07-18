@@ -23,8 +23,8 @@
 
 #include "Node.hpp"
 
-#define NOTIFYBUFFERSIZE 1024
-#define MONITORBUFFERSIZE 1024
+#define NOTIFYBUFFERSIZE 128
+#define MONITORBUFFERSIZE 128
 #define MAXNODES 64
 #define MAXSHAPES 4
 #define MAXEFFECTS 11
@@ -33,40 +33,46 @@
 #define BSHAPR_GUI_URI "https://www.jahnichen.de/plugins/lv2/BShapr#gui"
 
 const Node defaultEndNodes[MAXEFFECTS] = {{NodeType::END_NODE, {0, 1}, {0, 0}, {0, 0}},
-																					{NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}},
-																					{NodeType::END_NODE, {0, 1}, {0, 0}, {0, 0}},
-																					{NodeType::END_NODE, {0, 2000}, {0, 0}, {0, 0}},
-																					{NodeType::END_NODE, {0, 200}, {0, 0}, {0, 0}},
-																					{NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}},
-																					{NodeType::END_NODE, {0, 3.301}, {0, 0}, {0, 0}},
-																					{NodeType::END_NODE, {0, 2.301}, {0, 0}, {0, 0}},
-																					{NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}},
-																					{NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}},
-																					{NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}}};
+					  {NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}},
+					  {NodeType::END_NODE, {0, 1}, {0, 0}, {0, 0}},
+					  {NodeType::END_NODE, {0, 2000}, {0, 0}, {0, 0}},
+					  {NodeType::END_NODE, {0, 200}, {0, 0}, {0, 0}},
+					  {NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}},
+					  {NodeType::END_NODE, {0, 3.301}, {0, 0}, {0, 0}},
+					  {NodeType::END_NODE, {0, 2.301}, {0, 0}, {0, 0}},
+					  {NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}},
+					  {NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}},
+					  {NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}}};
 
 typedef enum
 {
-	NO_MSG				= 0,
+	NO_MSG		= 0,
 	JACK_STOP_MSG	= 1,
 	NO_INPUT_MSG	= 2,
 	NO_OUTPUT_MSG	= 3,
-	MAX_MSG				= 3
+	MAX_MSG		= 3
 } MessageNr;
 
 typedef enum
 {
 	DELETE	= 0,
-	ADD			= 1,
+	ADD	= 1,
 	CHANGE	= 2
 } NodeOperationType;
+
+struct Range
+{
+	float min;
+	float max;
+};
 
 struct  BShaprNotifications
 {
 	float position;
-	float input1;
-	float output1;
-	float input2;
-	float output2;
+	Range input1;
+	Range output1;
+	Range input2;
+	Range output2;
 };
 
 struct Limit
@@ -77,16 +83,16 @@ struct Limit
 };
 
 const Limit methodLimits [MAXEFFECTS] = {{0, 10, 0},
-																				 {-1, 1, 0},
-																				 {0, 100, 0},
-																				 {20, 20000, 0},
-																				 {20, 20000, 0},
-																				 {-90, 30, 0},
-																				 {1.301, 4.301, 0},
-																				 {1.301, 4.301, 0},
-																				 {-12, 12, 0},
-																				 {0, 800, 0},
-																				 {0, 800, 0}
-																			 };
+					 {-1, 1, 0},
+					 {0, 100, 0},
+					 {20, 20000, 0},
+					 {20, 20000, 0},
+					 {-90, 30, 0},
+					 {1.301, 4.301, 0},
+					 {1.301, 4.301, 0},
+					 {-12, 12, 0},
+					 {0, 800, 0},
+					 {0, 800, 0}
+				 	};
 
 #endif /* DEFINITIONS_H_ */

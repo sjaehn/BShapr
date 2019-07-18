@@ -29,22 +29,26 @@
  public:
         MonitorWidget ();
         MonitorWidget (const double x, const double y, const double width, const double height, const std::string& name);
+        ~MonitorWidget ();
 
         void clear ();
-        void addData (const uint pos, const double value);
+        void addData (const uint pos, const Range range);
         void setZoom (const double factor);
         double getZoom () const;
         void redrawRange (const uint start, const uint end);
         virtual void applyTheme (BStyles::Theme& theme) override;
 	virtual void applyTheme (BStyles::Theme& theme, const std::string& name) override;
+        virtual void update () override;
 
 protected:
-        void drawData (cairo_t* cr, const double x, const double y, const double width, const double height);
+        void makePattern ();
+        void drawData (const uint start, const uint end);
         virtual void draw (const double x, const double y, const double width, const double height) override;
 
-        std::array<double, MONITORBUFFERSIZE> data;
+        std::array<Range, MONITORBUFFERSIZE> data;
         BColors::ColorSet fgColors;
         double zoom;
+        cairo_pattern_t* pat;
  };
 
  #endif /* MONITORWIDGET_HPP_ */

@@ -37,7 +37,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	input2Monitor (0, 176, 1152, 176, "monitor.in"),
 	output2Monitor (0, 176, 1152, 176, "monitor.out"),
 
-	horizonPos (0), monitorScale (1), minorXSteps (1.0), majorXSteps (1.0),
+	horizonPos (0), monitorScale (2), minorXSteps (1.0), majorXSteps (1.0),
 	pluginPath (bundlePath ? std::string (bundlePath) : std::string ("")),
 	sz (1.0),
 	bgImageSurface (nullptr), forge (), urids (), map (NULL)

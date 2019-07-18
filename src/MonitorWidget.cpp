@@ -19,23 +19,30 @@
  */
 
  #include "MonitorWidget.hpp"
+ #include <cmath>
 
 MonitorWidget::MonitorWidget () : MonitorWidget (0, 0, 0, 0, "monitor") {}
 
 MonitorWidget::MonitorWidget (const double x, const double y, const double width, const double height, const std::string& name) :
         Widget (x, y, width, height, name),
-        fgColors (BColors::whites), zoom (1)
+        fgColors (BColors::whites), zoom (2), pat (nullptr)
 {
         clear ();
         clickable = false;
+        makePattern ();
 }
 
-void MonitorWidget::clear () {data.fill (0);}
+MonitorWidget::~MonitorWidget ()
+{
+        if (pat) cairo_pattern_destroy (pat);
+}
 
-void MonitorWidget::addData (const uint pos, const double value)
+void MonitorWidget::clear () {data.fill ({0.0f, 0.0f});}
+
+void MonitorWidget::addData (const uint pos, const Range range)
 {
         uint nr = LIMIT (pos, 0, MONITORBUFFERSIZE - 1);
-        data[nr] = value;
+        data[nr] = range;
 }
 
 void MonitorWidget::setZoom (const double factor)
@@ -49,11 +56,13 @@ void MonitorWidget::redrawRange (const uint start, const uint end)
 {
         double xabs = getOriginX ();
         double yabs = getOriginY ();
-        double x1 = width_ * start / (MONITORBUFFERSIZE - 1);
-        double w1 = width_ * (end - start) / (MONITORBUFFERSIZE - 1);
+        uint s = LIMIT (int (start) - 1, 0, MONITORBUFFERSIZE - 1);
+        uint e = LIMIT (end + 1, 0, MONITORBUFFERSIZE - 1);
+        double x1 = width_ * s / (MONITORBUFFERSIZE - 1);
+        double w = width_ * (e - s) / (MONITORBUFFERSIZE - 1);
 
-        draw (x1, 0, w1, height_);
-        if (isVisible ()) postRedisplay (xabs + x1, yabs, w1, height_);
+        drawData (s, e);
+        if (isVisible ()) postRedisplay (xabs + x1, yabs, w, height_);
 }
 
 void MonitorWidget::applyTheme (BStyles::Theme& theme) {applyTheme (theme, name_);}
@@ -70,45 +79,77 @@ void MonitorWidget::applyTheme (BStyles::Theme& theme, const std::string& name)
 	}
 }
 
-void MonitorWidget::drawData (cairo_t* cr, const double x, const double y, const double width, const double height)
+void MonitorWidget::update ()
 {
-        int start = x / width_ * (MONITORBUFFERSIZE - 1) - 1;
-        int end = (x + width) / width_ * (MONITORBUFFERSIZE - 1) + 1;
-        start = LIMIT (start, 0, MONITORBUFFERSIZE - 1);
-        end = LIMIT (end, 0, MONITORBUFFERSIZE - 1);
-
-        cairo_set_line_width (cr, 1.5);
-        cairo_move_to (cr, width_ * double (start) / (MONITORBUFFERSIZE - 1), height_ * (0.5  - (0.48 * LIMIT ((data[start] / zoom), -1, 1))));
-        for (int i = start + 1; (i < MONITORBUFFERSIZE) && (i <= end); ++i)
-        {
-                cairo_line_to (cr, width_ * double (i) / (MONITORBUFFERSIZE - 1), height_ * (0.5  - (0.48 * LIMIT ((data[i] / zoom), -1, 1))));
-        }
-        cairo_stroke (cr);
+        makePattern ();
+        Widget::update ();
 }
 
-void MonitorWidget::draw (const double x, const double y, const double width, const double height)
+void MonitorWidget::makePattern ()
+{
+        if (pat) cairo_pattern_destroy (pat);
+        pat = cairo_pattern_create_linear (0, 0, 0, height_);
+        BColors::Color col = *fgColors.getColor (getState ());
+        cairo_pattern_add_color_stop_rgba (pat, 1, col.getRed (), col.getGreen (), col.getBlue (), 0.6 * col.getAlpha ());
+        cairo_pattern_add_color_stop_rgba (pat, 0.5, col.getRed (), col.getGreen (), col.getBlue (), 0.1 * col.getAlpha ());
+        cairo_pattern_add_color_stop_rgba (pat, 0, col.getRed (), col.getGreen (), col.getBlue (), 0.6 * col.getAlpha ());
+}
+
+void MonitorWidget::drawData (const uint start, const uint end)
 {
         if ((!widgetSurface) || (cairo_surface_status (widgetSurface) != CAIRO_STATUS_SUCCESS)) return;
 
-	// Draw super class widget elements first
-	// Widget::draw (x, y, width, height);
-
+        BColors::Color col = *fgColors.getColor (getState ());
 	cairo_t* cr = cairo_create (widgetSurface);
 
 	if (cairo_status (cr) == CAIRO_STATUS_SUCCESS)
 	{
 		// Limit cairo-drawing area
                 cairo_set_line_width (cr, 0);
-		cairo_rectangle (cr, x, y, width, height);
+                double x0 = ceil (width_ * start / (MONITORBUFFERSIZE - 1));
+                double x1 = floor (width_ * end / (MONITORBUFFERSIZE - 1));
+		cairo_rectangle (cr, x0, 0, x1 - x0, height_);
 		cairo_clip (cr);
 
 		cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.0);
 		cairo_set_operator (cr, CAIRO_OPERATOR_SOURCE);
 		cairo_paint (cr);
 
-                cairo_set_source_rgba (cr, CAIRO_RGBA ((*fgColors.getColor (getState ()))));
-                drawData (cr, x, y, width, height);
+                cairo_set_line_width (cr, 2);
+                cairo_move_to (cr, width_ * double (start) / (MONITORBUFFERSIZE - 1), height_ * (0.5  - (0.48 * LIMIT ((data[start].max / zoom), -1, 1))));
+                for (int i = start + 1; i <= int (end); ++i)
+                {
+                        cairo_line_to (cr, width_ * double (i) / (MONITORBUFFERSIZE - 1), height_ * (0.5  - (0.48 * LIMIT ((data[i].max / zoom), -1, 1))));
+                }
+                cairo_set_source_rgba (cr, CAIRO_RGBA (col));
+                cairo_stroke_preserve (cr);
+                cairo_set_line_width (cr, 0);
+                cairo_line_to (cr, width_ * double (end) / (MONITORBUFFERSIZE - 1), height_ * 0.5);
+                cairo_line_to (cr, width_ * double (start) / (MONITORBUFFERSIZE - 1), height_ * 0.5);
+                cairo_close_path (cr);
+                cairo_set_source (cr, pat);
+                cairo_fill (cr);
+
+                cairo_set_line_width (cr, 2);
+                cairo_move_to (cr, width_ * double (start) / (MONITORBUFFERSIZE - 1), height_ * (0.5  - (0.48 * LIMIT ((data[start].min / zoom), -1, 1))));
+                for (int i = start + 1; i <= int (end); ++i)
+                {
+                        cairo_line_to (cr, width_ * double (i) / (MONITORBUFFERSIZE - 1), height_ * (0.5  - (0.48 * LIMIT ((data[i].min / zoom), -1, 1))));
+                }
+                cairo_set_source_rgba (cr, CAIRO_RGBA (col));
+                cairo_stroke_preserve (cr);
+                cairo_set_line_width (cr, 0);
+                cairo_line_to (cr, width_ * double (end) / (MONITORBUFFERSIZE - 1), height_ * 0.5);
+                cairo_line_to (cr, width_ * double (start) / (MONITORBUFFERSIZE - 1), height_ * 0.5);
+                cairo_close_path (cr);
+                cairo_set_source (cr, pat);
+                cairo_fill (cr);
 
                 cairo_destroy (cr);
         }
+}
+
+void MonitorWidget::draw (const double x, const double y, const double width, const double height)
+{
+        drawData (0, MONITORBUFFERSIZE - 1);
 }

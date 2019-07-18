@@ -129,7 +129,7 @@ BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 		try {audioBuffer2[i].resize (samplerate);}
 		catch (std::bad_alloc& ba) {throw ba;}
 	}
-	notifications.fill ({0, 0, 0, 0, 0});
+	notifications.fill ({0.0f, {0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}, {0.0f, 0.0f}});
 	fillFilterBuffer (filter1Buffer1, 0);
 	fillFilterBuffer (filter1Buffer2, 0);
 	fillFilterBuffer (filter2Buffer1, 0);
@@ -504,9 +504,10 @@ void BShapr::notifyMonitorToGui()
 		lv2_atom_forge_frame_time(&forge, 0);
 		lv2_atom_forge_object(&forge, &frame, 0, urids.notify_monitorEvent);
 		lv2_atom_forge_key(&forge, urids.notify_monitor);
-		lv2_atom_forge_vector(&forge, sizeof(float), urids.atom_Float, (uint32_t) (5 * notificationsCount), &notifications);
+		lv2_atom_forge_vector(&forge, sizeof(float), urids.atom_Float, (uint32_t) (9 * notificationsCount), &notifications);
 		lv2_atom_forge_pop(&forge, &frame);
 
+		memset (&notifications, 0, notificationsCount * sizeof (BShaprNotifications));
 		notificationsCount = 0;
 	}
 }
@@ -1008,19 +1009,35 @@ void BShapr::play (uint32_t start, uint32_t end)
 		{
 			// Calculate position in monitor
 			int newMonitorPos = pos * MONITORBUFFERSIZE;
+			uint nr = notificationsCount % NOTIFYBUFFERSIZE;
 
 			// Position changed? => Ready to send
 			if (newMonitorPos != monitorPos)
 			{
-				uint nr = notificationsCount % NOTIFYBUFFERSIZE;
+				uint next = (notificationsCount + 1) % NOTIFYBUFFERSIZE;
 				notifications[nr].position = newMonitorPos;
-				notifications[nr].input1 = audioInput1[i];
-				notifications[nr].output1 = output1;
-				notifications[nr].input2 = audioInput2[i];
-				notifications[nr].output2 = output2;
-
+				notifications[next].input1.min = audioInput1[i];
+				notifications[next].input1.max = audioInput1[i];
+				notifications[next].output1.min = output1;
+				notifications[next].output1.max = output1;
+				notifications[next].input2.min = audioInput2[i];
+				notifications[next].input2.max = audioInput2[i];
+				notifications[next].output2.min = output2;
+				notifications[next].output2.max = output2;
 				monitorPos = newMonitorPos;
 				++notificationsCount;
+			}
+
+			else
+			{
+				if (notifications[nr].input1.min > audioInput1[i]) notifications[nr].input1.min = audioInput1[i];
+				if (notifications[nr].input1.max < audioInput1[i]) notifications[nr].input1.max = audioInput1[i];
+				if (notifications[nr].output1.min > output1) notifications[nr].output1.min = output1;
+				if (notifications[nr].output1.max < output1) notifications[nr].output1.max = output1;
+				if (notifications[nr].input2.min > audioInput2[i]) notifications[nr].input2.min = audioInput2[i];
+				if (notifications[nr].input2.max < audioInput2[i]) notifications[nr].input2.max = audioInput2[i];
+				if (notifications[nr].output2.min > output2) notifications[nr].output2.min = output2;
+				if (notifications[nr].output2.max < output2) notifications[nr].output2.max = output2;
 			}
 		}
 
