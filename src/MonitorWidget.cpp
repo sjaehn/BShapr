@@ -25,7 +25,7 @@ MonitorWidget::MonitorWidget () : MonitorWidget (0, 0, 0, 0, "monitor") {}
 
 MonitorWidget::MonitorWidget (const double x, const double y, const double width, const double height, const std::string& name) :
         Widget (x, y, width, height, name),
-        fgColors (BColors::whites), zoom (2), pat (nullptr)
+        fgColors (BColors::whites), zoom (0.25), pat (nullptr)
 {
         clear ();
         clickable = false;

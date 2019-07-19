@@ -163,6 +163,7 @@ private:
 	Message message;
 	int monitorPos;
 	uint notificationsCount;
+	float stepCount;
 	std::array<BShaprNotifications, NOTIFYBUFFERSIZE> notifications;
 	bool scheduleNotifyShapes[MAXSHAPES];
 	bool scheduleNotifyStatus;

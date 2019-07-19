@@ -116,7 +116,8 @@ BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 	position(0), refFrame(0),
 	audioInput1(NULL), audioInput2(NULL), audioOutput1(NULL), audioOutput2(NULL),
 	urids (), controlPort(NULL), notifyPort(NULL), forge (), notify_frame (),
-	ui_on(false), message (), monitorPos(-1), notificationsCount(0), scheduleNotifyStatus (true)
+	ui_on(false), message (), monitorPos(-1), notificationsCount(0), stepCount (0),
+	scheduleNotifyStatus (true)
 
 {
 	for (int i = 0; i < MAXSHAPES; ++i)
@@ -509,6 +510,7 @@ void BShapr::notifyMonitorToGui()
 
 		memset (&notifications, 0, notificationsCount * sizeof (BShaprNotifications));
 		notificationsCount = 0;
+		stepCount = 0;
 	}
 }
 
@@ -1011,34 +1013,41 @@ void BShapr::play (uint32_t start, uint32_t end)
 			int newMonitorPos = pos * MONITORBUFFERSIZE;
 			uint nr = notificationsCount % NOTIFYBUFFERSIZE;
 
-			// Position changed? => Ready to send
+			notifications[nr].position = newMonitorPos;
+
+			// Position changed? => Next nr
 			if (newMonitorPos != monitorPos)
 			{
-				uint next = (notificationsCount + 1) % NOTIFYBUFFERSIZE;
-				notifications[nr].position = newMonitorPos;
-				notifications[next].input1.min = audioInput1[i];
-				notifications[next].input1.max = audioInput1[i];
-				notifications[next].output1.min = output1;
-				notifications[next].output1.max = output1;
-				notifications[next].input2.min = audioInput2[i];
-				notifications[next].input2.max = audioInput2[i];
-				notifications[next].output2.min = output2;
-				notifications[next].output2.max = output2;
-				monitorPos = newMonitorPos;
 				++notificationsCount;
+				stepCount = 0;
+				nr = notificationsCount % NOTIFYBUFFERSIZE;
+				memset(&notifications[nr], 0, sizeof (BShaprNotifications));
+				monitorPos = newMonitorPos;
 			}
 
-			else
-			{
-				if (notifications[nr].input1.min > audioInput1[i]) notifications[nr].input1.min = audioInput1[i];
-				if (notifications[nr].input1.max < audioInput1[i]) notifications[nr].input1.max = audioInput1[i];
-				if (notifications[nr].output1.min > output1) notifications[nr].output1.min = output1;
-				if (notifications[nr].output1.max < output1) notifications[nr].output1.max = output1;
-				if (notifications[nr].input2.min > audioInput2[i]) notifications[nr].input2.min = audioInput2[i];
-				if (notifications[nr].input2.max < audioInput2[i]) notifications[nr].input2.max = audioInput2[i];
-				if (notifications[nr].output2.min > output2) notifications[nr].output2.min = output2;
-				if (notifications[nr].output2.max < output2) notifications[nr].output2.max = output2;
-			}
+			++stepCount;
+			float fstep = 1 / stepCount;
+			float fprev = (stepCount - 1) * fstep;
+
+			if (audioInput1[i] < 0) notifications[nr].input1.min = fprev * notifications[nr].input1.min + fstep * audioInput1[i];
+			else notifications[nr].input1.max = fprev * notifications[nr].input1.max + fstep * audioInput1[i];
+			if (output1 < 0) notifications[nr].output1.min = fprev * notifications[nr].output1.min + fstep * output1;
+			else notifications[nr].output1.max = fprev * notifications[nr].output1.max + fstep * output1;
+			if (audioInput2[i] < 0) notifications[nr].input2.min = fprev * notifications[nr].input2.min + fstep * audioInput2[i];
+			else notifications[nr].input2.max = fprev * notifications[nr].input2.max + fstep * audioInput2[i];
+			if (output2 < 0) notifications[nr].output2.min = fprev * notifications[nr].output2.min + fstep * output2;
+			else notifications[nr].output2.max = fprev * notifications[nr].output2.max + fstep * output2;
+
+			/*
+			if (notifications[nr].input1.min > audioInput1[i]) notifications[nr].input1.min = audioInput1[i];
+			if (notifications[nr].input1.max < audioInput1[i]) notifications[nr].input1.max = audioInput1[i];
+			if (notifications[nr].output1.min > output1) notifications[nr].output1.min = output1;
+			if (notifications[nr].output1.max < output1) notifications[nr].output1.max = output1;
+			if (notifications[nr].input2.min > audioInput2[i]) notifications[nr].input2.min = audioInput2[i];
+			if (notifications[nr].input2.max < audioInput2[i]) notifications[nr].input2.max = audioInput2[i];
+			if (notifications[nr].output2.min > output2) notifications[nr].output2.min = output2;
+			if (notifications[nr].output2.max < output2) notifications[nr].output2.max = output2;
+			*/
 		}
 
 		// Store in audio out

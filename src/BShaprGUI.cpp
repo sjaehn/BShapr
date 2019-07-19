@@ -37,7 +37,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	input2Monitor (0, 176, 1152, 176, "monitor.in"),
 	output2Monitor (0, 176, 1152, 176, "monitor.out"),
 
-	horizonPos (0), monitorScale (2), minorXSteps (1.0), majorXSteps (1.0),
+	horizonPos (0), monitorScale (0.25), minorXSteps (1.0), majorXSteps (1.0),
 	pluginPath (bundlePath ? std::string (bundlePath) : std::string ("")),
 	sz (1.0),
 	bgImageSurface (nullptr), forge (), urids (), map (NULL)
@@ -680,7 +680,7 @@ void BShaprGUI::wheelScrolledCallback (BEvents::Event* event)
 		{
 			BShaprGUI* ui = (BShaprGUI*) widget->getMainWindow ();
 
-			ui->monitorScale += 0.01 * we->getDeltaY ();
+			ui->monitorScale = ui->monitorScale * (1 + 0.01 * we->getDeltaY ());
 			if (ui->monitorScale < 0.01) ui->monitorScale = 0.01;
 			ui->input1Monitor.setZoom (ui->monitorScale);
 			ui->output1Monitor.setZoom (ui->monitorScale);
