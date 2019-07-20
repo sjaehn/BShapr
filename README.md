@@ -80,7 +80,7 @@ However, dragging the background results only in dragging the whole **display** 
 scrolling zooms the display in or out.
 
 In the background of the shape editor a stereo monitor visualizes the input and the output levels. You can change
-the zoom by pressing <SHIFT> key AND scrolling the mouse wheel.
+the zoom by pressing SHIFT key AND scrolling the mouse wheel.
 
 ### Method
 
