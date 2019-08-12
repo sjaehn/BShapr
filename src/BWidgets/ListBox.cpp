@@ -126,7 +126,7 @@ void ListBox::updateItems ()
 			if ((n + 1 >= uint (listTop)) && (n + 1 < listTop + lines))
 			{
 				w->moveTo (x0, y0 + upButtonHeight + (n + 1 - listTop) * lineHeight);
-				if (width > w->getWidth ()) w->setWidth (width);
+				w->setWidth (width);
 				w->setHeight (lineHeight);
 
 				if (n + 1 == uint (activeNr)) w->setState (BColors::ACTIVE);

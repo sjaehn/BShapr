@@ -108,9 +108,9 @@ void ItemBox::update ()
 		double w = getEffectiveWidth ();
 		double h = getEffectiveHeight ();
 
-		widget -> moveTo (x0, y0);
-		if (w > widget->getWidth ()) widget->setWidth (w);
-		widget -> setHeight (h);
+		widget->moveTo (x0, y0);
+		widget->setWidth (w);
+		widget->setHeight (h);
 	}
 }
 

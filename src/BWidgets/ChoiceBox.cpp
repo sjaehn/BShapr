@@ -251,7 +251,7 @@ void ChoiceBox::updateItems ()
 			else w->hide ();
 
 			w->moveTo (x0, y0 + upButtonHeight);
-			if (width > w->getWidth ()) w->setWidth (width);
+			w->setWidth (width);
 			w->setHeight (itemHeight);
 		}
 		++n;

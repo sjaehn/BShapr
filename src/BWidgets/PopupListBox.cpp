@@ -168,7 +168,7 @@ void PopupListBox::update ()
 		double h = getEffectiveHeight ();
 
 		widget->moveTo (x0, y0);
-		if (w > w2) widget->setWidth (w2);
+		widget->setWidth (w2);
 		widget->setHeight (h);
 	}
 
