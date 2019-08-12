@@ -46,36 +46,55 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	// Init shapes
 	for (int i = 0; i < MAXSHAPES; ++i)
 	{
-		shapeGui[i].tabIcon = BWidgets::ImageIcon (20 + i * 120, 90, 119, 40, "tab", pluginPath + "Shape" + std::to_string (i + 1) + ".png");
+		shapeGui[i].tabIcon = BWidgets::ImageIcon (20 + i * 120, 90, 119, 40, "tab", pluginPath + "inc/Shape" + std::to_string (i + 1) + ".png");
 
 		shapeGui[i].shapeContainer = BWidgets::Widget (20, 130, 1160, 570, "widget");
 
 		for (int j = 0; j < i; ++j)
 		{
-			shapeGui[i].inputShapeLabelIcons.push_back (
-					BWidgets::ImageIcon (300 + j * 100, 30, 100, 20, "widget", pluginPath + "Shape" + std::to_string (j + 1) + ".png"));
+			shapeGui[i].inputShapeLabelIcons.push_back
+			(
+				BWidgets::ImageIcon (300 + j * 100, 30, 100, 20, "widget", pluginPath + "inc/Shape" + std::to_string (j + 1) + ".png")
+			);
 		}
 
 		shapeGui[i].inputSelect = SelectWidget (100, 20, 200 + i * 100, 40, "tool", 100, 40, 2 + i, 1);
 		shapeGui[i].inputAmpDial = BWidgets::DialValue (330 + shapeGui[i].inputShapeLabelIcons.size() * 100, 14, 50, 56, "dial", 1.0, -1.0, 1.0, 0, "%1.3f");
-		shapeGui[i].targetListBox = BWidgets::PopupListBox (800, 460, 180, 20, 0, -240, 180, 240, "menu",
-								    BItems::ItemList
-									({{0, "Level"},
-									  {5, "Amplification"},
-									  {1, "Balance"},
-									  {2, "Width"},
-									  {3, "Low pass filter"},
-									  {6, "Low pass filter (log)"},
-									  {4, "High pass filter"},
-								 	  {7, "High pass filter (log)"},
-								 	  {8, "Pitch shift"},
-								 	  {9, "Delay (const. pitch)"},
-								 	  {10, "Doppler delay"}}));
+
+		// Method menu
+		BItems::ItemList il;
+		shapeGui[i].methodIcons = {};
+		for (int j = 0; j < MAXEFFECTS; ++j)
+		{
+			shapeGui[i].methodIcons.push_back
+			(
+				BWidgets::ImageIcon
+				(
+					0, 0, 124, 44, "icon",
+					{
+						pluginPath + methodParameters[j].iconFileName,
+						pluginPath + methodParameters[j].iconFileName,
+						pluginPath + methodParameters[j].iconFileName
+					}
+				)
+
+			);
+
+			BWidgets::ImageIcon* icon = &*std::prev (shapeGui[i].methodIcons.end ());
+			cairo_t* cr = cairo_create (icon->getIconSurface (BColors::NORMAL));
+			cairo_set_source_rgba (cr, 0.0, 0.0, 0.0, 0.5);
+			cairo_paint (cr);
+			cairo_destroy (cr);
+
+			il.push_back (BItems::Item (methodParameters[j].value, icon));
+		}
+		shapeGui[i].targetListBox = BWidgets::PopupListBox (800, 448, 144, 44, 0, -380, 124, 380, "menu2", il);
+
 		shapeGui[i].shapeWidget = ShapeWidget (4, 84, 1152, 352, "shape");
 		shapeGui[i].toolSelect = SelectWidget (333, 448, 284, 44, "tool", 44, 44, 5, 1);
 		shapeGui[i].drywetLabel = BWidgets::Label (1020, 484, 50, 16, "smlabel", "dry/wet");
 		shapeGui[i].drywetDial = BWidgets::Dial (1020, 444, 50, 50, "dial", 1.0, 0.0, 1.0, 0);
-		shapeGui[i].shapeLabelIcon = BWidgets::ImageIcon (10, 460, 160, 20, "widget", pluginPath + "Shape" + std::to_string (i + 1) + ".png");
+		shapeGui[i].shapeLabelIcon = BWidgets::ImageIcon (10, 460, 160, 20, "widget", pluginPath + "inc/Shape" + std::to_string (i + 1) + ".png");
 		shapeGui[i].outputSelect = SelectWidget (100, 520, 100, 40, "tool", 100, 40, 1, 1);
 		shapeGui[i].outputAmpDial = BWidgets::DialValue (230, 514, 50, 56, "dial", 1.0, 0.0, 1.0, 0, "%1.3f");
 
@@ -83,7 +102,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].tabIcon.rename ("tab");
 		shapeGui[i].inputSelect.rename ("tool");
 		shapeGui[i].inputAmpDial.rename ("dial");
-		shapeGui[i].targetListBox.rename ("menu");
+		shapeGui[i].targetListBox.rename ("menu2");
 		shapeGui[i].shapeWidget.rename ("shape");
 		shapeGui[i].toolSelect.rename ("tool");
 		shapeGui[i].drywetLabel.rename ("smlabel");
@@ -372,9 +391,9 @@ void BShaprGUI::resizeGUI()
 		RESIZE (shapeGui[i].inputSelect, 100, 20, 200 + i * 100, 40, sz);
 		shapeGui[i].inputSelect.resizeSelection (100 * sz, 40 * sz);
 		RESIZE (shapeGui[i].inputAmpDial, 330 + shapeGui[i].inputShapeLabelIcons.size() * 100, 14, 50, 56, sz);
-		RESIZE (shapeGui[i].targetListBox, 800, 460, 180, 20, sz);
-		shapeGui[i].targetListBox.resizeListBox (180 * sz, 240 * sz);
-		shapeGui[i].targetListBox.moveListBox (0, -240 * sz);
+		RESIZE (shapeGui[i].targetListBox, 800, 448, 144, 44, sz);
+		shapeGui[i].targetListBox.resizeListBox (124 * sz, 380 * sz);
+		shapeGui[i].targetListBox.moveListBox (0, -380 * sz);
 		RESIZE (shapeGui[i].drywetLabel, 1020, 484, 50, 16, sz);
 		RESIZE (shapeGui[i].drywetDial, 1020, 444, 50, 50, sz);
 		RESIZE (shapeGui[i].shapeWidget, 4, 84, 1152, 352, sz);
@@ -410,7 +429,7 @@ void BShaprGUI::applyChildThemes ()
 	{
 		shapeGui[i].shapeContainer.applyTheme (theme);
 		shapeGui[i].tabIcon.applyTheme (theme);
-		for (uint j = 0; j < shapeGui[i].inputShapeLabelIcons.size(); ++j) shapeGui[i].inputShapeLabelIcons[j].applyTheme (theme);
+		//for (uint j = 0; j < shapeGui[i].inputShapeLabelIcons.size(); ++j) shapeGui[i].inputShapeLabelIcons[j].applyTheme (theme);
 		shapeGui[i].inputSelect.applyTheme (theme);
 		shapeGui[i].inputAmpDial.applyTheme (theme);
 		shapeGui[i].inputAmpDial.getDisplayLabel()->setTextColors (lbColors);
@@ -544,14 +563,33 @@ void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 					{
 						int sh = (widgetNr - SHAPERS) / SH_SIZE;
 						int nr = value;
+
+						// Position within the methodParameters array
+						int method = 0;
+						for (int i = 0; i < MAXEFFECTS; ++i)
+						{
+							if (methodParameters[i].value == value)
+							{
+								method = i;
+								break;
+							}
+						}
+
+						// Set default end notes (if not manually set before)
 						if ((ui->shapeGui[sh].shapeWidget.isDefault ()) && (ui->shapeGui[sh].shapeWidget.getNode (0).point.y != defaultEndNodes[nr].point.y))
 						{
 							ui->shapeGui[sh].shapeWidget.setDefaultShape (defaultEndNodes[nr]);
 						}
 
-						ui->shapeGui[sh].shapeWidget.setScaleParameters (scaleParameters[nr].anchorYPos, scaleParameters[nr].anchorValue, scaleParameters[nr].ratio);
-						ui->shapeGui[sh].shapeWidget.setUnit (scaleParameters[nr].unit);
-						ui->shapeGui[sh].shapeWidget.setPrefix (scaleParameters[nr].prefix);
+						// Set shapeWidget display parameters (limits, unit, prefix, ...)
+						ui->shapeGui[sh].shapeWidget.setScaleParameters
+						(
+							methodParameters[method].anchorYPos,
+							methodParameters[method].anchorValue,
+							methodParameters[method].ratio
+						);
+						ui->shapeGui[sh].shapeWidget.setUnit (methodParameters[method].unit);
+						ui->shapeGui[sh].shapeWidget.setPrefix (methodParameters[method].prefix);
 						ui->shapeGui[sh].shapeWidget.setLowerLimit (methodLimits[nr].min);
 						ui->shapeGui[sh].shapeWidget.setHigherLimit (methodLimits[nr].max);
 					}

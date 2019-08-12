@@ -30,8 +30,30 @@ OBJ_EXT = .so
 DSP_OBJ = $(DSP)$(OBJ_EXT)
 GUI_OBJ = $(GUI)$(OBJ_EXT)
 B_OBJECTS = $(addprefix $(BUNDLE)/, $(DSP_OBJ) $(GUI_OBJ))
-FILES = manifest.ttl BShapr.ttl surface.png Shape1.png Shape2.png Shape3.png Shape4.png LICENSE
-B_FILES = $(addprefix $(BUNDLE)/, $(FILES))
+ROOTFILES = \
+	manifest.ttl \
+	BShapr.ttl \
+	LICENSE
+
+INCFILES = \
+	inc/surface.png \
+	inc/Shape1.png \
+	inc/Shape2.png \
+	inc/Shape3.png \
+	inc/Shape4.png \
+	inc/Level.png \
+	inc/Balance.png \
+	inc/Width.png \
+	inc/Low_pass.png \
+	inc/High_pass.png \
+	inc/Amplify.png \
+	inc/Low_pass_log.png \
+	inc/High_pass_log.png \
+	inc/Pitch_shift.png \
+	inc/Delay.png \
+	inc/Doppler_delay.png
+
+B_FILES = $(addprefix $(BUNDLE)/, $(ROOTFILES) $(INCFILES))
 
 GUI_INCL = \
 	src/MonitorWidget.cpp \
@@ -90,7 +112,9 @@ ifeq ($(shell $(PKG_CONFIG) --exists cairo || echo no), no)
 endif
 
 $(BUNDLE): clean $(DSP_OBJ) $(GUI_OBJ)
-	@cp $(FILES) $(BUNDLE)
+	@cp $(ROOTFILES) $(BUNDLE)
+	@mkdir -p $(BUNDLE)/inc
+	@cp $(INCFILES) $(BUNDLE)/inc
 
 all: $(BUNDLE)
 
@@ -109,22 +133,25 @@ $(GUI_OBJ): $(GUI_SRC)
 install:
 	@echo -n Install $(BUNDLE) to $(DESTDIR)$(LV2DIR)...
 	@$(INSTALL) -d $(DESTDIR)$(LV2DIR)/$(BUNDLE)
+	@$(INSTALL) -d $(DESTDIR)$(LV2DIR)/$(BUNDLE)/inc
 	@$(INSTALL_PROGRAM) -m755 $(B_OBJECTS) $(DESTDIR)$(LV2DIR)/$(BUNDLE)
-	@$(INSTALL_DATA) $(B_FILES) $(DESTDIR)$(LV2DIR)/$(BUNDLE)
-	@cp -R $(BUNDLE) $(DESTDIR)$(LV2DIR)
+	@$(INSTALL_DATA) $(addprefix $(BUNDLE)/, $(ROOTFILES)) $(DESTDIR)$(LV2DIR)/$(BUNDLE)
+	@$(INSTALL_DATA) $(addprefix $(BUNDLE)/, $(INCFILES)) $(DESTDIR)$(LV2DIR)/$(BUNDLE)/inc
 	@echo \ done.
 
 install-strip:
 	@echo -n "Install (stripped)" $(BUNDLE) to $(DESTDIR)$(LV2DIR)...
 	@$(INSTALL) -d $(DESTDIR)$(LV2DIR)/$(BUNDLE)
+	@$(INSTALL) -d $(DESTDIR)$(LV2DIR)/$(BUNDLE)/inc
 	@$(INSTALL_PROGRAM) -m755 $(STRIPFLAGS) $(B_OBJECTS) $(DESTDIR)$(LV2DIR)/$(BUNDLE)
-	@$(INSTALL_DATA) $(B_FILES) $(DESTDIR)$(LV2DIR)/$(BUNDLE)
-	@cp -R $(BUNDLE) $(DESTDIR)$(LV2DIR)
+	@$(INSTALL_DATA) $(addprefix $(BUNDLE)/, $(ROOTFILES)) $(DESTDIR)$(LV2DIR)/$(BUNDLE)
+	@$(INSTALL_DATA) $(addprefix $(BUNDLE)/, $(INCFILES)) $(DESTDIR)$(LV2DIR)/$(BUNDLE)/inc
 	@echo \ done.
 
 uninstall:
 	@echo -n Uninstall $(BUNDLE)...
-	@rm -f $(addprefix $(DESTDIR)$(LV2DIR)/$(BUNDLE)/, $(FILES))
+	@rm -f $(addprefix $(DESTDIR)$(LV2DIR)/$(BUNDLE)/, $(ROOTFILES) $(INCFILES))
+	-@rmdir $(DESTDIR)$(LV2DIR)/$(BUNDLE)/inc
 	@rm -f $(DESTDIR)$(LV2DIR)/$(BUNDLE)/$(GUI_OBJ)
 	@rm -f $(DESTDIR)$(LV2DIR)/$(BUNDLE)/$(DSP_OBJ)
 	-@rmdir $(DESTDIR)$(LV2DIR)/$(BUNDLE)
