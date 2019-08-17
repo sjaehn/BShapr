@@ -105,7 +105,6 @@ the signal will only be used internally.
 
 * Additional methods (any ideas welcome)
 * Display additional configuration parameters for methods
-* MIDI trigger
 * Copy & paste nodes
 
 ## See also

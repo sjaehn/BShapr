@@ -24,6 +24,7 @@
 #include <lv2/lv2plug.in/ns/lv2core/lv2.h>
 #include <lv2/lv2plug.in/ns/ext/atom/util.h>
 #include <lv2/lv2plug.in/ns/ext/urid/urid.h>
+#include <lv2/lv2plug.in/ns/ext/midi/midi.h>
 #include <lv2/lv2plug.in/ns/ext/time/time.h>
 #include "definitions.h"
 
@@ -37,6 +38,7 @@ typedef struct
 	LV2_URID atom_eventTransfer;
 	LV2_URID atom_Vector;
 	LV2_URID atom_String;
+	LV2_URID midi_Event;
 	LV2_URID time_Position;
 	LV2_URID time_barBeat;
 	LV2_URID time_bar;
@@ -71,6 +73,7 @@ void mapURIDs (LV2_URID_Map* m, BShaprURIDs* uris)
 	uris->atom_eventTransfer = m->map(m->handle, LV2_ATOM__eventTransfer);
 	uris->atom_Vector = m->map(m->handle, LV2_ATOM__Vector);
 	uris->atom_String = m->map(m->handle, LV2_ATOM__String);
+	uris->midi_Event = m->map(m->handle, LV2_MIDI__MidiEvent);
 	uris->time_Position = m->map(m->handle, LV2_TIME__Position);
 	uris->time_barBeat = m->map(m->handle, LV2_TIME__barBeat);
 	uris->time_bar = m->map(m->handle, LV2_TIME__bar);

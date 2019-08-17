@@ -113,9 +113,10 @@ bool Message::isScheduled () {return scheduled;}
 BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 	map(NULL),
 	rate(samplerate), bpm(120.0f), speed(1), bar (0), barBeat (0), beatsPerBar (4), beatUnit (4),
-	position(0), refFrame(0),
+	position(0), offset(0), refFrame(0),
 	audioInput1(NULL), audioInput2(NULL), audioOutput1(NULL), audioOutput2(NULL),
 	urids (), controlPort(NULL), notifyPort(NULL), forge (), notify_frame (),
+	key (0xFF),
 	ui_on(false), message (), monitorPos(-1), notificationsCount(0), stepCount (0),
 	scheduleNotifyStatus (true)
 
@@ -262,7 +263,19 @@ void BShapr::run (uint32_t n_samples)
 			{
 				newValue = validateValue (*new_controllers[i], globalControllerLimits[i]);
 
-				if (i == BASE)
+				if (i == MIDI_CONTROL)
+				{
+					if (newValue == 0.0f)
+					{
+						// Hard set position back to offset-independent position
+						position = floorfrac (position + offset);
+						offset = 0;
+					}
+
+					else key = 0xFF;
+				}
+
+				else if (i == BASE)
 				{
 					if (newValue == SECONDS)
 					{
@@ -313,7 +326,57 @@ void BShapr::run (uint32_t n_samples)
 	uint32_t last_t = 0;
 	LV2_ATOM_SEQUENCE_FOREACH (controlPort, ev)
 	{
-		if ((ev->body.type == urids.atom_Object) || (ev->body.type == urids.atom_Blank))
+		// Read incoming MIDI events
+		if (ev->body.type == urids.midi_Event)
+		{
+			if (controllers[MIDI_CONTROL] == 1.0f)
+			{
+				const uint8_t* const msg = (const uint8_t*)(ev + 1);
+				uint8_t typ = lv2_midi_message_type(msg);
+				// uint8_t chn = msg[0] & 0x0F;
+				uint8_t note = msg[1];
+				uint32_t filter = controllers[MIDI_KEYS];
+
+				switch (typ)
+				{
+					case LV2_MIDI_MSG_NOTE_ON:
+					{
+						if (filter & (1 << (note % 12)))
+						{
+							key = note;
+							offset = position;
+							position = 0;
+							refFrame = ev->time.frames;
+						}
+					}
+					break;
+
+					case LV2_MIDI_MSG_NOTE_OFF:
+					{
+						if (key == note)
+						{
+							key = 0xFF;
+						}
+					}
+					break;
+
+					case LV2_MIDI_MSG_CONTROLLER:
+					{
+						if ((note == LV2_MIDI_CTL_ALL_NOTES_OFF) ||
+						    (note == LV2_MIDI_CTL_ALL_SOUNDS_OFF))
+						{
+							key = 0xFF;
+						}
+					}
+					break;
+
+					default: break;
+				}
+			}
+		}
+
+		// Read all other events
+		else if ((ev->body.type == urids.atom_Object) || (ev->body.type == urids.atom_Blank))
 		{
 			const LV2_Atom_Object* obj = (const LV2_Atom_Object*)&ev->body;
 
@@ -466,19 +529,20 @@ void BShapr::run (uint32_t n_samples)
 
 				if (scheduleUpdatePosition)
 				{
+					// Hard set new position if new data received
 					double pos = getPositionFromBeats (barBeat + beatsPerBar * bar);
-					position = floorfrac (pos);
+					position = floorfrac (pos - offset);
 					refFrame = ev->time.frames;
 				}
 			}
 		}
 
-		play(last_t, ev->time.frames);
+		play (last_t, ev->time.frames);
 		last_t = ev->time.frames;
 	}
 
 	// Play remaining samples
-	if (last_t < n_samples) play(last_t, n_samples);
+	if (last_t < n_samples) play (last_t, n_samples);
 
 	// Update position in case of no new barBeat submitted on next call
 	double relpos = getPositionFromFrames (n_samples - refFrame);	// Position relative to reference frame
@@ -488,12 +552,12 @@ void BShapr::run (uint32_t n_samples)
 	// Send collected data to GUI
 	if (ui_on)
 	{
-		notifyMonitorToGui();
+		notifyMonitorToGui ();
 		for (int i = 0; i < MAXSHAPES; ++i) if (scheduleNotifyShapes[i]) notifyShapeToGui (i);
 		if (message.isScheduled ()) notifyMessageToGui ();
 		if (scheduleNotifyStatus) notifyStatusToGui ();
 	}
-	lv2_atom_forge_pop(&forge, &notify_frame);
+	lv2_atom_forge_pop (&forge, &notify_frame);
 }
 
 void BShapr::notifyMonitorToGui()
@@ -900,108 +964,113 @@ void BShapr::play (uint32_t start, uint32_t end)
 		double relpos = getPositionFromFrames (i - refFrame);	// Position relative to reference frame
 		double pos = floorfrac (position + relpos);				// 0..1 position
 
-		float input1;
-		float input2;
 		float output1 = 0;
 		float output2 = 0;
-		float shapeOutput1[MAXSHAPES];
-		memset (shapeOutput1, 0, MAXSHAPES * sizeof (float));
-		float shapeOutput2[MAXSHAPES];
-		memset (shapeOutput2, 0, MAXSHAPES * sizeof (float));
 
-		for (int sh = 0; sh < MAXSHAPES; ++sh)
+		// Audio calculations only if MIDI-independent or key pressed
+		if ((controllers[MIDI_CONTROL] == 0.0f) || (key != 0xFF))
 		{
-			if (controllers[SHAPERS + sh * SH_SIZE + SH_INPUT] != BShaprInputIndex::OFF)
+			float input1;
+			float input2;
+			float shapeOutput1[MAXSHAPES];
+			memset (shapeOutput1, 0, MAXSHAPES * sizeof (float));
+			float shapeOutput2[MAXSHAPES];
+			memset (shapeOutput2, 0, MAXSHAPES * sizeof (float));
+
+			for (int sh = 0; sh < MAXSHAPES; ++sh)
 			{
-				// Connect to shaper input
-				switch (int (controllers[SHAPERS + sh * SH_SIZE + SH_INPUT]))
+				if (controllers[SHAPERS + sh * SH_SIZE + SH_INPUT] != BShaprInputIndex::OFF)
 				{
-					case BShaprInputIndex::AUDIO_IN:
-						input1 = audioInput1[i] * controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_AMP];
-						input2 = audioInput2[i] * controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_AMP];
-						break;
+					// Connect to shaper input
+					switch (int (controllers[SHAPERS + sh * SH_SIZE + SH_INPUT]))
+					{
+						case BShaprInputIndex::AUDIO_IN:
+							input1 = audioInput1[i] * controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_AMP];
+							input2 = audioInput2[i] * controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_AMP];
+							break;
 
-					case BShaprInputIndex::CONSTANT:
-						input1 = controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_AMP];
-						input2 = controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_AMP];
-						break;
+						case BShaprInputIndex::CONSTANT:
+							input1 = controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_AMP];
+							input2 = controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_AMP];
+							break;
 
-					default:
-						if ((controllers[SHAPERS + sh * SH_SIZE + SH_INPUT] >= BShaprInputIndex::OUTPUT) &&
-									(controllers[SHAPERS + sh * SH_SIZE + SH_INPUT] < BShaprInputIndex::OUTPUT + MAXSHAPES))
-						{
-							int inputSh = controllers[SHAPERS + sh * SH_SIZE + SH_INPUT] - BShaprInputIndex::OUTPUT;
-							input1 = shapeOutput1[inputSh] * controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_AMP];
-							input2 = shapeOutput2[inputSh] * controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_AMP];
-						}
-						else
-						{
-							input1 = 0;
-							input2 = 0;
-						}
-				}
+						default:
+							if ((controllers[SHAPERS + sh * SH_SIZE + SH_INPUT] >= BShaprInputIndex::OUTPUT) &&
+										(controllers[SHAPERS + sh * SH_SIZE + SH_INPUT] < BShaprInputIndex::OUTPUT + MAXSHAPES))
+							{
+								int inputSh = controllers[SHAPERS + sh * SH_SIZE + SH_INPUT] - BShaprInputIndex::OUTPUT;
+								input1 = shapeOutput1[inputSh] * controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_AMP];
+								input2 = shapeOutput2[inputSh] * controllers[SHAPERS + sh * SH_SIZE + SH_INPUT_AMP];
+							}
+							else
+							{
+								input1 = 0;
+								input2 = 0;
+							}
+					}
 
-				// Get shaper value for the actual position
-				float iFactor = shapes[sh].getMapValue (pos);
-				float drywet = controllers[SHAPERS + sh * SH_SIZE + SH_DRY_WET];
-				float wet1 = 0;
-				float wet2 = 0;
+					// Get shaper value for the actual position
+					float iFactor = shapes[sh].getMapValue (pos);
+					float drywet = controllers[SHAPERS + sh * SH_SIZE + SH_DRY_WET];
+					float wet1 = 0;
+					float wet2 = 0;
 
-				// Apply shaper on target
-				switch (int (controllers[SHAPERS + sh * SH_SIZE + SH_TARGET]))
-				{
-					case BShaprTargetIndex::LEVEL:
-						audioLevel (input1, input2, &wet1, &wet2, iFactor);
-						break;
+					// Apply shaper on target
+					switch (int (controllers[SHAPERS + sh * SH_SIZE + SH_TARGET]))
+					{
+						case BShaprTargetIndex::LEVEL:
+							audioLevel (input1, input2, &wet1, &wet2, iFactor);
+							break;
 
-					case BShaprTargetIndex::GAIN:
-						audioLevel (input1, input2, &wet1, &wet2, pow (10, 0.05 * (LIM (iFactor, methodLimits[GAIN].min, methodLimits[GAIN].max))));
-						break;
+						case BShaprTargetIndex::GAIN:
+							audioLevel (input1, input2, &wet1, &wet2, pow (10, 0.05 * (LIM (iFactor, methodLimits[GAIN].min, methodLimits[GAIN].max))));
+							break;
 
-					case BShaprTargetIndex::BALANCE:
-						stereoBalance (input1, input2, &wet1, &wet2, iFactor);
-						break;
+						case BShaprTargetIndex::BALANCE:
+							stereoBalance (input1, input2, &wet1, &wet2, iFactor);
+							break;
 
-					case BShaprTargetIndex::WIDTH:
-						stereoWidth (input1, input2, &wet1, &wet2, iFactor);
-						break;
+						case BShaprTargetIndex::WIDTH:
+							stereoWidth (input1, input2, &wet1, &wet2, iFactor);
+							break;
 
-					case BShaprTargetIndex::LOW_PASS:
-						lowPassFilter (input1, input2, &wet1, &wet2, iFactor, sh);
-						break;
+						case BShaprTargetIndex::LOW_PASS:
+							lowPassFilter (input1, input2, &wet1, &wet2, iFactor, sh);
+							break;
 
-					case BShaprTargetIndex::LOW_PASS_LOG:
-						lowPassFilter (input1, input2, &wet1, &wet2, pow (10, LIM (iFactor, methodLimits[LOW_PASS_LOG].min, methodLimits[LOW_PASS_LOG].max)), sh);
-						break;
+						case BShaprTargetIndex::LOW_PASS_LOG:
+							lowPassFilter (input1, input2, &wet1, &wet2, pow (10, LIM (iFactor, methodLimits[LOW_PASS_LOG].min, methodLimits[LOW_PASS_LOG].max)), sh);
+							break;
 
-					case BShaprTargetIndex::HIGH_PASS:
-						highPassFilter (input1, input2, &wet1, &wet2, iFactor, sh);
-						break;
+						case BShaprTargetIndex::HIGH_PASS:
+							highPassFilter (input1, input2, &wet1, &wet2, iFactor, sh);
+							break;
 
-					case BShaprTargetIndex::HIGH_PASS_LOG:
-						highPassFilter (input1, input2, &wet1, &wet2, pow (10, LIM (iFactor, methodLimits[HIGH_PASS_LOG].min, methodLimits[HIGH_PASS_LOG].max)), sh);
-						break;
+						case BShaprTargetIndex::HIGH_PASS_LOG:
+							highPassFilter (input1, input2, &wet1, &wet2, pow (10, LIM (iFactor, methodLimits[HIGH_PASS_LOG].min, methodLimits[HIGH_PASS_LOG].max)), sh);
+							break;
 
-					case BShaprTargetIndex::PITCH:
-						pitch (input1, input2, &wet1, &wet2, iFactor, sh);
-						break;
+						case BShaprTargetIndex::PITCH:
+							pitch (input1, input2, &wet1, &wet2, iFactor, sh);
+							break;
 
-					case BShaprTargetIndex::DELAY:
-						delay (input1, input2, &wet1, &wet2, iFactor, sh);
-						break;
+						case BShaprTargetIndex::DELAY:
+							delay (input1, input2, &wet1, &wet2, iFactor, sh);
+							break;
 
-					case BShaprTargetIndex::DOPPLER:
-						doppler (input1, input2, &wet1, &wet2, iFactor, sh);
-						break;
-				}
+						case BShaprTargetIndex::DOPPLER:
+							doppler (input1, input2, &wet1, &wet2, iFactor, sh);
+							break;
+					}
 
-				shapeOutput1[sh] = (1 - drywet) * input1 + drywet * wet1;
-				shapeOutput2[sh] = (1 - drywet) * input2 + drywet * wet2;
+					shapeOutput1[sh] = (1 - drywet) * input1 + drywet * wet1;
+					shapeOutput2[sh] = (1 - drywet) * input2 + drywet * wet2;
 
-				if (controllers[SHAPERS + sh * SH_SIZE + SH_OUTPUT] == BShaprOutputIndex::AUDIO_OUT)
-				{
-					output1 += shapeOutput1[sh] * controllers[SHAPERS + sh * SH_SIZE + SH_OUTPUT_AMP];
-					output2 += shapeOutput2[sh] * controllers[SHAPERS + sh * SH_SIZE + SH_OUTPUT_AMP];
+					if (controllers[SHAPERS + sh * SH_SIZE + SH_OUTPUT] == BShaprOutputIndex::AUDIO_OUT)
+					{
+						output1 += shapeOutput1[sh] * controllers[SHAPERS + sh * SH_SIZE + SH_OUTPUT_AMP];
+						output2 += shapeOutput2[sh] * controllers[SHAPERS + sh * SH_SIZE + SH_OUTPUT_AMP];
+					}
 				}
 			}
 		}
@@ -1037,17 +1106,6 @@ void BShapr::play (uint32_t start, uint32_t end)
 			else notifications[nr].input2.max = fprev * notifications[nr].input2.max + fstep * audioInput2[i];
 			if (output2 < 0) notifications[nr].output2.min = fprev * notifications[nr].output2.min + fstep * output2;
 			else notifications[nr].output2.max = fprev * notifications[nr].output2.max + fstep * output2;
-
-			/*
-			if (notifications[nr].input1.min > audioInput1[i]) notifications[nr].input1.min = audioInput1[i];
-			if (notifications[nr].input1.max < audioInput1[i]) notifications[nr].input1.max = audioInput1[i];
-			if (notifications[nr].output1.min > output1) notifications[nr].output1.min = output1;
-			if (notifications[nr].output1.max < output1) notifications[nr].output1.max = output1;
-			if (notifications[nr].input2.min > audioInput2[i]) notifications[nr].input2.min = audioInput2[i];
-			if (notifications[nr].input2.max < audioInput2[i]) notifications[nr].input2.max = audioInput2[i];
-			if (notifications[nr].output2.min > output2) notifications[nr].output2.min = output2;
-			if (notifications[nr].output2.max < output2) notifications[nr].output2.max = output2;
-			*/
 		}
 
 		// Store in audio out

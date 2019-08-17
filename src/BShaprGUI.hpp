@@ -42,6 +42,8 @@
 #include "BWidgets/Dial.hpp"
 #include "BWidgets/DialValue.hpp"
 #include "BWidgets/PopupListBox.hpp"
+#include "BWidgets/VSwitch.hpp"
+#include "BWidgets/HPianoRoll.hpp"
 #include "ShapeWidget.hpp"
 #include "ValueSelect.hpp"
 #include "HorizonWidget.hpp"
@@ -120,6 +122,7 @@ public:
 	static void toolChangedCallback (BEvents::Event* event);
 	static void tabClickedCallback (BEvents::Event* event);
 	static void wheelScrolledCallback (BEvents::Event* event);
+	static void pianoCallback (BEvents::Event* event);
 
 
 private:
@@ -139,6 +142,8 @@ private:
 	// Widgets
 	BWidgets::ImageIcon mContainer;
 	BWidgets::Label messageLabel;
+	BWidgets::VSwitch midiSwitch;
+	BWidgets::HPianoRoll midiPiano;
 	ValueSelect baseValueSelect;
 	BWidgets::PopupListBox baseListBox;
 	BWidgets::Widget monitorContainer;

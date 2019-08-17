@@ -45,16 +45,24 @@
 #define PITCHFADERTIME 2
 #define DELAYBUFFERTIME 20
 
-const Limit globalControllerLimits [SHAPERS] = {{0, 2, 1},
-						{1, 16, 0},
-					 	{1, 4, 1}};
+const Limit globalControllerLimits [SHAPERS] =
+{
+	{0, 1, 0},
+	{0, 4095, 0},
+	{0, 2, 1},
+	{1, 16, 0},
+	{1, 4, 1}
+};
 
-const Limit shapeControllerLimits [SH_SIZE] = {{0, 6, 1},
-					       {-1, 1, 0},
-				 	       {0, MAXEFFECTS - 1, 1},
-					       {0, 1, 0},
-				 	       {0, 1, 1},
-				 	       {0, 1, 0}};
+const Limit shapeControllerLimits [SH_SIZE] =
+{
+	{0, 6, 1},
+	{-1, 1, 0},
+	{0, MAXEFFECTS - 1, 1},
+	{0, 1, 0},
+	{0, 1, 1},
+	{0, 1, 0}
+};
 
 struct AudioBuffer
 {
@@ -124,6 +132,7 @@ private:
 	uint32_t beatUnit;
 
 	double position;
+	double offset;
 	uint64_t refFrame;
 
 	// Audio buffers
@@ -157,6 +166,9 @@ private:
 	// Data buffers
 	float nodeBuffer[7];
 	float shapeBuffer[MAXNODES * 7];
+
+	// MIDI
+	uint8_t key;
 
 	// Internals
 	bool ui_on;

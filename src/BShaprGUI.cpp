@@ -27,6 +27,8 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 
 	mContainer (0, 0, 1200, 780, "widget"),
 	messageLabel (600, 45, 600, 20, "label", ""),
+	midiSwitch (880, 150, 20, 40, "dial", 0),
+	midiPiano (980, 150, 140, 40, "widget", 0, 11),
 	baseValueSelect (480, 730, 100, 20, "select", 1.0, 1.0, 16.0, 0.01),
 	baseListBox (620, 730, 100, 20, 0, -80, 100, 80, "menu", BItems::ItemList ({{0, "Seconds"}, {1, "Beats"}, {2, "Bars"}})),
 	monitorContainer (24, 214, 1152, 352, "monitor"),
@@ -116,6 +118,8 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	initMonitors ();
 
 	// Link controllers
+	controllerWidgets[MIDI_CONTROL] = (BWidgets::ValueWidget*) &midiSwitch;
+	controllerWidgets[MIDI_KEYS] = nullptr;
 	controllerWidgets[BASE] = (BWidgets::ValueWidget*) &baseListBox;
 	controllerWidgets[BASE_VALUE] = (BWidgets::ValueWidget*) &baseValueSelect;
 	for (int i = 0; i < MAXSHAPES; ++i)
@@ -129,6 +133,10 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	}
 
 	// Set callbacks
+	midiSwitch.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
+	midiPiano.setCallbackFunction (BEvents::EventType::BUTTON_PRESS_EVENT, BShaprGUI::pianoCallback);
+	midiPiano.setCallbackFunction (BEvents::EventType::BUTTON_RELEASE_EVENT, BShaprGUI::pianoCallback);
+	midiPiano.setCallbackFunction (BEvents::EventType::POINTER_DRAG_EVENT, BShaprGUI::pianoCallback);
 	baseValueSelect.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 	baseListBox.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 	monitorContainer.setCallbackFunction (BEvents::EventType::WHEEL_SCROLL_EVENT, BShaprGUI::wheelScrolledCallback);
@@ -148,6 +156,10 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	// Configure widgets
 	calculateXSteps ();
 	mContainer.loadImage (BColors::NORMAL, pluginPath + BG_FILE);
+	std::vector<bool> keys (12, true);
+	midiPiano.setKeysToggleable (true);
+	midiPiano.pressKeys (keys);
+	midiPiano.hide();
 	monitorContainer.setScrollable (true);
 	shapeGui[0].tabIcon.rename ("activetab");
 	for (uint i = 0; i < MAXSHAPES; ++i)
@@ -190,6 +202,8 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].shapeContainer.add (shapeGui[i].outputAmpDial);
 		mContainer.add (shapeGui[i].shapeContainer);
 	}
+	mContainer.add (midiSwitch);
+	mContainer.add (midiPiano);
 	mContainer.add (messageLabel);
 	mContainer.add (baseValueSelect);
 	mContainer.add (baseListBox);
@@ -213,6 +227,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 
 	// Initialize forge
 	lv2_atom_forge_init (&forge, map);
+
 }
 
 BShaprGUI::~BShaprGUI()
@@ -324,7 +339,6 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 					}
 				}
 			}
-
 		}
 	}
 
@@ -346,12 +360,28 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 			shapeGui[nsh].shapeContainer.show();
 		}
 
+		else if (port == CONTROLLERS + MIDI_KEYS)
+		{
+			uint32_t bits = *pval;
+			std::vector<bool> keys (12, false);
+			for (int i = 0; i < 12; ++i)
+			{
+				if (bits & (1 << i)) keys[i] = true;
+			}
+		}
+
 		else
 		{
 			controllerWidgets[port - CONTROLLERS]->setValue (*pval);
 			controllers[port - CONTROLLERS] = *pval;
 
-			if ((port == CONTROLLERS + BASE) || (port == CONTROLLERS + BASE_VALUE)) calculateXSteps ();
+			if (port == CONTROLLERS + MIDI_CONTROL)
+			{
+				if (*pval == 1.0f) midiPiano.show ();
+				else midiPiano.hide ();
+			}
+
+			else if ((port == CONTROLLERS + BASE) || (port == CONTROLLERS + BASE_VALUE)) calculateXSteps ();
 		}
 	}
 }
@@ -368,6 +398,8 @@ void BShaprGUI::resizeGUI()
 	// Resize widgets
 	RESIZE (mContainer, 0, 0, 1200, 780, sz);
 	RESIZE (messageLabel, 600, 45, 600, 20, sz);
+	RESIZE (midiSwitch, 880, 150, 20, 40, sz);
+	RESIZE (midiPiano, 980, 150, 140, 40, sz);
 	RESIZE (baseValueSelect, 480, 730, 100, 20, sz);
 	RESIZE (baseListBox, 620, 730, 100, 20, sz);
 	baseListBox.resizeListBox (100 * sz, 80 * sz);
@@ -418,6 +450,8 @@ void BShaprGUI::applyChildThemes ()
 {
 	mContainer.applyTheme (theme);
 	messageLabel.applyTheme (theme);
+	midiSwitch.applyTheme (theme);
+	midiPiano.applyTheme (theme);
 	baseValueSelect.applyTheme (theme);
 	baseListBox.applyTheme (theme);
 	monitorContainer.applyTheme (theme);
@@ -555,6 +589,12 @@ void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 			{
 				ui->controllers[widgetNr] = value;
 				ui->write_function(ui->controller, CONTROLLERS + widgetNr, sizeof(float), 0, &ui->controllers[widgetNr]);
+
+				if (widgetNr == MIDI_CONTROL)
+				{
+					if (value == 1.0f) ui->midiPiano.show ();
+					else ui->midiPiano.hide ();
+				}
 
 				if (widgetNr >= SHAPERS)
 				{
@@ -728,6 +768,34 @@ void BShaprGUI::wheelScrolledCallback (BEvents::Event* event)
 	}
 }
 
+void BShaprGUI::pianoCallback (BEvents::Event* event)
+{
+	if ((event) && (event->getWidget ()))
+	{
+		BWidgets::Widget* widget = event->getWidget ();
+
+		if (widget->getMainWindow ())
+		{
+			BShaprGUI* ui = (BShaprGUI*) widget->getMainWindow ();
+
+			std::vector<bool> keys = ui->midiPiano.getPressedKeys ();
+			size_t sz = (keys.size () < 12 ? keys.size () : 12);
+			uint32_t bits = 0;
+
+			for (uint i = 0; i < sz; ++i)
+			{
+				if (keys[i]) bits += (1 << i);
+			}
+
+			if (bits != uint32_t (ui->controllers[MIDI_KEYS]))
+			{
+				ui->controllers[MIDI_KEYS] = bits;
+				ui->write_function(ui->controller, CONTROLLERS + MIDI_KEYS, sizeof(float), 0, &ui->controllers[MIDI_KEYS]);
+			}
+		}
+	}
+}
+
 void BShaprGUI::calculateXSteps ()
 {
 	majorXSteps = 1.0 / controllers[BASE_VALUE];
@@ -735,13 +803,13 @@ void BShaprGUI::calculateXSteps ()
 	switch ((BShaprBaseIndex)controllers[BASE])
 	{
 		case SECONDS:	minorXSteps = majorXSteps / 10.0;
-									break;
+				break;
 
-		case BEATS:		minorXSteps = majorXSteps / (16.0 / ((double)beatUnit));
-									break;
+		case BEATS:	minorXSteps = majorXSteps / (16.0 / ((double)beatUnit));
+				break;
 
-		case BARS:		minorXSteps = majorXSteps / beatsPerBar;
-									break;
+		case BARS:	minorXSteps = majorXSteps / beatsPerBar;
+				break;
 	}
 
 	if (controllers[BASE_VALUE] >= 10.0) minorXSteps = majorXSteps;

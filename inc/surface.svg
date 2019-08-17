@@ -17,7 +17,7 @@
    id="svg969"
    inkscape:version="0.92.3 (2405546, 2018-03-11)"
    sodipodi:docname="surface.svg"
-   inkscape:export-filename="/home/sven/dev/c/BShapr/surface.png"
+   inkscape:export-filename="/home/sven/dev/c/BShapr/inc/surface.png"
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96">
   <defs
@@ -1352,8 +1352,8 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.87916665"
-     inkscape:cx="657.59826"
+     inkscape:zoom="1.2433294"
+     inkscape:cx="790.13625"
      inkscape:cy="388.51204"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
@@ -1741,5 +1741,27 @@
          x="222.90407"
          y="52.713818"
          style="stroke-width:0.26458332">MIDI:</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:6.61458302px;font-family:'Good Times';-inkscape-font-specification:'Good Times';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="240.59303"
+       y="47.59325"
+       id="text1003"><tspan
+         sodipodi:role="line"
+         id="tspan1001"
+         x="240.59303"
+         y="47.59325"
+         style="font-size:3.52777767px;stroke-width:0.26458332">on</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:6.61458302px;font-family:'Good Times';-inkscape-font-specification:'Good Times';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="240.59303"
+       y="55.5625"
+       id="text1007"><tspan
+         sodipodi:role="line"
+         id="tspan1005"
+         x="240.59303"
+         y="55.5625"
+         style="font-size:3.52777767px;stroke-width:0.26458332">off</tspan></text>
   </g>
 </svg>

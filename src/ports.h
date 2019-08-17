@@ -23,40 +23,42 @@
 
 typedef enum
 {
-	CONTROL				= 0,
-	NOTIFY				= 1,
-	AUDIO_IN_1		= 2,
-	AUDIO_IN_2		= 3,
-	AUDIO_OUT_1		= 4,
-	AUDIO_OUT_2		= 5,
+	CONTROL		= 0,
+	NOTIFY		= 1,
+	AUDIO_IN_1	= 2,
+	AUDIO_IN_2	= 3,
+	AUDIO_OUT_1	= 4,
+	AUDIO_OUT_2	= 5,
 
-	CONTROLLERS		= 6,
-	BASE					= 0,
-	BASE_VALUE		= 1,
-	ACTIVE_SHAPE	= 2,
+	CONTROLLERS	= 6,
+	MIDI_CONTROL	= 0,
+	MIDI_KEYS	= 1,
+	BASE		= 2,
+	BASE_VALUE	= 3,
+	ACTIVE_SHAPE	= 4,
 
-	SHAPERS					= 3,
-	SH_INPUT				= 0,
-	SH_INPUT_AMP		= 1,
-	SH_TARGET				= 2,
-	SH_DRY_WET			= 3,
-	SH_OUTPUT				= 4,
-	SH_OUTPUT_AMP		= 5,
-	SH_SIZE					= 6,
+	SHAPERS		= 5,
+	SH_INPUT	= 0,
+	SH_INPUT_AMP	= 1,
+	SH_TARGET	= 2,
+	SH_DRY_WET	= 3,
+	SH_OUTPUT	= 4,
+	SH_OUTPUT_AMP	= 5,
+	SH_SIZE		= 6,
 
-	NR_CONTROLLERS	= 27
+	NR_CONTROLLERS	= 28
 } BShaprPortIndex;
 
 typedef enum
 {
-	SECONDS	= 0,
+	SECONDS		= 0,
 	BEATS		= 1,
 	BARS		= 2
 } BShaprBaseIndex;
 
 typedef enum
 {
-	OFF				= 0,
+	OFF		= 0,
 	AUDIO_IN	= 1,
 	CONSTANT	= 2,
 	OUTPUT		= 3
@@ -64,16 +66,16 @@ typedef enum
 
 typedef enum
 {
-	LEVEL			= 0,
+	LEVEL		= 0,
 	BALANCE		= 1,
-	WIDTH			= 2,
+	WIDTH		= 2,
 	LOW_PASS	= 3,
 	HIGH_PASS	= 4,
-	GAIN			= 5,
+	GAIN		= 5,
 	LOW_PASS_LOG	= 6,
 	HIGH_PASS_LOG	= 7,
-	PITCH			= 8,
-	DELAY			= 9,
+	PITCH		= 8,
+	DELAY		= 9,
 	DOPPLER		= 10
 } BShaprTargetIndex;
 

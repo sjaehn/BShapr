@@ -62,6 +62,8 @@ GUI_INCL = \
 	src/DownClick.cpp \
 	src/UpClick.cpp \
 	src/ShapeWidget.cpp \
+	src/BWidgets/HPianoRoll.cpp \
+	src/BWidgets/PianoWidget.cpp \
 	src/BWidgets/DrawingSurface.cpp \
 	src/BWidgets/PopupListBox.cpp \
 	src/BWidgets/ListBox.cpp \
@@ -73,13 +75,9 @@ GUI_INCL = \
 	src/BWidgets/Button.cpp \
 	src/BWidgets/DialValue.cpp \
 	src/BWidgets/Dial.cpp \
-	src/BWidgets/VSliderValue.cpp \
+	src/BWidgets/VSwitch.cpp \
 	src/BWidgets/VSlider.cpp \
 	src/BWidgets/VScale.cpp \
-	src/BWidgets/HSwitch.cpp \
-	src/BWidgets/HSliderValue.cpp \
-	src/BWidgets/HSlider.cpp \
-	src/BWidgets/HScale.cpp \
 	src/BWidgets/RangeWidget.cpp \
 	src/BWidgets/ValueWidget.cpp \
 	src/BWidgets/Knob.cpp \
