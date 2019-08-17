@@ -59,7 +59,9 @@ a base.
 
 ### MIDI control
 
-Not active yet.
+You can additionally connect B.Shapr to a MIDI input device. Once switched to B.Shapr's MIDI mode,
+you can control B.Shapr by pressing a key on your MIDI input device. In addition, you can select and
+deselect the keys to which B.Shapr shall respond.
 
 ### Shape selector
 

@@ -28,7 +28,8 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	mContainer (0, 0, 1200, 780, "widget"),
 	messageLabel (600, 45, 600, 20, "label", ""),
 	midiSwitch (880, 150, 20, 40, "dial", 0),
-	midiPiano (980, 150, 140, 40, "widget", 0, 11),
+	midiPiano (980, 160, 140, 35, "widget", 0, 11),
+	midiLabel (1030, 145, 40, 10, "smlabel", "Filter"),
 	baseValueSelect (480, 730, 100, 20, "select", 1.0, 1.0, 16.0, 0.01),
 	baseListBox (620, 730, 100, 20, 0, -80, 100, 80, "menu", BItems::ItemList ({{0, "Seconds"}, {1, "Beats"}, {2, "Bars"}})),
 	monitorContainer (24, 214, 1152, 352, "monitor"),
@@ -160,6 +161,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	midiPiano.setKeysToggleable (true);
 	midiPiano.pressKeys (keys);
 	midiPiano.hide();
+	midiLabel.hide();
 	monitorContainer.setScrollable (true);
 	shapeGui[0].tabIcon.rename ("activetab");
 	for (uint i = 0; i < MAXSHAPES; ++i)
@@ -204,6 +206,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	}
 	mContainer.add (midiSwitch);
 	mContainer.add (midiPiano);
+	mContainer.add (midiLabel);
 	mContainer.add (messageLabel);
 	mContainer.add (baseValueSelect);
 	mContainer.add (baseListBox);
@@ -377,8 +380,16 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 
 			if (port == CONTROLLERS + MIDI_CONTROL)
 			{
-				if (*pval == 1.0f) midiPiano.show ();
-				else midiPiano.hide ();
+				if (*pval == 1.0f)
+				{
+					midiPiano.show ();
+					midiLabel.show ();
+				}
+				else
+				{
+					midiPiano.hide ();
+					midiLabel.hide ();
+				}
 			}
 
 			else if ((port == CONTROLLERS + BASE) || (port == CONTROLLERS + BASE_VALUE)) calculateXSteps ();
@@ -399,7 +410,8 @@ void BShaprGUI::resizeGUI()
 	RESIZE (mContainer, 0, 0, 1200, 780, sz);
 	RESIZE (messageLabel, 600, 45, 600, 20, sz);
 	RESIZE (midiSwitch, 880, 150, 20, 40, sz);
-	RESIZE (midiPiano, 980, 150, 140, 40, sz);
+	RESIZE (midiPiano, 980, 160, 140, 35, sz);
+	RESIZE (midiLabel, 1030, 145, 40, 10, sz);
 	RESIZE (baseValueSelect, 480, 730, 100, 20, sz);
 	RESIZE (baseListBox, 620, 730, 100, 20, sz);
 	baseListBox.resizeListBox (100 * sz, 80 * sz);
@@ -452,6 +464,7 @@ void BShaprGUI::applyChildThemes ()
 	messageLabel.applyTheme (theme);
 	midiSwitch.applyTheme (theme);
 	midiPiano.applyTheme (theme);
+	midiLabel.applyTheme (theme);
 	baseValueSelect.applyTheme (theme);
 	baseListBox.applyTheme (theme);
 	monitorContainer.applyTheme (theme);
@@ -592,8 +605,16 @@ void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 
 				if (widgetNr == MIDI_CONTROL)
 				{
-					if (value == 1.0f) ui->midiPiano.show ();
-					else ui->midiPiano.hide ();
+					if (value == 1.0f)
+					{
+						ui->midiPiano.show ();
+						ui->midiLabel.show ();
+					}
+					else
+					{
+						ui->midiPiano.hide ();
+						ui->midiLabel.hide ();
+					}
 				}
 
 				if (widgetNr >= SHAPERS)

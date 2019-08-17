@@ -144,6 +144,7 @@ private:
 	BWidgets::Label messageLabel;
 	BWidgets::VSwitch midiSwitch;
 	BWidgets::HPianoRoll midiPiano;
+	BWidgets::Label midiLabel;
 	ValueSelect baseValueSelect;
 	BWidgets::PopupListBox baseListBox;
 	BWidgets::Widget monitorContainer;
