@@ -105,6 +105,7 @@ the signal will only be used internally.
 
 ## TODO
 
+* Simplify workflow: Linear input-shape-output order instead of manual connection of shapes to input and output
 * Additional methods (any ideas welcome)
 * Display additional configuration parameters for methods
 * Copy & paste nodes

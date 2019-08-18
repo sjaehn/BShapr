@@ -44,6 +44,7 @@
 #include "BWidgets/PopupListBox.hpp"
 #include "BWidgets/VSwitch.hpp"
 #include "BWidgets/HPianoRoll.hpp"
+#include "BWidgets/Text.hpp"
 #include "ShapeWidget.hpp"
 #include "ValueSelect.hpp"
 #include "HorizonWidget.hpp"
@@ -167,6 +168,7 @@ private:
 		BWidgets::Label drywetLabel;
 		BWidgets::Dial drywetDial;
 		ShapeWidget shapeWidget;
+		BWidgets::Text focusText;
 		std::list<BWidgets::ImageIcon> methodIcons;
 		SelectWidget toolSelect;
 		SelectWidget outputSelect;
@@ -190,7 +192,7 @@ private:
 	BShaprURIDs urids;
 	LV2_URID_Map* map;
 
-
+	std::string focusString = "<CLICK>: Set, select, or remove node.\n<DRAG>: Drag selected node or handle or drag grid pattern.\n<SCROLL>: Resize grid pattern.\n<SHIFT><SCROLL>: Resize input / output signal monitor.";
 
 	// Definition of styles
 	BColors::ColorSet fgColors = {{{1.0, 0.0, 1.0, 1.0}, {1.0, 0.5, 1.0, 1.0}, {0.25, 0.0, 0.25, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
@@ -206,6 +208,7 @@ private:
 	BStyles::Fill widgetBg = BStyles::noFill;
 	BStyles::Fill tabBg = BStyles::Fill (BColors::Color (0.5, 0, 0.5, 0.375));
 	BStyles::Fill activeTabBg = BStyles::Fill (BColors::Color (0.5, 0, 0.5, 0.75));
+	BStyles::Fill screenBg = BStyles::Fill (BColors::Color (0.0, 0.0, 0.0, 0.5));
 	BStyles::Font defaultFont = BStyles::Font ("Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL, 12.0,
 						   BStyles::TEXT_ALIGN_CENTER, BStyles::TEXT_VALIGN_MIDDLE);
  	BStyles::Font smFont = BStyles::Font ("Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL, 10.0,
@@ -224,6 +227,7 @@ private:
 		{"B.Shapr", 		{{"background", STYLEPTR (&BStyles::blackFill)},
 					 {"border", STYLEPTR (&BStyles::noBorder)}}},
 		{"widget", 		{{"uses", STYLEPTR (&defaultStyles)}}},
+		{"screen", 		{{"background", STYLEPTR (&screenBg)}}},
 		{"icon", 		{{"uses", STYLEPTR (&defaultStyles)},
 					 {"border", STYLEPTR (&labelBorder)}}},
 		{"tab", 		{{"background", STYLEPTR (&tabBg)},

@@ -94,6 +94,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].targetListBox = BWidgets::PopupListBox (800, 448, 144, 44, 0, -380, 124, 380, "menu2", il);
 
 		shapeGui[i].shapeWidget = ShapeWidget (4, 84, 1152, 352, "shape");
+		shapeGui[i].focusText = BWidgets::Text (0, 0, 400, 80, "label", focusString);
 		shapeGui[i].toolSelect = SelectWidget (333, 448, 284, 44, "tool", 44, 44, 5, 1);
 		shapeGui[i].drywetLabel = BWidgets::Label (1020, 484, 50, 16, "smlabel", "dry/wet");
 		shapeGui[i].drywetDial = BWidgets::Dial (1020, 444, 50, 50, "dial", 1.0, 0.0, 1.0, 0);
@@ -107,6 +108,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].inputAmpDial.rename ("dial");
 		shapeGui[i].targetListBox.rename ("menu2");
 		shapeGui[i].shapeWidget.rename ("shape");
+		shapeGui[i].focusText.rename ("label");
 		shapeGui[i].toolSelect.rename ("tool");
 		shapeGui[i].drywetLabel.rename ("smlabel");
 		shapeGui[i].drywetDial.rename ("dial");
@@ -152,6 +154,14 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].outputAmpDial.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 		shapeGui[i].shapeWidget.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::shapeChangedCallback);
 		shapeGui[i].toolSelect.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::toolChangedCallback);
+
+		shapeGui[i].shapeWidget.setFocusable (true);
+		BWidgets::FocusWidget* focus = new BWidgets::FocusWidget (this, "screen");
+		if (!focus) throw std::bad_alloc ();
+		shapeGui[i].shapeWidget.setFocusWidget (focus);
+		focus->add (shapeGui[i].focusText);
+		focus->resize ();
+		shapeGui[i].shapeWidget.setMergeable (BEvents::POINTER_DRAG_EVENT, false);
 	}
 
 	// Configure widgets
@@ -235,6 +245,11 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 
 BShaprGUI::~BShaprGUI()
 {
+	for (int i = 0; i < MAXSHAPES; ++i)
+	{
+		BWidgets::FocusWidget* focus = shapeGui[i].shapeWidget.getFocusWidget();
+		if (focus) delete focus;
+	}
 	sendGuiOff ();
 }
 
@@ -441,6 +456,8 @@ void BShaprGUI::resizeGUI()
 		RESIZE (shapeGui[i].drywetLabel, 1020, 484, 50, 16, sz);
 		RESIZE (shapeGui[i].drywetDial, 1020, 444, 50, 50, sz);
 		RESIZE (shapeGui[i].shapeWidget, 4, 84, 1152, 352, sz);
+		RESIZE (shapeGui[i].focusText, 0, 0, 400, 80, sz);
+		shapeGui[i].shapeWidget.getFocusWidget()->resize();
 		RESIZE (shapeGui[i].toolSelect, 333, 448, 284, 44, sz);
 		shapeGui[i].toolSelect.resizeSelection (44 * sz, 44 * sz);
 		RESIZE (shapeGui[i].shapeLabelIcon, 10, 460, 160, 20, sz);
@@ -485,6 +502,8 @@ void BShaprGUI::applyChildThemes ()
 		shapeGui[i].drywetLabel.setTextColors (lbColors);
 		shapeGui[i].drywetDial.applyTheme (theme);
 		shapeGui[i].shapeWidget.applyTheme (theme);
+		shapeGui[i].shapeWidget.getFocusWidget()->applyTheme (theme);
+		shapeGui[i].focusText.applyTheme (theme);
 		shapeGui[i].toolSelect.applyTheme (theme);
 		shapeGui[i].shapeLabelIcon.applyTheme (theme);
 		shapeGui[i].outputSelect.applyTheme (theme);
