@@ -962,7 +962,7 @@ void BShapr::play (uint32_t start, uint32_t end)
 	{
 		// Interpolate position within the loop
 		double relpos = getPositionFromFrames (i - refFrame);	// Position relative to reference frame
-		double pos = floorfrac (position + relpos);				// 0..1 position
+		double pos = floorfrac (position + relpos);		// 0..1 position
 
 		float output1 = 0;
 		float output2 = 0;

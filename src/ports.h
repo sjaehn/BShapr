@@ -46,7 +46,7 @@ typedef enum
 	SH_OUTPUT_AMP	= 5,
 	SH_SIZE		= 6,
 
-	NR_CONTROLLERS	= 28
+	NR_CONTROLLERS	= 29
 } BShaprPortIndex;
 
 typedef enum
