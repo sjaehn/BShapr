@@ -313,14 +313,22 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 				lv2_atom_object_get(obj, urids.time_beatsPerBar, &oBpb, urids.time_beatUnit, &oBu, 0);
 				if (oBpb && (oBpb->type == urids.atom_Float))
 				{
-					beatsPerBar = ((LV2_Atom_Float*)oBpb)->body;
-					calculateXSteps ();
+					float value = ((LV2_Atom_Float*)oBpb)->body;
+					if (value != 0.0f)
+					{
+						beatsPerBar = value;
+						calculateXSteps ();
+					}
 				}
 
 				if (oBu && (oBu->type == urids.atom_Int))
 				{
-					beatUnit = ((LV2_Atom_Float*)oBu)->body;
-					calculateXSteps ();
+					float value = ((LV2_Atom_Float*)oBu)->body;
+					if (int (value) != 0)
+					{
+						beatUnit = value;
+						calculateXSteps ();
+					}
 				}
 			}
 
@@ -407,7 +415,10 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 				}
 			}
 
-			else if ((port == CONTROLLERS + BASE) || (port == CONTROLLERS + BASE_VALUE)) calculateXSteps ();
+			else if ((port == CONTROLLERS + BASE) || (port == CONTROLLERS + BASE_VALUE))
+			{
+				calculateXSteps ();
+			}
 		}
 	}
 }
@@ -845,10 +856,12 @@ void BShaprGUI::calculateXSteps ()
 		case SECONDS:	minorXSteps = majorXSteps / 10.0;
 				break;
 
-		case BEATS:	minorXSteps = majorXSteps / (16.0 / ((double)beatUnit));
+		case BEATS:	if (beatUnit != 0) minorXSteps = majorXSteps / (16.0 / ((double)beatUnit));
+				else minorXSteps = majorXSteps / 4;
 				break;
 
-		case BARS:	minorXSteps = majorXSteps / beatsPerBar;
+		case BARS:	if (beatsPerBar != 0.0f) minorXSteps = majorXSteps / beatsPerBar;
+				else minorXSteps = majorXSteps / 4;
 				break;
 	}
 
