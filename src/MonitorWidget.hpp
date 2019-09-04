@@ -32,17 +32,17 @@
         ~MonitorWidget ();
 
         void clear ();
-        void addData (const uint pos, const Range range);
+        void addData (const unsigned int pos, const Range range);
         void setZoom (const double factor);
         double getZoom () const;
-        void redrawRange (const uint start, const uint end);
+        void redrawRange (const unsigned int start, const unsigned int end);
         virtual void applyTheme (BStyles::Theme& theme) override;
 	virtual void applyTheme (BStyles::Theme& theme, const std::string& name) override;
         virtual void update () override;
 
 protected:
         void makePattern ();
-        void drawData (const uint start, const uint end);
+        void drawData (const unsigned int start, const unsigned int end);
         virtual void draw (const double x, const double y, const double width, const double height) override;
 
         std::array<Range, MONITORBUFFERSIZE> data;

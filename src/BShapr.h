@@ -174,7 +174,7 @@ private:
 	bool ui_on;
 	Message message;
 	int monitorPos;
-	uint notificationsCount;
+	unsigned int notificationsCount;
 	float stepCount;
 	std::array<BShaprNotifications, NOTIFYBUFFERSIZE> notifications;
 	bool scheduleNotifyShapes[MAXSHAPES];

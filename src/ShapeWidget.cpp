@@ -195,7 +195,7 @@ void ShapeWidget::onButtonPressed (BEvents::PointerEvent* event)
 		// Point => Select
 		activeHandle = -1;
 		activeNode = -1;
-		for (uint i = 0; i < nodes.size; ++i)
+		for (unsigned int i = 0; i < nodes.size; ++i)
 		{
 			px = x0 + w * nodes[i].point.x;
 			py = y0 + h - h * (nodes[i].point.y - ymin) / (ymax - ymin);
@@ -525,7 +525,7 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 		cairo_pattern_destroy (pat);
 
 		// Draw nodes
-		for (uint i = 0; i < nodes.size; ++i)
+		for (unsigned int i = 0; i < nodes.size; ++i)
 		{
 			double xp = nodes[i].point.x;
 			double yp = nodes[i].point.y;

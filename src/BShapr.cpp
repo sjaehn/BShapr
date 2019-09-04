@@ -411,7 +411,7 @@ void BShapr::run (uint32_t n_samples)
 						{
 							shapes[shapeNr].clearShape ();
 							float* data = (float*)(&vec->body + 1);
-							for (uint nodeNr = 0; (nodeNr < vecSize) && (nodeNr < MAXNODES); ++nodeNr)
+							for (unsigned int nodeNr = 0; (nodeNr < vecSize) && (nodeNr < MAXNODES); ++nodeNr)
 							{
 								Node node (&data[nodeNr * 7]);
 								shapes[shapeNr].appendNode (node);
@@ -583,7 +583,7 @@ void BShapr::notifyShapeToGui (int shapeNr)
 	size_t size = shapes[shapeNr].size ();
 
 	// Load shapeBuffer
-	for (uint i = 0; i < size; ++i)
+	for (unsigned int i = 0; i < size; ++i)
 	{
 		Node node = shapes[shapeNr].getNode (i);
 		shapeBuffer[i * 7] = (float)node.nodeType;
@@ -1080,7 +1080,7 @@ void BShapr::play (uint32_t start, uint32_t end)
 		{
 			// Calculate position in monitor
 			int newMonitorPos = pos * MONITORBUFFERSIZE;
-			uint nr = notificationsCount % NOTIFYBUFFERSIZE;
+			unsigned int nr = notificationsCount % NOTIFYBUFFERSIZE;
 
 			notifications[nr].position = newMonitorPos;
 
@@ -1119,9 +1119,9 @@ LV2_State_Status BShapr::state_save (LV2_State_Store_Function store, LV2_State_H
 {
 	char shapesDataString[0x8010] = "Shape data:\n";
 
-	for (uint sh = 0; sh < MAXSHAPES; ++sh)
+	for (unsigned int sh = 0; sh < MAXSHAPES; ++sh)
 	{
-		for (uint nd = 0; nd < shapes[sh].size (); ++nd)
+		for (unsigned int nd = 0; nd < shapes[sh].size (); ++nd)
 		{
 			char valueString[128];
 			Node node = shapes[sh].getNode (nd);

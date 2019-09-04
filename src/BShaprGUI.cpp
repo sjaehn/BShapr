@@ -174,9 +174,9 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	midiLabel.hide();
 	monitorContainer.setScrollable (true);
 	shapeGui[0].tabIcon.rename ("activetab");
-	for (uint i = 0; i < MAXSHAPES; ++i)
+	for (unsigned int i = 0; i < MAXSHAPES; ++i)
 	{
-		for (uint j = 0; j < shapeGui[i].inputShapeLabelIcons.size(); ++j) shapeGui[i].inputShapeLabelIcons[j].setClickable (false);
+		for (unsigned int j = 0; j < shapeGui[i].inputShapeLabelIcons.size(); ++j) shapeGui[i].inputShapeLabelIcons[j].setClickable (false);
 		shapeGui[i].shapeWidget.setTool (ToolType::POINT_NODE_TOOL);
 		shapeGui[i].shapeWidget.setLowerLimit (methodLimits[0].min);
 		shapeGui[i].shapeWidget.setHigherLimit (methodLimits[0].max);
@@ -198,10 +198,10 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	monitorContainer.add (monitorHorizon1);
 	monitorContainer.add (monitorHorizon2);
 	mContainer.add (monitorContainer);
-	for (uint i = 0; i < MAXSHAPES; ++i)
+	for (unsigned int i = 0; i < MAXSHAPES; ++i)
 	{
 		mContainer.add (shapeGui[i].tabIcon);
-		for (uint j = 0; j < shapeGui[i].inputShapeLabelIcons.size(); ++j) shapeGui[i].shapeContainer.add (shapeGui[i].inputShapeLabelIcons[j]);
+		for (unsigned int j = 0; j < shapeGui[i].inputShapeLabelIcons.size(); ++j) shapeGui[i].shapeContainer.add (shapeGui[i].inputShapeLabelIcons[j]);
 		shapeGui[i].shapeContainer.add (shapeGui[i].inputSelect);
 		shapeGui[i].shapeContainer.add (shapeGui[i].inputAmpDial);
 		shapeGui[i].shapeContainer.add (shapeGui[i].targetListBox);
@@ -353,7 +353,7 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 							shapeGui[shapeNr].shapeWidget.setValueEnabled (false);
 							shapeGui[shapeNr].shapeWidget.clearShape ();
 							float* data = (float*)(&vec->body + 1);
-							for (uint nodeNr = 0; (nodeNr < vecSize) && (nodeNr < MAXNODES); ++nodeNr)
+							for (unsigned int nodeNr = 0; (nodeNr < vecSize) && (nodeNr < MAXNODES); ++nodeNr)
 							{
 								Node node (&data[nodeNr * 7]);
 								shapeGui[shapeNr].shapeWidget.appendNode (node);
@@ -453,7 +453,7 @@ void BShaprGUI::resizeGUI()
 	{
 		RESIZE (shapeGui[i].tabIcon, 20 + i * 120, 90, 119, 40, sz);
 		RESIZE (shapeGui[i].shapeContainer, 20, 130, 1160, 570, sz);
-		for (uint j = 0; j < shapeGui[i].inputShapeLabelIcons.size(); ++j)
+		for (unsigned int j = 0; j < shapeGui[i].inputShapeLabelIcons.size(); ++j)
 		{
 			RESIZE (shapeGui[i].inputShapeLabelIcons[j], 300 + j * 100, 30, 100, 20, sz);
 		}
@@ -500,11 +500,10 @@ void BShaprGUI::applyChildThemes ()
 	output1Monitor.applyTheme (theme);
 	input2Monitor.applyTheme (theme);
 	output2Monitor.applyTheme (theme);
-	for (uint i = 0; i < MAXSHAPES; ++i)
+	for (unsigned int i = 0; i < MAXSHAPES; ++i)
 	{
 		shapeGui[i].shapeContainer.applyTheme (theme);
 		shapeGui[i].tabIcon.applyTheme (theme);
-		//for (uint j = 0; j < shapeGui[i].inputShapeLabelIcons.size(); ++j) shapeGui[i].inputShapeLabelIcons[j].applyTheme (theme);
 		shapeGui[i].inputSelect.applyTheme (theme);
 		shapeGui[i].inputAmpDial.applyTheme (theme);
 		shapeGui[i].inputAmpDial.getDisplayLabel()->setTextColors (lbColors);
@@ -583,7 +582,7 @@ void BShaprGUI::sendShape (size_t shapeNr)
 	lv2_atom_forge_set_buffer(&forge, obj_buf, sizeof(obj_buf));
 
 	// Load shapeBuffer
-	for (uint i = 0; i < size; ++i)
+	for (unsigned int i = 0; i < size; ++i)
 	{
 		Node node = shapeGui[shapeNr].shapeWidget.getNode (i);
 		shapeBuffer[i * 7 + 0] = (float)node.nodeType;
@@ -833,7 +832,7 @@ void BShaprGUI::pianoCallback (BEvents::Event* event)
 			size_t sz = (keys.size () < 12 ? keys.size () : 12);
 			uint32_t bits = 0;
 
-			for (uint i = 0; i < sz; ++i)
+			for (unsigned int i = 0; i < sz; ++i)
 			{
 				if (keys[i]) bits += (1 << i);
 			}
@@ -890,7 +889,7 @@ std::pair<int, int> BShaprGUI::translateNotification (BShaprNotifications* notif
 
 	int startpos = notifications[0].position;
 	int monitorpos = startpos;
-	for (uint i = 0; i < notificationsCount; ++i)
+	for (unsigned int i = 0; i < notificationsCount; ++i)
 	{
 		monitorpos = LIMIT (notifications[i].position, 0, MONITORBUFFERSIZE - 1);
 

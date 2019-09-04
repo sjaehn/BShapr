@@ -39,9 +39,9 @@ MonitorWidget::~MonitorWidget ()
 
 void MonitorWidget::clear () {data.fill ({0.0f, 0.0f});}
 
-void MonitorWidget::addData (const uint pos, const Range range)
+void MonitorWidget::addData (const unsigned int pos, const Range range)
 {
-        uint nr = LIMIT (pos, 0, MONITORBUFFERSIZE - 1);
+        unsigned int nr = LIMIT (pos, 0, MONITORBUFFERSIZE - 1);
         data[nr] = range;
 }
 
@@ -52,12 +52,12 @@ void MonitorWidget::setZoom (const double factor)
 }
 double MonitorWidget::getZoom () const {return zoom;}
 
-void MonitorWidget::redrawRange (const uint start, const uint end)
+void MonitorWidget::redrawRange (const unsigned int start, const unsigned int end)
 {
         double xabs = getOriginX ();
         double yabs = getOriginY ();
-        uint s = LIMIT (int (start) - 1, 0, MONITORBUFFERSIZE - 1);
-        uint e = LIMIT (end + 1, 0, MONITORBUFFERSIZE - 1);
+        unsigned int s = LIMIT (int (start) - 1, 0, MONITORBUFFERSIZE - 1);
+        unsigned int e = LIMIT (end + 1, 0, MONITORBUFFERSIZE - 1);
         double x1 = width_ * s / (MONITORBUFFERSIZE - 1);
         double w = width_ * (e - s) / (MONITORBUFFERSIZE - 1);
 
@@ -95,7 +95,7 @@ void MonitorWidget::makePattern ()
         cairo_pattern_add_color_stop_rgba (pat, 0, col.getRed (), col.getGreen (), col.getBlue (), 0.6 * col.getAlpha ());
 }
 
-void MonitorWidget::drawData (const uint start, const uint end)
+void MonitorWidget::drawData (const unsigned int start, const unsigned int end)
 {
         if ((!widgetSurface) || (cairo_surface_status (widgetSurface) != CAIRO_STATUS_SUCCESS)) return;
 
