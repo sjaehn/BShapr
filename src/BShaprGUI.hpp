@@ -160,10 +160,6 @@ private:
 	{
 		BWidgets::Widget shapeContainer;
 		BWidgets::ImageIcon tabIcon;
-		std::vector<BWidgets::ImageIcon> inputShapeLabelIcons;
-		SelectWidget inputSelect;
-		BWidgets::DialValue inputAmpDial;
-		BWidgets::DialValue outputAmpDial;
 		BWidgets::PopupListBox targetListBox;
 		BWidgets::Label drywetLabel;
 		BWidgets::Dial drywetDial;
@@ -171,8 +167,6 @@ private:
 		BWidgets::Text focusText;
 		std::list<BWidgets::ImageIcon> methodIcons;
 		SelectWidget toolSelect;
-		SelectWidget outputSelect;
-		BWidgets::ImageIcon shapeLabelIcon;
 	} ShapeGui;
 
 	std::array<ShapeGui, MAXSHAPES> shapeGui;
@@ -195,19 +189,19 @@ private:
 	std::string focusString = "<CLICK>: Set, select, or remove node.\n<DRAG>: Drag selected node or handle or drag grid pattern.\n<SCROLL>: Resize grid pattern.\n<SHIFT><SCROLL>: Resize input / output signal monitor.";
 
 	// Definition of styles
-	BColors::ColorSet fgColors = {{{1.0, 0.0, 1.0, 1.0}, {1.0, 0.5, 1.0, 1.0}, {0.25, 0.0, 0.25, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
+	BColors::ColorSet fgColors = {{{0.75, 0.0, 0.75, 1.0}, {1.0, 0.0, 1.0, 1.0}, {0.25, 0.0, 0.25, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
 	BColors::ColorSet txColors = {{{1.0, 1.0, 1.0, 1.0}, {1.0, 1.0, 1.0, 1.0}, {0.2, 0.2, 0.2, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
 	BColors::ColorSet bgColors = {{{0.15, 0.15, 0.15, 1.0}, {0.3, 0.3, 0.3, 1.0}, {0.05, 0.05, 0.05, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
-	BColors::ColorSet lbColors = {{{0, 0, 0, 1.0}, {0, 0, 0, 1.0}, {0, 0, 0, 1.0}, {0, 0, 0, 0.0}}};
-	BColors::ColorSet clickColors = {{{0, 0, 0, 1.0}, {1, 1, 1, 1.0}, {0, 0, 0, 1.0}, {0, 0, 0, 0.0}}};
+	BColors::ColorSet menuBgColors = {{{0.05, 0.05, 0.05, 1.0}, {0.05, 0.05, 0.05, 1.0}, {0.05, 0.05, 0.05, 1.0}, {0.0, 0.0, 0.0, 1.0}}};
+	BColors::ColorSet buttonBgColors = {{{0.1, 0.1, 0.1, 1.0}, {0.2, 0.2, 0.2, 1.0}, {0.05, 0.05, 0.05, 1.0}, {0.0, 0.0, 0.0, 1.0}}};
+	BColors::ColorSet clickColors = {{{0.2, 0.2, 0.2, 1.0}, {1, 1, 1, 1.0}, {0, 0, 0, 1.0}, {0, 0, 0, 0.0}}};
 	BColors::ColorSet ink1 = {{{0.75, 0.0, 1.0, 1.0}, {0.9, 0.5, 1.0, 1.0}, {0.1, 0.0, 0.25, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
 	BColors::ColorSet ink2 = {{{1.0, 0.0, 0.75, 1.0}, {1.0, 0.5, 0.9, 1.0}, {0.25, 0.0, 0.1, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
-	BColors::Color ink = {0.0, 0.75, 0.2, 1.0};
 	BStyles::Border labelBorder = BStyles::Border (BStyles::noLine, 0.0, 4.0);
-	BStyles::Border menuBorder = BStyles::Border (BStyles::noLine, 0.0, 2.0);
-	BStyles::Fill widgetBg = BStyles::noFill;
-	BStyles::Fill tabBg = BStyles::Fill (BColors::Color (0.5, 0, 0.5, 0.375));
-	BStyles::Fill activeTabBg = BStyles::Fill (BColors::Color (0.5, 0, 0.5, 0.75));
+	BStyles::Border menuBorder = BStyles::Border (BStyles::Line (BColors::Color (0.2, 0.2, 0.2, 1.0), 1.0));
+	BStyles::Border itemBorder = BStyles::Border (BStyles::noLine, 0.0, 2.0);
+	BStyles::Fill tabBg = BStyles::Fill (BColors::Color (0.5, 0, 0.5, 0.5));
+	BStyles::Fill activeTabBg = BStyles::Fill (BColors::Color (0.5, 0, 0.5, 0.875));
 	BStyles::Fill screenBg = BStyles::Fill (BColors::Color (0.0, 0.0, 0.0, 0.5));
 	BStyles::Font defaultFont = BStyles::Font ("Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL, 12.0,
 						   BStyles::TEXT_ALIGN_CENTER, BStyles::TEXT_VALIGN_MIDDLE);
@@ -255,7 +249,7 @@ private:
 					 {"font", STYLEPTR (&defaultFont)}}},
 		{"label", 		{{"uses", STYLEPTR (&labelStyles)}}},
 		{"smlabel",	 	{{"uses", STYLEPTR (&defaultStyles)},
-					 {"textcolors", STYLEPTR (&fgColors)},
+					 {"textcolors", STYLEPTR (&txColors)},
 					 {"font", STYLEPTR (&smFont)}}},
 		{"select",	 	{{"uses", STYLEPTR (&defaultStyles)}}},
 		{"select/label",	{{"uses", STYLEPTR (&defaultStyles)},
@@ -263,42 +257,42 @@ private:
 					 {"font", STYLEPTR (&defaultFont)}}},
 		{"select/click",	{{"uses", STYLEPTR (&defaultStyles)},
 					 {"bgcolors", STYLEPTR (&clickColors)}}},
-		{"menu",	 	{{"border", STYLEPTR (&BStyles::greyBorder1pt)},
-					 {"background", STYLEPTR (&BStyles::grey20Fill)}}},
+		{"menu",	 	{{"border", STYLEPTR (&menuBorder)},
+					 {"background", STYLEPTR (&BStyles::blackFill)}}},
 		{"menu/item",		{{"uses", STYLEPTR (&defaultStyles)},
 					 {"border", STYLEPTR (&labelBorder)},
 					 {"textcolors", STYLEPTR (&BColors::whites)},
 					 {"font", STYLEPTR (&lfLabelFont)}}},
-		{"menu/button",	 	{{"border", STYLEPTR (&BStyles::greyBorder1pt)},
-			 		 {"background", STYLEPTR (&BStyles::grey20Fill)},
-					 {"bgcolors", STYLEPTR (&BColors::darks)}}},
-		{"menu/listbox",	{{"border", STYLEPTR (&BStyles::greyBorder1pt)},
-					 {"background", STYLEPTR (&BStyles::grey20Fill)}}},
+		{"menu/button",	 	{{"border", STYLEPTR (&menuBorder)},
+			 		 {"background", STYLEPTR (&BStyles::blackFill)},
+					 {"bgcolors", STYLEPTR (&buttonBgColors)}}},
+		{"menu/listbox",	{{"border", STYLEPTR (&menuBorder)},
+					 {"background", STYLEPTR (&BStyles::blackFill)}}},
 		{"menu/listbox/item",	{{"uses", STYLEPTR (&defaultStyles)},
 					 {"border", STYLEPTR (&labelBorder)},
 					 {"textcolors", STYLEPTR (&BColors::whites)},
 					 {"font", STYLEPTR (&lfLabelFont)}}},
-		{"menu/listbox/button",	{{"border", STYLEPTR (&BStyles::greyBorder1pt)},
-					 {"background", STYLEPTR (&BStyles::grey20Fill)},
-			 	 	 {"bgcolors", STYLEPTR (&BColors::darks)}}},
-		{"menu2",	 	{{"border", STYLEPTR (&BStyles::greyBorder1pt)},
-					 {"background", STYLEPTR (&BStyles::grey20Fill)}}},
+		{"menu/listbox/button",	{{"border", STYLEPTR (&menuBorder)},
+					 {"background", STYLEPTR (&BStyles::blackFill)},
+			 	 	 {"bgcolors", STYLEPTR (&buttonBgColors)}}},
+		{"menu2",	 	{{"border", STYLEPTR (&menuBorder)},
+					 {"background", STYLEPTR (&BStyles::blackFill)}}},
 		{"menu2/item",		{{"uses", STYLEPTR (&defaultStyles)},
-					 {"border", STYLEPTR (&menuBorder)},
+					 {"border", STYLEPTR (&itemBorder)},
 					 {"textcolors", STYLEPTR (&BColors::whites)},
 					 {"font", STYLEPTR (&lfLabelFont)}}},
-		{"menu2/button",	{{"border", STYLEPTR (&BStyles::greyBorder1pt)},
-			 		 {"background", STYLEPTR (&BStyles::grey20Fill)},
-					 {"bgcolors", STYLEPTR (&BColors::darks)}}},
-		{"menu2/listbox",	{{"border", STYLEPTR (&BStyles::greyBorder1pt)},
-					 {"background", STYLEPTR (&BStyles::grey20Fill)}}},
+		{"menu2/button",	{{"border", STYLEPTR (&menuBorder)},
+			 		 {"background", STYLEPTR (&BStyles::blackFill)},
+					 {"bgcolors", STYLEPTR (&buttonBgColors)}}},
+		{"menu2/listbox",	{{"border", STYLEPTR (&menuBorder)},
+					 {"background", STYLEPTR (&BStyles::blackFill)}}},
 		{"menu2/listbox/item",	{{"uses", STYLEPTR (&defaultStyles)},
-					 {"border", STYLEPTR (&menuBorder)},
+					 {"border", STYLEPTR (&itemBorder)},
 					 {"textcolors", STYLEPTR (&BColors::whites)},
 					 {"font", STYLEPTR (&lfLabelFont)}}},
-		{"menu2/listbox/button",{{"border", STYLEPTR (&BStyles::greyBorder1pt)},
-					 {"background", STYLEPTR (&BStyles::grey20Fill)},
-			 	 	 {"bgcolors", STYLEPTR (&BColors::darks)}}}
+		{"menu2/listbox/button",{{"border", STYLEPTR (&menuBorder)},
+					 {"background", STYLEPTR (&BStyles::blackFill)},
+			 	 	 {"bgcolors", STYLEPTR (&buttonBgColors)}}}
 	});
 };
 

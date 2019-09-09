@@ -40,37 +40,17 @@ to run it stand-alone and connect it to the JACK system.
 Notes:
 
 * **Jack transport is required to get information about beat and bar position (not required for seconds mode)**
-* **Don't forget to select an input for each shape you use and an output (see usage/input and usage/output)**
 
 ## Usage
-
-+++ See tutorial: https://youtu.be/fjhL_rku2BU +++
 
 B.Shapr is an envelope plugin for time or beat position-dependent effects.
 The user can define up to four different envelope shapes by drawing Bezier curves. Each of these envelope
 shapes can be connected to different target effects, such as level, balance, or stereo width, and can be
 combined together.
 
-### Sequence size
-
-On the bottom of the widget, you can set the lenght of the whole shape sequence between 1 and 16 seconds,
-beats or bars. Change the value by dragging, scrolling or clicking on its up and down arrows and select
-a base.
-
-### MIDI control
-
-You can additionally connect B.Shapr to a MIDI input device. Once switched to B.Shapr's MIDI mode,
-you can control B.Shapr by pressing a key on your MIDI input device. In addition, you can select and
-deselect the keys to which B.Shapr shall respond.
-
 ### Shape selector
 
 Select between the four user-defineable shapes.
-
-### Input
-
-Select one input for this shape. You can choose between the audio input, a constant signal, or a previous shape.
-Use the dial to set the level of the input signal.
 
 ### Shape editor
 
@@ -98,14 +78,26 @@ Select a method that will be applied on the input signal by the use of the shape
 * Delay (const. pitch)
 * Doppler delay
 
-### Output
+### MIDI control
 
-Select the output for this shape. Mark "audio" if you want to send the output directly to audio out. Otherwise
-the signal will only be used internally.
+B.Shapr can optionally be controlled by a MIDI device. Once switched to B.Shapr's MIDI mode, you can select and
+deselect the keys to which B.Shapr shall respond. This takes effect to all four shapers.
+
+### Sequence size
+
+On the bottom of the widget, you can set the lenght of the whole shape sequence between 1 and 16 seconds,
+beats or bars. Change the value by dragging, scrolling or clicking on its up and down arrows and select
+a base.
+
+### What's new
+
+* Usage simplified
+** No routing in GUI
+** Routing can only be done in LV2 now
+* New GUI
 
 ## TODO
 
-* Simplify workflow: Linear input-shape-output order instead of manual connection of shapes to input and output
 * Additional methods (any ideas welcome)
 * Display additional configuration parameters for methods
 * Copy & paste nodes

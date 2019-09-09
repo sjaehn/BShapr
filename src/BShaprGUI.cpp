@@ -21,18 +21,18 @@
 #include "BShaprGUI.hpp"
 
 BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features, PuglNativeWindow parentWindow) :
-	Window (1200, 780, "B.Shapr", parentWindow, true),
+	Window (1200, 690, "B.Shapr", parentWindow, true),
 	controller (NULL), write_function (NULL),
 	beatsPerBar (4.0), beatUnit (4),
 
-	mContainer (0, 0, 1200, 780, "widget"),
+	mContainer (0, 0, 1200, 690, "widget"),
 	messageLabel (600, 45, 600, 20, "label", ""),
-	midiSwitch (880, 150, 20, 40, "dial", 0),
-	midiPiano (980, 160, 140, 35, "widget", 0, 11),
-	midiLabel (1030, 145, 40, 10, "smlabel", "Filter"),
-	baseValueSelect (480, 730, 100, 20, "select", 1.0, 1.0, 16.0, 0.01),
-	baseListBox (620, 730, 100, 20, 0, -80, 100, 80, "menu", BItems::ItemList ({{0, "Seconds"}, {1, "Beats"}, {2, "Bars"}})),
-	monitorContainer (24, 214, 1152, 352, "monitor"),
+	midiSwitch (720, 570, 20, 40, "dial", 0),
+	midiPiano (900, 580, 140, 35, "widget", 0, 11),
+	midiLabel (950, 565, 40, 10, "smlabel", "Filter"),
+	baseValueSelect (480, 640, 100, 20, "select", 1.0, 1.0, 16.0, 0.01),
+	baseListBox (620, 640, 100, 20, 0, -80, 100, 80, "menu", BItems::ItemList ({{0, "Seconds"}, {1, "Beats"}, {2, "Bars"}})),
+	monitorContainer (24, 134, 1152, 352, "monitor"),
 	monitorHorizon1 (0, 0, 64, 352, "horizon"),
 	monitorHorizon2 (-1152, 0, 64, 352, "horizon"),
 	input1Monitor (0, 0, 1152, 176, "monitor.in"),
@@ -51,18 +51,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	{
 		shapeGui[i].tabIcon = BWidgets::ImageIcon (20 + i * 120, 90, 119, 40, "tab", pluginPath + "inc/Shape" + std::to_string (i + 1) + ".png");
 
-		shapeGui[i].shapeContainer = BWidgets::Widget (20, 130, 1160, 570, "widget");
-
-		for (int j = 0; j < i; ++j)
-		{
-			shapeGui[i].inputShapeLabelIcons.push_back
-			(
-				BWidgets::ImageIcon (300 + j * 100, 30, 100, 20, "widget", pluginPath + "inc/Shape" + std::to_string (j + 1) + ".png")
-			);
-		}
-
-		shapeGui[i].inputSelect = SelectWidget (100, 20, 200 + i * 100, 40, "tool", 100, 40, 2 + i, 1);
-		shapeGui[i].inputAmpDial = BWidgets::DialValue (330 + shapeGui[i].inputShapeLabelIcons.size() * 100, 14, 50, 56, "dial", 1.0, -1.0, 1.0, 0, "%1.3f");
+		shapeGui[i].shapeContainer = BWidgets::Widget (20, 130, 1160, 490, "widget");
 
 		// Method menu
 		BItems::ItemList il;
@@ -91,30 +80,22 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 
 			il.push_back (BItems::Item (methodParameters[j].value, icon));
 		}
-		shapeGui[i].targetListBox = BWidgets::PopupListBox (800, 448, 144, 44, 0, -380, 124, 380, "menu2", il);
+		shapeGui[i].targetListBox = BWidgets::PopupListBox (40, 438, 144, 44, 0, -380, 124, 380, "menu2", il);
 
-		shapeGui[i].shapeWidget = ShapeWidget (4, 84, 1152, 352, "shape");
+		shapeGui[i].shapeWidget = ShapeWidget (4, 4, 1152, 352, "shape");
 		shapeGui[i].focusText = BWidgets::Text (0, 0, 400, 80, "label", focusString);
-		shapeGui[i].toolSelect = SelectWidget (333, 448, 284, 44, "tool", 44, 44, 5, 1);
-		shapeGui[i].drywetLabel = BWidgets::Label (1020, 484, 50, 16, "smlabel", "dry/wet");
-		shapeGui[i].drywetDial = BWidgets::Dial (1020, 444, 50, 50, "dial", 1.0, 0.0, 1.0, 0);
-		shapeGui[i].shapeLabelIcon = BWidgets::ImageIcon (10, 460, 160, 20, "widget", pluginPath + "inc/Shape" + std::to_string (i + 1) + ".png");
-		shapeGui[i].outputSelect = SelectWidget (100, 520, 100, 40, "tool", 100, 40, 1, 1);
-		shapeGui[i].outputAmpDial = BWidgets::DialValue (230, 514, 50, 56, "dial", 1.0, 0.0, 1.0, 0, "%1.3f");
+		shapeGui[i].toolSelect = SelectWidget (333, 368, 284, 44, "tool", 44, 44, 5, 1);
+		shapeGui[i].drywetLabel = BWidgets::Label (500, 474, 50, 16, "smlabel", "dry/wet");
+		shapeGui[i].drywetDial = BWidgets::Dial (500, 434, 50, 50, "dial", 1.0, 0.0, 1.0, 0);
 
 		shapeGui[i].shapeContainer.rename ("widget");
 		shapeGui[i].tabIcon.rename ("tab");
-		shapeGui[i].inputSelect.rename ("tool");
-		shapeGui[i].inputAmpDial.rename ("dial");
 		shapeGui[i].targetListBox.rename ("menu2");
 		shapeGui[i].shapeWidget.rename ("shape");
 		shapeGui[i].focusText.rename ("label");
 		shapeGui[i].toolSelect.rename ("tool");
 		shapeGui[i].drywetLabel.rename ("smlabel");
 		shapeGui[i].drywetDial.rename ("dial");
-		shapeGui[i].shapeLabelIcon.rename ("widget");
-		shapeGui[i].outputSelect.rename ("tool");
-		shapeGui[i].outputAmpDial.rename ("dial");
 	}
 
 	// Init main monitor
@@ -127,12 +108,8 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	controllerWidgets[BASE_VALUE] = (BWidgets::ValueWidget*) &baseValueSelect;
 	for (int i = 0; i < MAXSHAPES; ++i)
 	{
-		controllerWidgets[SHAPERS + i * SH_SIZE + SH_INPUT] = (BWidgets::ValueWidget*) &shapeGui[i].inputSelect;
-		controllerWidgets[SHAPERS + i * SH_SIZE + SH_INPUT_AMP] = (BWidgets::ValueWidget*) &shapeGui[i].inputAmpDial;
 		controllerWidgets[SHAPERS + i * SH_SIZE + SH_TARGET] = (BWidgets::ValueWidget*) &shapeGui[i].targetListBox;
 		controllerWidgets[SHAPERS + i * SH_SIZE + SH_DRY_WET] = (BWidgets::ValueWidget*) &shapeGui[i].drywetDial;
-		controllerWidgets[SHAPERS + i * SH_SIZE + SH_OUTPUT] = (BWidgets::ValueWidget*) &shapeGui[i].outputSelect;
-		controllerWidgets[SHAPERS + i * SH_SIZE + SH_OUTPUT_AMP] = (BWidgets::ValueWidget*) &shapeGui[i].outputAmpDial;
 	}
 
 	// Set callbacks
@@ -146,12 +123,8 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	for (int i = 0; i < MAXSHAPES; ++i)
 	{
 		shapeGui[i].tabIcon.setCallbackFunction (BEvents::EventType::BUTTON_PRESS_EVENT, BShaprGUI::tabClickedCallback);
-		shapeGui[i].inputSelect.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
-		shapeGui[i].inputAmpDial.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 		shapeGui[i].targetListBox.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 		shapeGui[i].drywetDial.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
-		shapeGui[i].outputSelect.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
-		shapeGui[i].outputAmpDial.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 		shapeGui[i].shapeWidget.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::shapeChangedCallback);
 		shapeGui[i].toolSelect.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::toolChangedCallback);
 
@@ -176,15 +149,10 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	shapeGui[0].tabIcon.rename ("activetab");
 	for (unsigned int i = 0; i < MAXSHAPES; ++i)
 	{
-		for (unsigned int j = 0; j < shapeGui[i].inputShapeLabelIcons.size(); ++j) shapeGui[i].inputShapeLabelIcons[j].setClickable (false);
 		shapeGui[i].shapeWidget.setTool (ToolType::POINT_NODE_TOOL);
 		shapeGui[i].shapeWidget.setLowerLimit (methodLimits[0].min);
 		shapeGui[i].shapeWidget.setHigherLimit (methodLimits[0].max);
-		shapeGui[i].inputAmpDial.setScrollable (true);
-		shapeGui[i].inputAmpDial.setHardChangeable (false);
 		shapeGui[i].drywetDial.setHardChangeable (false);
-		shapeGui[i].outputAmpDial.setScrollable (true);
-		shapeGui[i].outputAmpDial.setHardChangeable (false);
 		if (i >= 1) shapeGui[i].shapeContainer.hide();
 	}
 	applyChildThemes ();
@@ -201,17 +169,11 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	for (unsigned int i = 0; i < MAXSHAPES; ++i)
 	{
 		mContainer.add (shapeGui[i].tabIcon);
-		for (unsigned int j = 0; j < shapeGui[i].inputShapeLabelIcons.size(); ++j) shapeGui[i].shapeContainer.add (shapeGui[i].inputShapeLabelIcons[j]);
-		shapeGui[i].shapeContainer.add (shapeGui[i].inputSelect);
-		shapeGui[i].shapeContainer.add (shapeGui[i].inputAmpDial);
 		shapeGui[i].shapeContainer.add (shapeGui[i].targetListBox);
 		shapeGui[i].shapeContainer.add (shapeGui[i].drywetLabel);
 		shapeGui[i].shapeContainer.add (shapeGui[i].drywetDial);
 		shapeGui[i].shapeContainer.add (shapeGui[i].shapeWidget);
 		shapeGui[i].shapeContainer.add (shapeGui[i].toolSelect);
-		shapeGui[i].shapeContainer.add (shapeGui[i].shapeLabelIcon);
-		shapeGui[i].shapeContainer.add (shapeGui[i].outputSelect);
-		shapeGui[i].shapeContainer.add (shapeGui[i].outputAmpDial);
 		mContainer.add (shapeGui[i].shapeContainer);
 	}
 	mContainer.add (midiSwitch);
@@ -398,7 +360,7 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 
 		else
 		{
-			controllerWidgets[port - CONTROLLERS]->setValue (*pval);
+			if (controllerWidgets[port - CONTROLLERS]) controllerWidgets[port - CONTROLLERS]->setValue (*pval);
 			controllers[port - CONTROLLERS] = *pval;
 
 			if (port == CONTROLLERS + MIDI_CONTROL)
@@ -433,16 +395,16 @@ void BShaprGUI::resizeGUI()
 	lfLabelFont.setFontSize (12 * sz);
 
 	// Resize widgets
-	RESIZE (mContainer, 0, 0, 1200, 780, sz);
+	RESIZE (mContainer, 0, 0, 1200, 690, sz);
 	RESIZE (messageLabel, 600, 45, 600, 20, sz);
-	RESIZE (midiSwitch, 880, 150, 20, 40, sz);
-	RESIZE (midiPiano, 980, 160, 140, 35, sz);
-	RESIZE (midiLabel, 1030, 145, 40, 10, sz);
-	RESIZE (baseValueSelect, 480, 730, 100, 20, sz);
-	RESIZE (baseListBox, 620, 730, 100, 20, sz);
+	RESIZE (midiSwitch, 720, 570, 20, 40, sz);
+	RESIZE (midiPiano, 900, 580, 140, 35, sz);
+	RESIZE (midiLabel, 950, 565, 40, 10, sz);
+	RESIZE (baseValueSelect, 480, 640, 100, 20, sz);
+	RESIZE (baseListBox, 620, 640, 100, 20, sz);
 	baseListBox.resizeListBox (100 * sz, 80 * sz);
 	baseListBox.moveListBox (0, -80 * sz);
-	RESIZE (monitorContainer, 24, 214, 1152, 352, sz);
+	RESIZE (monitorContainer, 24, 134, 1152, 352, sz);
 	RESIZE (monitorHorizon1, monitorHorizon1.getX(), 0, 64, 352, sz);
 	RESIZE (monitorHorizon2, monitorHorizon1.getX(), 0, 64, 352, sz);
 	RESIZE (input1Monitor, 0, 0, 1152, 176, sz);
@@ -453,28 +415,16 @@ void BShaprGUI::resizeGUI()
 	{
 		RESIZE (shapeGui[i].tabIcon, 20 + i * 120, 90, 119, 40, sz);
 		RESIZE (shapeGui[i].shapeContainer, 20, 130, 1160, 570, sz);
-		for (unsigned int j = 0; j < shapeGui[i].inputShapeLabelIcons.size(); ++j)
-		{
-			RESIZE (shapeGui[i].inputShapeLabelIcons[j], 300 + j * 100, 30, 100, 20, sz);
-		}
-
-		RESIZE (shapeGui[i].inputSelect, 100, 20, 200 + i * 100, 40, sz);
-		shapeGui[i].inputSelect.resizeSelection (100 * sz, 40 * sz);
-		RESIZE (shapeGui[i].inputAmpDial, 330 + shapeGui[i].inputShapeLabelIcons.size() * 100, 14, 50, 56, sz);
-		RESIZE (shapeGui[i].targetListBox, 800, 448, 144, 44, sz);
+		RESIZE (shapeGui[i].targetListBox, 40, 438, 144, 44, sz);
 		shapeGui[i].targetListBox.resizeListBox (124 * sz, 380 * sz);
 		shapeGui[i].targetListBox.moveListBox (0, -380 * sz);
-		RESIZE (shapeGui[i].drywetLabel, 1020, 484, 50, 16, sz);
-		RESIZE (shapeGui[i].drywetDial, 1020, 444, 50, 50, sz);
-		RESIZE (shapeGui[i].shapeWidget, 4, 84, 1152, 352, sz);
+		RESIZE (shapeGui[i].drywetLabel, 500, 474, 50, 16, sz);
+		RESIZE (shapeGui[i].drywetDial, 500, 434, 50, 50, sz);
+		RESIZE (shapeGui[i].shapeWidget, 4, 4, 1152, 352, sz);
 		RESIZE (shapeGui[i].focusText, 0, 0, 400, 80, sz);
 		shapeGui[i].shapeWidget.getFocusWidget()->resize();
-		RESIZE (shapeGui[i].toolSelect, 333, 448, 284, 44, sz);
+		RESIZE (shapeGui[i].toolSelect, 333, 368, 284, 44, sz);
 		shapeGui[i].toolSelect.resizeSelection (44 * sz, 44 * sz);
-		RESIZE (shapeGui[i].shapeLabelIcon, 10, 460, 160, 20, sz);
-		RESIZE (shapeGui[i].outputSelect, 100, 520, 100, 40, sz);
-		shapeGui[i].outputSelect.resizeSelection (100 * sz, 40 * sz);
-		RESIZE (shapeGui[i].outputAmpDial, 230, 514, 50, 56, sz);
 	}
 
 	// Update monitor, const std::string& name
@@ -504,21 +454,13 @@ void BShaprGUI::applyChildThemes ()
 	{
 		shapeGui[i].shapeContainer.applyTheme (theme);
 		shapeGui[i].tabIcon.applyTheme (theme);
-		shapeGui[i].inputSelect.applyTheme (theme);
-		shapeGui[i].inputAmpDial.applyTheme (theme);
-		shapeGui[i].inputAmpDial.getDisplayLabel()->setTextColors (lbColors);
 		shapeGui[i].targetListBox.applyTheme (theme);
 		shapeGui[i].drywetLabel.applyTheme (theme);
-		shapeGui[i].drywetLabel.setTextColors (lbColors);
 		shapeGui[i].drywetDial.applyTheme (theme);
 		shapeGui[i].shapeWidget.applyTheme (theme);
 		shapeGui[i].shapeWidget.getFocusWidget()->applyTheme (theme);
 		shapeGui[i].focusText.applyTheme (theme);
 		shapeGui[i].toolSelect.applyTheme (theme);
-		shapeGui[i].shapeLabelIcon.applyTheme (theme);
-		shapeGui[i].outputSelect.applyTheme (theme);
-		shapeGui[i].outputAmpDial.applyTheme (theme);
-		shapeGui[i].outputAmpDial.getDisplayLabel()->setTextColors (lbColors);
 	}
 }
 
@@ -526,7 +468,7 @@ void BShaprGUI::onConfigure (BEvents::ExposeEvent* event)
 {
 	Window::onConfigure (event);
 
-	sz = (width_ / 1200 > height_ / 780 ? height_ / 780 : width_ / 1200);
+	sz = (width_ / 1200 > height_ / 690 ? height_ / 690 : width_ / 1200);
 	resizeGUI ();
 }
 
@@ -682,41 +624,6 @@ void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 						ui->shapeGui[sh].shapeWidget.setPrefix (methodParameters[method].prefix);
 						ui->shapeGui[sh].shapeWidget.setLowerLimit (methodLimits[nr].min);
 						ui->shapeGui[sh].shapeWidget.setHigherLimit (methodLimits[nr].max);
-					}
-
-					// Input
-					if ((widgetNr - SHAPERS) % SH_SIZE == SH_INPUT)
-					{
-						int sh = (widgetNr - SHAPERS) / SH_SIZE;
-
-						// Input: Constant => show level dial (range -1..1)
-						if (value == BShaprInputIndex::CONSTANT)
-						{
-							ui->shapeGui[sh].inputAmpDial.setMin (-1);
-							ui->shapeGui[sh].inputAmpDial.setMax (1);
-							ui->shapeGui[sh].inputAmpDial.show();
-						}
-
-						// Input: AUDIO or ShapeX => show level dial (range 0..1)
-						else if (value != BShaprInputIndex::OFF)
-						{
-							ui->shapeGui[sh].inputAmpDial.setMin (0);
-							ui->shapeGui[sh].inputAmpDial.setMax (1);
-							ui->shapeGui[sh].inputAmpDial.show();
-						}
-
-						// Input: OFF => hide dial
-						else ui->shapeGui[sh].inputAmpDial.hide();
-					}
-
-					// Output
-					if ((widgetNr - SHAPERS) % SH_SIZE == SH_OUTPUT)
-					{
-						int sh = (widgetNr - SHAPERS) / SH_SIZE;
-
-						if (value != BShaprInputIndex::OFF) ui->shapeGui[sh].outputAmpDial.show ();
-						else ui->shapeGui[sh].outputAmpDial.hide();
-
 					}
 				}
 			}
@@ -951,10 +858,10 @@ LV2UI_Handle instantiate (const LV2UI_Descriptor *descriptor, const char *plugin
 	double sz = 1.0;
 	int screenWidth  = getScreenWidth ();
 	int screenHeight = getScreenHeight ();
-	if ((screenWidth < 1240) || (screenHeight < 800)) sz = 0.66;
+	if ((screenWidth < 1240) || (screenHeight < 720)) sz = 0.66;
 	if ((screenWidth < 840) || (screenHeight < 530)) sz = 0.50;
 
-	if (resize) resize->ui_resize (resize->handle, 1200 * sz, 780 * sz);
+	if (resize) resize->ui_resize (resize->handle, 1200 * sz, 690 * sz);
 
 	*widget = (LV2UI_Widget) puglGetNativeWindow (ui->getPuglView ());
 	ui->sendGuiOn();
