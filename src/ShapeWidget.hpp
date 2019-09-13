@@ -21,7 +21,7 @@
 #ifndef SHAPEWIDGET_HPP_
 #define SHAPEWIDGET_HPP_
 
-#include "definitions.h"
+#include "definitions.hpp"
 #include "StaticArrayList.hpp"
 #include "BWidgets/ValueWidget.hpp"
 #include "Shape.hpp"

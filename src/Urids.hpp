@@ -18,17 +18,17 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef URIDS_H_
-#define URIDS_H_
+#ifndef URIDS_HPP_
+#define URIDS_HPP_
 
 #include <lv2/lv2plug.in/ns/lv2core/lv2.h>
 #include <lv2/lv2plug.in/ns/ext/atom/util.h>
 #include <lv2/lv2plug.in/ns/ext/urid/urid.h>
 #include <lv2/lv2plug.in/ns/ext/midi/midi.h>
 #include <lv2/lv2plug.in/ns/ext/time/time.h>
-#include "definitions.h"
+#include "definitions.hpp"
 
-typedef struct
+struct BShaprURIDs
 {
 	LV2_URID atom_Float;
 	LV2_URID atom_Int;
@@ -61,7 +61,7 @@ typedef struct
 	LV2_URID notify_messageEvent;
 	LV2_URID notify_message;
 	LV2_URID notify_statusEvent;
-}  BShaprURIDs;
+};
 
 void mapURIDs (LV2_URID_Map* m, BShaprURIDs* uris)
 {
@@ -98,4 +98,4 @@ void mapURIDs (LV2_URID_Map* m, BShaprURIDs* uris)
 	uris->notify_statusEvent = m->map(m->handle, BSHAPR_URI "#NOTIFYstatusEvent");
 }
 
-#endif /* URIDS_H_ */
+#endif /* URIDS_HPP_ */

@@ -21,7 +21,7 @@
 #include <cstdio>
 #include <string>
 #include <exception>
-#include "BShapr.h"
+#include "BShapr.hpp"
 
 #define LIM(g , min, max) ((g) > (max) ? (max) : ((g) < (min) ? (min) : (g)))
 #define SQR(a) (a * a)
@@ -123,7 +123,7 @@ BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 {
 	for (int i = 0; i < MAXSHAPES; ++i)
 	{
-		shapes[i].setDefaultShape (defaultEndNodes[0]);
+		shapes[i].setDefaultShape (methods[0].defaultEndNode);
 
 		try {audioBuffer1[i].resize (samplerate);}
 		catch (std::bad_alloc& ba) {throw ba;}
@@ -297,7 +297,7 @@ void BShapr::run (uint32_t n_samples)
 				if (shapeControllerNr == SH_TARGET)
 				{
 					// Keep a default shape as a default shape but with new default values
-					if (shapes[shapeNr].isDefault ()) shapes[shapeNr].setDefaultShape (defaultEndNodes[(int)newValue]);
+					if (shapes[shapeNr].isDefault ()) shapes[shapeNr].setDefaultShape (methods[(int)newValue].defaultEndNode);
 
 					// Clear audiobuffers, if needed
 					if ((newValue == BShaprTargetIndex::PITCH) ||
@@ -638,13 +638,13 @@ void BShapr::notifyStatusToGui()
 
 void BShapr::audioLevel (const float input1, const float input2, float* output1, float* output2, const float amp)
 {
-	*output1 = input1 * LIM (amp, methodLimits[LEVEL].min, methodLimits[LEVEL].max);
+	*output1 = input1 * LIM (amp, methods[LEVEL].limit.min, methods[LEVEL].limit.max);
 	*output2 = input2 * LIM (amp, 0, 100);
 }
 
 void BShapr::stereoBalance (const float input1, const float input2, float* output1, float* output2, const float balance)
 {
-	float f = LIM (balance, methodLimits[BALANCE].min, methodLimits[BALANCE].max);
+	float f = LIM (balance, methods[BALANCE].limit.min, methods[BALANCE].limit.max);
 	if (f < 0)
 	{
 		*output1 = input1 + (0 - f) * input2;
@@ -660,7 +660,7 @@ void BShapr::stereoBalance (const float input1, const float input2, float* outpu
 
 void BShapr::stereoWidth (const float input1, const float input2, float* output1, float* output2, const float width)
 {
-	float f = LIM (width, methodLimits[WIDTH].min, methodLimits[WIDTH].max);
+	float f = LIM (width, methods[WIDTH].limit.min, methods[WIDTH].limit.max);
 	float m = (input1 + input2) / 2;
 	float s = (input1 - input2) * f / 2;
 
@@ -671,7 +671,7 @@ void BShapr::stereoWidth (const float input1, const float input2, float* output1
 // Butterworth algorithm
 void BShapr::lowPassFilter (const float input1, const float input2, float* output1, float* output2, const float cutoffFreq, const int shape)
 {
-	float f = LIM (cutoffFreq, methodLimits[LOW_PASS].min, methodLimits[LOW_PASS].max);
+	float f = LIM (cutoffFreq, methods[LOW_PASS].limit.min, methods[LOW_PASS].limit.max);
 	float a = tan (M_PI * f / rate);
   float a2 = a * a;
 	float coeff0 [F_ORDER / 2];
@@ -710,7 +710,7 @@ void BShapr::lowPassFilter (const float input1, const float input2, float* outpu
 // Butterworth algorithm
 void BShapr::highPassFilter (const float input1, const float input2, float* output1, float* output2, const float cutoffFreq, const int shape)
 {
-	float f = LIM (cutoffFreq, methodLimits[HIGH_PASS].min, methodLimits[HIGH_PASS].max);
+	float f = LIM (cutoffFreq, methods[HIGH_PASS].limit.min, methods[HIGH_PASS].limit.max);
 	float a = tan (M_PI * f / rate);
   float a2 = a * a;
 	float coeff0 [F_ORDER / 2];
@@ -751,7 +751,7 @@ void BShapr::pitch (const float input1, const float input2, float* output1, floa
 {
 	const int pitchBufferSize = rate * PITCHBUFFERTIME / 1000;
 	const int pitchFaderSize = rate * PITCHFADERTIME / 1000;
-	const float p  = LIM (semitone, methodLimits[PITCH].min, methodLimits[PITCH].max);
+	const float p  = LIM (semitone, methods[PITCH].limit.min, methods[PITCH].limit.max);
 	const double pitchFactor = pow (2, p / 12);
 	const uint32_t wPtr = audioBuffer1[shape].wPtr1;
 	const double rPtr = audioBuffer1[shape].rPtr1;
@@ -842,7 +842,7 @@ void BShapr::delay (const float input1, const float input2, float* output1, floa
 {
 	const int audioBufferSize = rate;
 	const int delayBufferSize = rate * DELAYBUFFERTIME / 1000;
-	float param = LIM (delaytime, methodLimits[DELAY].min, methodLimits[DELAY].max) * rate / 1000;
+	float param = LIM (delaytime, methods[DELAY].limit.min, methods[DELAY].limit.max) * rate / 1000;
 	const int delayframes = LIM (param, 0, audioBufferSize);
 
 	const uint32_t wPtr = uint32_t (audioBuffer1[shape].wPtr1) % audioBufferSize;
@@ -926,7 +926,7 @@ void BShapr::delay (const float input1, const float input2, float* output1, floa
 void BShapr::doppler (const float input1, const float input2, float* output1, float* output2, const float delaytime, const int shape)
 {
 	const int audioBufferSize = rate;
-	float param = LIM (delaytime, methodLimits[DELAY].min, methodLimits[DELAY].max) * rate / 1000;
+	float param = LIM (delaytime, methods[DELAY].limit.min, methods[DELAY].limit.max) * rate / 1000;
 	const float delayframes = LIM (param, 0, audioBufferSize);
 
 	const uint32_t wPtr = uint32_t (audioBuffer1[shape].wPtr1) % audioBufferSize;
@@ -1023,7 +1023,7 @@ void BShapr::play (uint32_t start, uint32_t end)
 							break;
 
 						case BShaprTargetIndex::GAIN:
-							audioLevel (input1, input2, &wet1, &wet2, pow (10, 0.05 * (LIM (iFactor, methodLimits[GAIN].min, methodLimits[GAIN].max))));
+							audioLevel (input1, input2, &wet1, &wet2, pow (10, 0.05 * (LIM (iFactor, methods[GAIN].limit.min, methods[GAIN].limit.max))));
 							break;
 
 						case BShaprTargetIndex::BALANCE:
@@ -1039,7 +1039,7 @@ void BShapr::play (uint32_t start, uint32_t end)
 							break;
 
 						case BShaprTargetIndex::LOW_PASS_LOG:
-							lowPassFilter (input1, input2, &wet1, &wet2, pow (10, LIM (iFactor, methodLimits[LOW_PASS_LOG].min, methodLimits[LOW_PASS_LOG].max)), sh);
+							lowPassFilter (input1, input2, &wet1, &wet2, pow (10, LIM (iFactor, methods[LOW_PASS_LOG].limit.min, methods[LOW_PASS_LOG].limit.max)), sh);
 							break;
 
 						case BShaprTargetIndex::HIGH_PASS:
@@ -1047,7 +1047,7 @@ void BShapr::play (uint32_t start, uint32_t end)
 							break;
 
 						case BShaprTargetIndex::HIGH_PASS_LOG:
-							highPassFilter (input1, input2, &wet1, &wet2, pow (10, LIM (iFactor, methodLimits[HIGH_PASS_LOG].min, methodLimits[HIGH_PASS_LOG].max)), sh);
+							highPassFilter (input1, input2, &wet1, &wet2, pow (10, LIM (iFactor, methods[HIGH_PASS_LOG].limit.min, methods[HIGH_PASS_LOG].limit.max)), sh);
 							break;
 
 						case BShaprTargetIndex::PITCH:

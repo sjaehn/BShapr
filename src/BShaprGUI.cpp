@@ -50,7 +50,6 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	for (int i = 0; i < MAXSHAPES; ++i)
 	{
 		shapeGui[i].tabIcon = BWidgets::ImageIcon (20 + i * 120, 90, 119, 40, "tab", pluginPath + "inc/Shape" + std::to_string (i + 1) + ".png");
-
 		shapeGui[i].shapeContainer = BWidgets::Widget (20, 130, 1160, 490, "widget");
 
 		// Method menu
@@ -58,19 +57,19 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].methodIcons = {};
 		for (int j = 0; j < MAXEFFECTS; ++j)
 		{
-			shapeGui[i].methodIcons.push_back
-			(
-				BWidgets::ImageIcon
-				(
-					0, 0, 124, 44, "icon",
-					{
-						pluginPath + methodParameters[j].iconFileName,
-						pluginPath + methodParameters[j].iconFileName,
-						pluginPath + methodParameters[j].iconFileName
-					}
-				)
+			std::string iconPath = "";
+			int index = 0;
+			for (int k = 0; k < MAXEFFECTS; ++k)
+			{
+				if (j == methods[k].index)
+				{
+					iconPath = pluginPath + methods[k].iconFileName;
+					index = k;
+					break;
+				}
+			}
 
-			);
+			shapeGui[i].methodIcons.push_back (BWidgets::ImageIcon (0, 0, 124, 44, "icon", {iconPath, iconPath}));
 
 			BWidgets::ImageIcon* icon = &*std::prev (shapeGui[i].methodIcons.end ());
 			cairo_t* cr = cairo_create (icon->getIconSurface (BColors::NORMAL));
@@ -78,8 +77,9 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 			cairo_paint (cr);
 			cairo_destroy (cr);
 
-			il.push_back (BItems::Item (methodParameters[j].value, icon));
+			il.push_back (BItems::Item (index, icon));
 		}
+
 		shapeGui[i].targetListBox = BWidgets::PopupListBox (40, 438, 144, 44, 0, -380, 124, 380, "menu2", il);
 
 		shapeGui[i].shapeWidget = ShapeWidget (4, 4, 1152, 352, "shape");
@@ -150,8 +150,8 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	for (unsigned int i = 0; i < MAXSHAPES; ++i)
 	{
 		shapeGui[i].shapeWidget.setTool (ToolType::POINT_NODE_TOOL);
-		shapeGui[i].shapeWidget.setLowerLimit (methodLimits[0].min);
-		shapeGui[i].shapeWidget.setHigherLimit (methodLimits[0].max);
+		shapeGui[i].shapeWidget.setLowerLimit (methods[0].limit.min);
+		shapeGui[i].shapeWidget.setHigherLimit (methods[0].limit.max);
 		shapeGui[i].drywetDial.setHardChangeable (false);
 		if (i >= 1) shapeGui[i].shapeContainer.hide();
 	}
@@ -185,7 +185,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	add (mContainer);
 
 	// Post addition configurations
-	for (int i = 0; i < MAXSHAPES; ++i) shapeGui[i].shapeWidget.setDefaultShape(defaultEndNodes[0]);
+	for (int i = 0; i < MAXSHAPES; ++i) shapeGui[i].shapeWidget.setDefaultShape(methods[0].defaultEndNode);
 	for (int i = 0; i < MAXSHAPES; ++i) shapeGui[i].shapeWidget.setValueEnabled (true);
 
 	//Scan host features for URID map
@@ -590,40 +590,38 @@ void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 
 				if (widgetNr >= SHAPERS)
 				{
+					int nr = value;
+
 					// Target
-					if ((widgetNr - SHAPERS) % SH_SIZE == SH_TARGET)
+					if
+					(
+						((widgetNr - SHAPERS) % SH_SIZE == SH_TARGET) &&
+						(nr >= 0) &&
+						(nr <= MAXEFFECTS)
+					)
 					{
 						int sh = (widgetNr - SHAPERS) / SH_SIZE;
-						int nr = value;
-
-						// Position within the methodParameters array
-						int method = 0;
-						for (int i = 0; i < MAXEFFECTS; ++i)
-						{
-							if (methodParameters[i].value == value)
-							{
-								method = i;
-								break;
-							}
-						}
 
 						// Set default end notes (if not manually set before)
-						if ((ui->shapeGui[sh].shapeWidget.isDefault ()) && (ui->shapeGui[sh].shapeWidget.getNode (0).point.y != defaultEndNodes[nr].point.y))
+						if
+						(
+							(ui->shapeGui[sh].shapeWidget.isDefault ()) &&
+							(ui->shapeGui[sh].shapeWidget.getNode (0).point.y != methods[nr].defaultEndNode.point.y))
 						{
-							ui->shapeGui[sh].shapeWidget.setDefaultShape (defaultEndNodes[nr]);
+							ui->shapeGui[sh].shapeWidget.setDefaultShape (methods[nr].defaultEndNode);
 						}
 
 						// Set shapeWidget display parameters (limits, unit, prefix, ...)
 						ui->shapeGui[sh].shapeWidget.setScaleParameters
 						(
-							methodParameters[method].anchorYPos,
-							methodParameters[method].anchorValue,
-							methodParameters[method].ratio
+							methods[nr].anchorYPos,
+							methods[nr].anchorValue,
+							methods[nr].ratio
 						);
-						ui->shapeGui[sh].shapeWidget.setUnit (methodParameters[method].unit);
-						ui->shapeGui[sh].shapeWidget.setPrefix (methodParameters[method].prefix);
-						ui->shapeGui[sh].shapeWidget.setLowerLimit (methodLimits[nr].min);
-						ui->shapeGui[sh].shapeWidget.setHigherLimit (methodLimits[nr].max);
+						ui->shapeGui[sh].shapeWidget.setUnit (methods[nr].unit);
+						ui->shapeGui[sh].shapeWidget.setPrefix (methods[nr].prefix);
+						ui->shapeGui[sh].shapeWidget.setLowerLimit (methods[nr].limit.min);
+						ui->shapeGui[sh].shapeWidget.setHigherLimit (methods[nr].limit.max);
 					}
 				}
 			}

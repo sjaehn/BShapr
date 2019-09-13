@@ -18,8 +18,8 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef BSHAPR_H_
-#define BSHAPR_H_
+#ifndef BSHAPR_HPP_
+#define BSHAPR_HPP_
 
 #include <cmath>
 #include <array>
@@ -32,12 +32,14 @@
 #include <lv2/lv2plug.in/ns/ext/time/time.h>
 #include <lv2/lv2plug.in/ns/ext/state/state.h>
 #include "StaticArrayList.hpp"
-#include "definitions.h"
+#include "definitions.hpp"
 #include "ports.h"
-#include "urids.h"
+#include "Urids.hpp"
 #include "Point.hpp"
 #include "Node.hpp"
 #include "Shape.hpp"
+#include "BShaprNotifications.hpp"
+#include "Method.hpp"
 
 #define F_ORDER 8
 #define P_ORDER 6
@@ -182,4 +184,4 @@ private:
 
 };
 
-#endif /* BSHAPR_H_ */
+#endif /* BSHAPR_HPP_ */

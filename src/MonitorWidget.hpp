@@ -22,7 +22,8 @@
  #define MONITORWIDGET_HPP_
 
  #include "BWidgets/Widget.hpp"
- #include "definitions.h"
+ #include "definitions.hpp"
+ #include "Range.hpp"
 
  class MonitorWidget : public BWidgets::Widget
  {

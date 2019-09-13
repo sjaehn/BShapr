@@ -49,9 +49,11 @@
 #include "ValueSelect.hpp"
 #include "HorizonWidget.hpp"
 #include "MonitorWidget.hpp"
-#include "definitions.h"
+#include "definitions.hpp"
 #include "ports.h"
-#include "urids.h"
+#include "Urids.hpp"
+#include "BShaprNotifications.hpp"
+#include "Method.hpp"
 
 #include "screen.h"
 #include "SelectWidget.hpp"
@@ -66,32 +68,6 @@
 #define BG_FILE "inc/surface.png"
 
 #define RESIZE(widget, x, y, w, h, sz) widget.moveTo ((x) * (sz), (y) * (sz)); widget.resize ((w) * (sz), (h) * (sz));
-
-struct MethodParameters
-{
-	double value;
-	double anchorYPos;
-	double anchorValue;
-	double ratio;
-	std::string prefix;
-	std::string unit;
-	std::string iconFileName;
-};
-
-const MethodParameters methodParameters[MAXEFFECTS] =
-{
-	{0, 0.05, 0, 1.1, "", "", "inc/Level.png"},
-	{5, 0.75, 0, 90, "", "dB", "inc/Amplify.png"},
-	{1, 0.5, 0, 2.2, "", "", "inc/Balance.png"},
-	{2, 0.05, 0, 2.2, "", "", "inc/Width.png"},
-	{3, 0, 0, 5050, "", "Hz", "inc/Low_pass.png"},
-	{6, 0.1, 1.3, 3.5, "10^", "Hz", "inc/Low_pass_log.png"},
-	{4, 0, 0, 810, "", "Hz", "inc/High_pass.png"},
-	{7, 0.1, 1.3, 3.5, "10^", "Hz", "inc/High_pass_log.png"},
-	{8, 0.5, 0, 25, "", "semitones", "inc/Pitch_shift.png"},
-	{9, 0.05, 0, 800, "", "ms", "inc/Delay.png"},
-	{10, 0.05, 0, 800, "", "ms", "inc/Doppler_delay.png"}
-};
 
 const std::string messageStrings[MAXMESSAGES] =
 {
