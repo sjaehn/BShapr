@@ -18,14 +18,26 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
- #ifndef LIMIT_HPP_
- #define LIMIT_HPP_
+#ifndef LIMIT_HPP_
+#define LIMIT_HPP_
 
- struct Limit
- {
- 	float min;
- 	float max;
- 	float step;
- };
+#include <cmath>
+
+struct Limit
+{
+	float min;
+	float max;
+	float step;
+
+        float validate (float value) const
+        {
+                if (max <= min) return min;
+                if (value <= min) return min;
+                if (value >= max) return max;
+                if (step == 0) return value;
+                if (step > 0) return min + round ((value - min) / step) * step;
+                return max - round ((max - value) / step) * step;
+        }
+};
 
 #endif /* LIMIT_HPP_ */

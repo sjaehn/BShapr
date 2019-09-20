@@ -186,21 +186,15 @@ void BShapr::connect_port(uint32_t port, void *data)
 	}
 }
 
-void BShapr::fillFilterBuffer (float filterBuffer[MAXSHAPES] [F_ORDER / 2], const float value)
+void BShapr::fillFilterBuffer (float filterBuffer[MAXSHAPES] [MAX_F_ORDER / 2], const float value)
 {
 	for (int i = 0; i < MAXSHAPES; ++ i)
 	{
-		for (int j = 0; j < F_ORDER / 2; ++ j)
+		for (int j = 0; j < MAX_F_ORDER / 2; ++ j)
 		{
 			filterBuffer[i][j] = value;
 		}
 	}
-}
-
-float BShapr::validateValue (float value, const Limit limit)
-{
-	float ltdValue = ((limit.step != 0) ? (limit.min + round ((value - limit.min) / limit.step) * limit.step) : value);
-	return LIM (ltdValue, limit.min, limit.max);
 }
 
 bool BShapr::isAudioOutputConnected (int shapeNr)
@@ -255,13 +249,14 @@ void BShapr::run (uint32_t n_samples)
 	{
 		if (controllers[i] != *new_controllers[i])
 		{
-			float newValue;
+			float newValue = *new_controllers[i];
 			int shapeNr = ((i >= SHAPERS) ? ((i - SHAPERS) / SH_SIZE) : -1);
 			int shapeControllerNr = ((i >= SHAPERS) ? ((i - SHAPERS) % SH_SIZE) : -1);
 
+			// Global controllers
 			if (i < SHAPERS)
 			{
-				newValue = validateValue (*new_controllers[i], globalControllerLimits[i]);
+				newValue = globalControllerLimits[i].validate (newValue);
 
 				if (i == MIDI_CONTROL)
 				{
@@ -290,23 +285,35 @@ void BShapr::run (uint32_t n_samples)
 				}
 			}
 
+			// Shape controllers
 			else
 			{
-				newValue = validateValue (*new_controllers[i], shapeControllerLimits[shapeControllerNr]);
+				newValue = shapeControllerLimits[shapeControllerNr].validate (newValue);
 
+				// Target
 				if (shapeControllerNr == SH_TARGET)
 				{
 					// Keep a default shape as a default shape but with new default values
 					if (shapes[shapeNr].isDefault ()) shapes[shapeNr].setDefaultShape (methods[(int)newValue].defaultEndNode);
 
 					// Clear audiobuffers, if needed
-					if ((newValue == BShaprTargetIndex::PITCH) ||
-							(newValue == BShaprTargetIndex::DELAY) ||
-							(newValue == BShaprTargetIndex::DOPPLER))
+					if
+					(
+						(newValue == BShaprTargetIndex::PITCH) ||
+						(newValue == BShaprTargetIndex::DELAY) ||
+						(newValue == BShaprTargetIndex::DOPPLER)
+					)
 					{
 						audioBuffer1[shapeNr].reset ();
 						audioBuffer2[shapeNr].reset ();
 					}
+				}
+
+				// Options
+				else if ((shapeControllerNr >= SH_OPTION) && (shapeControllerNr < SH_OPTION + MAXOPTIONS))
+				{
+					int optionNr = shapeControllerNr - SH_OPTION;
+					newValue = options[optionNr].limit.validate (newValue);
 				}
 			}
 
@@ -671,36 +678,37 @@ void BShapr::stereoWidth (const float input1, const float input2, float* output1
 // Butterworth algorithm
 void BShapr::lowPassFilter (const float input1, const float input2, float* output1, float* output2, const float cutoffFreq, const int shape)
 {
+	int order = controllers[SHAPERS + shape * SH_SIZE + SH_OPTION] / 6;
 	float f = LIM (cutoffFreq, methods[LOW_PASS].limit.min, methods[LOW_PASS].limit.max);
 	float a = tan (M_PI * f / rate);
-  float a2 = a * a;
-	float coeff0 [F_ORDER / 2];
-	float coeff1 [F_ORDER / 2];
-	float coeff2 [F_ORDER / 2];
-	float filter1Buffer0 [F_ORDER / 2];
-	float filter2Buffer0 [F_ORDER / 2];
+	float a2 = a * a;
+	float coeff0 [MAX_F_ORDER / 2];
+	float coeff1 [MAX_F_ORDER / 2];
+	float coeff2 [MAX_F_ORDER / 2];
+	float filter1Buffer0 [MAX_F_ORDER / 2];
+	float filter2Buffer0 [MAX_F_ORDER / 2];
 
-	for (int i = 0; i < F_ORDER / 2; ++i)
+	for (int i = 0; i < int (order / 2); ++i)
 	{
-    float r = sin (M_PI * (2.0f * i + 1.0f) / (2.0f * F_ORDER));
-    float s = a2 + 2.0f * a * r + 1.0f;
-    coeff0[i] = a2 / s;
-    coeff1[i] = 2.0f * (1 - a2) / s;
-    coeff2[i] = -(a2 - 2.0f * a * r + 1.0f) / s;
+		float r = sin (M_PI * (2.0f * i + 1.0f) / (2.0f * order));
+		float s = a2 + 2.0f * a * r + 1.0f;
+		coeff0[i] = a2 / s;
+		coeff1[i] = 2.0f * (1 - a2) / s;
+		coeff2[i] = -(a2 - 2.0f * a * r + 1.0f) / s;
 	}
 
 	double f1 = input1;
 	double f2 = input2;
-	for (int i = 0; i < F_ORDER / 2; ++i)
+	for (int i = 0; i < int (order / 2); ++i)
 	{
-    filter1Buffer0[i] = coeff1[i] * filter1Buffer1[shape][i] + coeff2[i] * filter1Buffer2[shape][i] + f1;
+		filter1Buffer0[i] = coeff1[i] * filter1Buffer1[shape][i] + coeff2[i] * filter1Buffer2[shape][i] + f1;
 		filter2Buffer0[i] = coeff1[i] * filter2Buffer1[shape][i] + coeff2[i] * filter2Buffer2[shape][i] + f2;
-    f1 = coeff0[i] * (filter1Buffer0[i] + 2.0f * filter1Buffer1[shape][i] + filter1Buffer2[shape][i]);
+		f1 = coeff0[i] * (filter1Buffer0[i] + 2.0f * filter1Buffer1[shape][i] + filter1Buffer2[shape][i]);
 		f2 = coeff0[i] * (filter2Buffer0[i] + 2.0f * filter2Buffer1[shape][i] + filter2Buffer2[shape][i]);
-    filter1Buffer2[shape][i] = filter1Buffer1[shape][i];
-    filter1Buffer1[shape][i] = filter1Buffer0[i];
+		filter1Buffer2[shape][i] = filter1Buffer1[shape][i];
+		filter1Buffer1[shape][i] = filter1Buffer0[i];
 		filter2Buffer2[shape][i] = filter2Buffer1[shape][i];
-    filter2Buffer1[shape][i] = filter2Buffer0[i];
+		filter2Buffer1[shape][i] = filter2Buffer0[i];
 	}
 
 	*output1 = f1;
@@ -710,36 +718,37 @@ void BShapr::lowPassFilter (const float input1, const float input2, float* outpu
 // Butterworth algorithm
 void BShapr::highPassFilter (const float input1, const float input2, float* output1, float* output2, const float cutoffFreq, const int shape)
 {
+	int order = controllers[SHAPERS + shape * SH_SIZE + SH_OPTION] / 6;
 	float f = LIM (cutoffFreq, methods[HIGH_PASS].limit.min, methods[HIGH_PASS].limit.max);
 	float a = tan (M_PI * f / rate);
-  float a2 = a * a;
-	float coeff0 [F_ORDER / 2];
-	float coeff1 [F_ORDER / 2];
-	float coeff2 [F_ORDER / 2];
-	float filter1Buffer0 [F_ORDER / 2];
-	float filter2Buffer0 [F_ORDER / 2];
+	float a2 = a * a;
+	float coeff0 [MAX_F_ORDER / 2];
+	float coeff1 [MAX_F_ORDER / 2];
+	float coeff2 [MAX_F_ORDER / 2];
+	float filter1Buffer0 [MAX_F_ORDER / 2];
+	float filter2Buffer0 [MAX_F_ORDER / 2];
 
-	for (int i = 0; i < F_ORDER / 2; ++i)
+	for (int i = 0; i < int (order / 2); ++i)
 	{
-    float r = sin (M_PI * (2.0f * i + 1.0f) / (2.0f * F_ORDER));
-    float s = a2 + 2.0f * a * r + 1.0f;
-    coeff0[i] = 1 / s;
-    coeff1[i] = 2.0f * (1 - a2) / s;
-    coeff2[i] = -(a2 - 2.0f * a * r + 1.0f) / s;
+		float r = sin (M_PI * (2.0f * i + 1.0f) / (2.0f * order));
+		float s = a2 + 2.0f * a * r + 1.0f;
+		coeff0[i] = 1 / s;
+		coeff1[i] = 2.0f * (1 - a2) / s;
+		coeff2[i] = -(a2 - 2.0f * a * r + 1.0f) / s;
 	}
 
 	double f1 = input1;
 	double f2 = input2;
-	for (int i = 0; i < F_ORDER / 2; ++i)
+	for (int i = 0; i < int (order / 2); ++i)
 	{
-    filter1Buffer0[i] = coeff1[i] * filter1Buffer1[shape][i] + coeff2[i] * filter1Buffer2[shape][i] + f1;
+		filter1Buffer0[i] = coeff1[i] * filter1Buffer1[shape][i] + coeff2[i] * filter1Buffer2[shape][i] + f1;
 		filter2Buffer0[i] = coeff1[i] * filter2Buffer1[shape][i] + coeff2[i] * filter2Buffer2[shape][i] + f2;
-    f1 = coeff0[i] * (filter1Buffer0[i] - 2.0f * filter1Buffer1[shape][i] + filter1Buffer2[shape][i]);
+		f1 = coeff0[i] * (filter1Buffer0[i] - 2.0f * filter1Buffer1[shape][i] + filter1Buffer2[shape][i]);
 		f2 = coeff0[i] * (filter2Buffer0[i] - 2.0f * filter2Buffer1[shape][i] + filter2Buffer2[shape][i]);
-    filter1Buffer2[shape][i] = filter1Buffer1[shape][i];
-    filter1Buffer1[shape][i] = filter1Buffer0[i];
+		filter1Buffer2[shape][i] = filter1Buffer1[shape][i];
+		filter1Buffer1[shape][i] = filter1Buffer0[i];
 		filter2Buffer2[shape][i] = filter2Buffer1[shape][i];
-    filter2Buffer1[shape][i] = filter2Buffer0[i];
+		filter2Buffer1[shape][i] = filter2Buffer0[i];
 	}
 
 	*output1 = f1;

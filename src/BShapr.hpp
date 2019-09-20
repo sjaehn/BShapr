@@ -31,40 +31,21 @@
 #include <lv2/lv2plug.in/ns/ext/urid/urid.h>
 #include <lv2/lv2plug.in/ns/ext/time/time.h>
 #include <lv2/lv2plug.in/ns/ext/state/state.h>
-#include "StaticArrayList.hpp"
-#include "definitions.hpp"
-#include "ports.h"
+#include "Globals.hpp"
 #include "Urids.hpp"
 #include "Point.hpp"
 #include "Node.hpp"
 #include "Shape.hpp"
 #include "BShaprNotifications.hpp"
-#include "Method.hpp"
 
-#define F_ORDER 8
+
+#define MAX_F_ORDER 12
 #define P_ORDER 6
 #define PITCHBUFFERTIME 20
 #define PITCHFADERTIME 2
 #define DELAYBUFFERTIME 20
-
-const Limit globalControllerLimits [SHAPERS] =
-{
-	{0, 1, 0},
-	{0, 4095, 0},
-	{0, 2, 1},
-	{1, 16, 0},
-	{1, 4, 1}
-};
-
-const Limit shapeControllerLimits [SH_SIZE] =
-{
-	{0, 6, 1},
-	{-1, 1, 0},
-	{0, MAXEFFECTS - 1, 1},
-	{0, 1, 0},
-	{0, 1, 1},
-	{0, 1, 0}
-};
+#define MINOPTIONVALUE -20000
+#define MAXOPTIONVALUE 20000
 
 struct AudioBuffer
 {
@@ -106,8 +87,7 @@ public:
 	LV2_URID_Map* map;
 
 private:
-	void fillFilterBuffer (float filterBuffer[MAXSHAPES] [F_ORDER / 2], const float value);
-	float validateValue (float value, const Limit limit);
+	void fillFilterBuffer (float filterBuffer[MAXSHAPES] [MAX_F_ORDER / 2], const float value);
 	bool isAudioOutputConnected (int shapeNr);
 	void audioLevel (const float input1, const float input2, float* output1, float* output2, const float amp);
 	void stereoBalance (const float input1, const float input2, float* output1, float* output2, const float balance);
@@ -144,10 +124,10 @@ private:
 	float* audioOutput2;
 	AudioBuffer audioBuffer1 [MAXSHAPES];
 	AudioBuffer audioBuffer2 [MAXSHAPES];
-	float filter1Buffer1 [MAXSHAPES] [F_ORDER / 2];
-	float filter1Buffer2 [MAXSHAPES] [F_ORDER / 2];
-	float filter2Buffer1 [MAXSHAPES] [F_ORDER / 2];
-	float filter2Buffer2 [MAXSHAPES] [F_ORDER / 2];
+	float filter1Buffer1 [MAXSHAPES] [MAX_F_ORDER / 2];
+	float filter1Buffer2 [MAXSHAPES] [MAX_F_ORDER / 2];
+	float filter2Buffer1 [MAXSHAPES] [MAX_F_ORDER / 2];
+	float filter2Buffer2 [MAXSHAPES] [MAX_F_ORDER / 2];
 
 	// Controllers
 	float* new_controllers[NR_CONTROLLERS];

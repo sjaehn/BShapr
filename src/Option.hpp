@@ -27,9 +27,9 @@
 enum WidgetType
 {
 	NO_WIDGET,
-	DIAL,
-	SLIDER,
-	SWITCH
+	DIAL_WIDGET,
+	SLIDER_WIDGET,
+	SWITCH_WIDGET
 };
 
 struct Option
@@ -38,6 +38,7 @@ struct Option
 	std::string name;
 	double value;
 	Limit limit;
+	std::string format;
 };
 
 #endif /* OPTION_HPP_ */

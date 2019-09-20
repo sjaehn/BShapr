@@ -78,6 +78,7 @@ Select a method that will be applied on the input signal by the use of the shape
 * Delay (const. pitch)
 * Doppler delay
 
+
 ### MIDI control
 
 B.Shapr can optionally be controlled by a MIDI device. Once switched to B.Shapr's MIDI mode, you can select and
@@ -93,13 +94,13 @@ a base.
 
 * Usage simplified
 ** No routing in GUI
-** Routing can only be done in LV2 now
+** Routing can only be done in LV2 backend now
 * New GUI
+* Additional configuration parameters for methods (optional dials)
 
 ## TODO
 
 * Additional methods (any ideas welcome)
-* Display additional configuration parameters for methods
 * Copy & paste nodes
 
 ## See also

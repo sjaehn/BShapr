@@ -49,25 +49,15 @@
 #include "ValueSelect.hpp"
 #include "HorizonWidget.hpp"
 #include "MonitorWidget.hpp"
-#include "definitions.hpp"
-#include "ports.h"
+#include "Globals.hpp"
 #include "Urids.hpp"
 #include "BShaprNotifications.hpp"
-#include "Method.hpp"
 
 #include "screen.h"
 #include "SelectWidget.hpp"
 
-#define CAIRO_BG_COLOR 0.0, 0.0, 0.0, 1.0
-#define CAIRO_BG_COLOR2 0.2, 0.2, 0.2, 1.0
-#define CAIRO_TRANSPARENT 0.0, 0.0, 0.0, 0.0
-#define CAIRO_FG_COLOR 1.0, 1.0, 1.0, 1.0
-#define CAIRO_INK1 0.75, 0.0, 1.0
-#define CAIRO_INK2 1.0, 0.0, 0.75
-
 #define BG_FILE "inc/surface.png"
-
-#define RESIZE(widget, x, y, w, h, sz) widget.moveTo ((x) * (sz), (y) * (sz)); widget.resize ((w) * (sz), (h) * (sz));
+#define RESIZE(widget, x, y, w, h, sz) {widget.moveTo ((x) * (sz), (y) * (sz)); widget.resize ((w) * (sz), (h) * (sz));}
 
 const std::string messageStrings[MAXMESSAGES] =
 {
@@ -117,6 +107,21 @@ private:
 	int beatUnit;
 
 	// Widgets
+	typedef struct
+	{
+		BWidgets::Widget shapeContainer;
+		BWidgets::ImageIcon tabIcon;
+		BWidgets::PopupListBox targetListBox;
+		BWidgets::Label drywetLabel;
+		BWidgets::DialValue drywetDial;
+		ShapeWidget shapeWidget;
+		BWidgets::Text focusText;
+		std::list<BWidgets::ImageIcon> methodIcons;
+		std::array<BWidgets::RangeWidget*, MAXOPTIONS> optionWidgets;
+		std::array<BWidgets::Label, MAXOPTIONS> optionLabels;
+		SelectWidget toolSelect;
+	} ShapeGui;
+
 	BWidgets::ImageIcon mContainer;
 	BWidgets::Label messageLabel;
 	BWidgets::VSwitch midiSwitch;
@@ -131,20 +136,6 @@ private:
 	MonitorWidget output1Monitor;
 	MonitorWidget input2Monitor;
 	MonitorWidget output2Monitor;
-
-	typedef struct
-	{
-		BWidgets::Widget shapeContainer;
-		BWidgets::ImageIcon tabIcon;
-		BWidgets::PopupListBox targetListBox;
-		BWidgets::Label drywetLabel;
-		BWidgets::Dial drywetDial;
-		ShapeWidget shapeWidget;
-		BWidgets::Text focusText;
-		std::list<BWidgets::ImageIcon> methodIcons;
-		SelectWidget toolSelect;
-	} ShapeGui;
-
 	std::array<ShapeGui, MAXSHAPES> shapeGui;
 
 	float shapeBuffer[MAXNODES * 7];
