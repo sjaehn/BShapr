@@ -35,8 +35,8 @@ struct Limit
                 if (value <= min) return min;
                 if (value >= max) return max;
                 if (step == 0) return value;
-                if (step > 0) return min + round ((value - min) / step) * step;
-                return max - round ((max - value) / step) * step;
+		float newValue = (step > 0 ? min + round ((value - min) / step) * step : max - round ((max - value) / step) * step);
+		return (newValue >= min ? (newValue <= max ? newValue : max) : min);
         }
 };
 
