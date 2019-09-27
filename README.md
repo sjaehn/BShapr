@@ -45,8 +45,8 @@ Notes:
 
 B.Shapr is an envelope plugin for time or beat position-dependent effects.
 The user can define up to four different envelope shapes by drawing Bezier curves. Each of these envelope
-shapes can be connected to different target effects, such as level, balance, or stereo width, and can be
-combined together.
+shapes can be connected to different target effects, such as amplification, balance, stereo width,
+filters, pitch shift, delay, and distortion effecs and can be combined together.
 
 ### Shape selector
 
@@ -64,9 +64,9 @@ scrolling zooms the display in or out.
 In the background of the shape editor a stereo monitor visualizes the input and the output levels. You can change
 the zoom by pressing SHIFT key AND scrolling the mouse wheel.
 
-### Method
+### Effect
 
-Select a method that will be applied on the input signal by the use of the shape. You can choose between:
+Select a effect that will be applied on the input signal by the use of the shape. You can choose between:
 
 * Level
 * Amplification
@@ -77,7 +77,9 @@ Select a method that will be applied on the input signal by the use of the shape
 * Pitch shift
 * Delay (const. pitch)
 * Doppler delay
-
+* Distortion
+* Decimate
+* Bitcrush
 
 ### MIDI control
 
@@ -93,14 +95,23 @@ a base.
 ### What's new
 
 * Usage simplified
-** No routing in GUI
-** Routing can only be done in LV2 backend now
+* * No routing in GUI
+* * Routing can only be done in LV2 backend now
 * New GUI
-* Additional configuration parameters for methods (optional dials)
+* Additional configuration parameters for effects (optional dials)
+* New effects
+* * Distortion
+* * * Hardclip
+* * * Softclip
+* * * Foldback
+* * * Overdrive
+* * * Fuzz
+* * Decimate
+* * Bitcrush
 
 ## TODO
 
-* Additional methods (any ideas welcome)
+* Additional effects (any ideas welcome)
 * Copy & paste nodes
 
 ## See also

@@ -97,6 +97,9 @@ private:
 	void pitch (const float input1, const float input2, float* output1, float* output2, const float semitone, const int shape);
 	void delay (const float input1, const float input2, float* output1, float* output2, const float delaytime, const int shape);
 	void doppler (const float input1, const float input2, float* output1, float* output2, const float delaytime, const int shape);
+	void decimate (const float input1, const float input2, float* output1, float* output2, const float hz, const int shape);
+	void distortion (const float input1, const float input2, float* output1, float* output2, const int mode, const float drive, const float limit);
+	void bitcrush (const float input1, const float input2, float* output1, float* output2, const float bitNr);
 	void play(uint32_t start, uint32_t end);
 	void notifyMonitorToGui ();
 	void notifyShapeToGui (int shapeNr);
@@ -128,6 +131,9 @@ private:
 	float filter1Buffer2 [MAXSHAPES] [MAX_F_ORDER / 2];
 	float filter2Buffer1 [MAXSHAPES] [MAX_F_ORDER / 2];
 	float filter2Buffer2 [MAXSHAPES] [MAX_F_ORDER / 2];
+	float decimateBuffer1 [MAXSHAPES];
+	float decimateBuffer2 [MAXSHAPES];
+	double decimateCounter [MAXSHAPES];
 
 	// Controllers
 	float* new_controllers[NR_CONTROLLERS];

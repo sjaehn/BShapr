@@ -51,7 +51,10 @@ INCFILES = \
 	inc/High_pass_log.png \
 	inc/Pitch_shift.png \
 	inc/Delay.png \
-	inc/Doppler_delay.png
+	inc/Doppler_delay.png \
+	inc/Distortion.png \
+	inc/Decimate.png \
+	inc/Bitcrush.png
 
 B_FILES = $(addprefix $(BUNDLE)/, $(ROOTFILES) $(INCFILES))
 

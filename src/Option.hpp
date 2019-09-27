@@ -29,7 +29,8 @@ enum WidgetType
 	NO_WIDGET,
 	DIAL_WIDGET,
 	SLIDER_WIDGET,
-	SWITCH_WIDGET
+	SWITCH_WIDGET,
+	POPUP_WIDGET
 };
 
 struct Option

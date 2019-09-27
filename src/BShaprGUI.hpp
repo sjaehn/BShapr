@@ -117,7 +117,7 @@ private:
 		ShapeWidget shapeWidget;
 		BWidgets::Text focusText;
 		std::list<BWidgets::ImageIcon> methodIcons;
-		std::array<BWidgets::RangeWidget*, MAXOPTIONS> optionWidgets;
+		std::array<BWidgets::ValueWidget*, MAXOPTIONS> optionWidgets;
 		std::array<BWidgets::Label, MAXOPTIONS> optionLabels;
 		SelectWidget toolSelect;
 	} ShapeGui;

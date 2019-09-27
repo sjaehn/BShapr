@@ -24,7 +24,10 @@
 #include "BShapr.hpp"
 
 #define LIM(g , min, max) ((g) > (max) ? (max) : ((g) < (min) ? (min) : (g)))
-#define SQR(a) (a * a)
+#define SGN(a) ((a) < 0 ? -1 : 1)
+#define SQR(a) ((a) * (a))
+
+inline float db2co (const float value) {return pow (10, 0.05 * value);}
 
 inline double floorfrac (const double value) {return value - floor (value);}
 
@@ -437,13 +440,16 @@ void BShapr::run (uint32_t n_samples)
 				// Update bpm, speed, position
 				LV2_Atom *oBbeat = NULL, *oBpm = NULL, *oSpeed = NULL, *oBpb = NULL, *oBu = NULL, *oBar = NULL;
 				const LV2_Atom_Object* obj = (const LV2_Atom_Object*)&ev->body;
-				lv2_atom_object_get (obj, urids.time_bar, &oBar,
-											urids.time_barBeat, &oBbeat,
-										  urids.time_beatsPerMinute,  &oBpm,
-										  urids.time_beatsPerBar,  &oBpb,
-										  urids.time_beatUnit,  &oBu,
-										  urids.time_speed, &oSpeed,
-										  NULL);
+				lv2_atom_object_get
+				(
+					obj, urids.time_bar, &oBar,
+					urids.time_barBeat, &oBbeat,
+					urids.time_beatsPerMinute,  &oBpm,
+					urids.time_beatsPerBar,  &oBpb,
+					urids.time_beatUnit,  &oBu,
+					urids.time_speed, &oSpeed,
+					NULL
+				);
 
 				// BPM changed?
 				if (oBpm && (oBpm->type == urids.atom_Float))
@@ -646,7 +652,7 @@ void BShapr::notifyStatusToGui()
 void BShapr::audioLevel (const float input1, const float input2, float* output1, float* output2, const float amp)
 {
 	*output1 = input1 * LIM (amp, methods[LEVEL].limit.min, methods[LEVEL].limit.max);
-	*output2 = input2 * LIM (amp, 0, 100);
+	*output2 = input2 * LIM (amp, methods[LEVEL].limit.min, methods[LEVEL].limit.max);
 }
 
 void BShapr::stereoBalance (const float input1, const float input2, float* output1, float* output2, const float balance)
@@ -678,7 +684,7 @@ void BShapr::stereoWidth (const float input1, const float input2, float* output1
 // Butterworth algorithm
 void BShapr::lowPassFilter (const float input1, const float input2, float* output1, float* output2, const float cutoffFreq, const int shape)
 {
-	int order = controllers[SHAPERS + shape * SH_SIZE + SH_OPTION] / 6;
+	int order = controllers[SHAPERS + shape * SH_SIZE + SH_OPTION + DB_PER_OCT_OPT] / 6;
 	float f = LIM (cutoffFreq, methods[LOW_PASS].limit.min, methods[LOW_PASS].limit.max);
 	float a = tan (M_PI * f / rate);
 	float a2 = a * a;
@@ -718,7 +724,7 @@ void BShapr::lowPassFilter (const float input1, const float input2, float* outpu
 // Butterworth algorithm
 void BShapr::highPassFilter (const float input1, const float input2, float* output1, float* output2, const float cutoffFreq, const int shape)
 {
-	int order = controllers[SHAPERS + shape * SH_SIZE + SH_OPTION] / 6;
+	int order = controllers[SHAPERS + shape * SH_SIZE + SH_OPTION + DB_PER_OCT_OPT] / 6;
 	float f = LIM (cutoffFreq, methods[HIGH_PASS].limit.min, methods[HIGH_PASS].limit.max);
 	float a = tan (M_PI * f / rate);
 	float a2 = a * a;
@@ -957,6 +963,73 @@ void BShapr::doppler (const float input1, const float input2, float* output1, fl
 	audioBuffer2[shape].rPtr1 = audioBuffer1[shape].rPtr1;
 }
 
+void BShapr::distortion (const float input1, const float input2, float* output1, float* output2, const int mode, const float drive, const float limit)
+{
+	const float f = db2co (LIM (drive, methods[DISTORTION].limit.min, methods[DISTORTION].limit.max));
+	const float l = db2co (LIM (limit, options[LIMIT_DB_OPT].limit.min, options[LIMIT_DB_OPT].limit.max));
+	double i1 = input1 * f / l;
+	double i2 = input2 * f / l;
+
+	switch (mode)
+	{
+		case HARDCLIP:
+			*output1 = LIM (l * i1, -l, l);
+			*output2 = LIM (l * i2, -l, l);
+			break;
+
+		case SOFTCLIP:
+			*output1 = SGN (i1) * l * sqrt (SQR (i1) / (1 + SQR (i1)));
+			*output2 = SGN (i2) * l * sqrt (SQR (i2) / (1 + SQR (i2)));
+			break;
+
+		case FOLDBACK:
+			*output1 = (fabs (i1) <= 1 ? l * i1 : (SGN (i1) * l * double (2 * (int ((abs (i1) + 1) / 2) % 2) - 1) * (1.0 - fmod (fabs (i1) + 1, 2))));
+			*output2 = (fabs (i2) <= 1 ? l * i2 : (SGN (i2) * l * double (2 * (int ((abs (i2) + 1) / 2) % 2) - 1) * (1.0 - fmod (fabs (i2) + 1, 2))));
+			break;
+
+		case OVERDRIVE:
+			*output1 = ((fabs (i1) < (1.0/3.0)) ? (2.0 * l * i1) : ((fabs (i1) < (2.0/3.0)) ? (SGN (i1) * l * (3.0 - SQR (2.0 - 3.0 * fabs (i1))) / 3.0) : l * SGN (i1)));
+			*output2 = ((fabs (i2) < (1.0/3.0)) ? (2.0 * l * i2) : ((fabs (i2) < (2.0/3.0)) ? (SGN (i2) * l * (3.0 - SQR (2.0 - 3.0 * fabs (i2))) / 3.0) : l * SGN (i2)));
+			break;
+
+		case FUZZ:
+			*output1 = SGN (i1) * l * (1 - exp (- fabs (i1)));
+			*output2 = SGN (i2) * l * (1 - exp (- fabs (i2)));
+			break;
+
+		default:
+			*output1 = input1;
+			*output2 = input2;
+			break;
+	}
+}
+
+void BShapr::decimate (const float input1, const float input2, float* output1, float* output2, const float hz, const int shape)
+{
+	const double f = LIM (hz, methods[DECIMATE].limit.min, methods[DECIMATE].limit.max);
+	if (decimateCounter[shape] + 1 >= double (rate) / f)
+	{
+		decimateBuffer1[shape] = input1;
+		decimateBuffer2[shape] = input2;
+		float c0 = double (rate) / f - decimateCounter[shape];
+		decimateCounter[shape] = (c0 > 0 ? c0 : 0);
+	}
+
+	else decimateCounter[shape]++;
+
+	*output1 = decimateBuffer1[shape];
+	*output2 = decimateBuffer2[shape];
+}
+
+void BShapr::bitcrush (const float input1, const float input2, float* output1, float* output2, const float bitNr)
+{
+	const double f = pow (2, LIM (bitNr, methods[BITCRUSH].limit.min, methods[BITCRUSH].limit.max) - 1);
+	const int64_t bits1 = round (double (input1) * f);
+	const int64_t bits2 = round (double (input2) * f);
+	*output1 = double (bits1) / f;
+	*output2 = double (bits2) / f;
+}
+
 void BShapr::play (uint32_t start, uint32_t end)
 {
 	// Return if halted or bpm == 0
@@ -1032,7 +1105,7 @@ void BShapr::play (uint32_t start, uint32_t end)
 							break;
 
 						case BShaprTargetIndex::GAIN:
-							audioLevel (input1, input2, &wet1, &wet2, pow (10, 0.05 * (LIM (iFactor, methods[GAIN].limit.min, methods[GAIN].limit.max))));
+							audioLevel (input1, input2, &wet1, &wet2, db2co (LIM (iFactor, methods[GAIN].limit.min, methods[GAIN].limit.max)));
 							break;
 
 						case BShaprTargetIndex::BALANCE:
@@ -1069,6 +1142,18 @@ void BShapr::play (uint32_t start, uint32_t end)
 
 						case BShaprTargetIndex::DOPPLER:
 							doppler (input1, input2, &wet1, &wet2, iFactor, sh);
+							break;
+
+						case BShaprTargetIndex::DISTORTION:
+							distortion (input1, input2, &wet1, &wet2, controllers[SHAPERS + sh * SH_SIZE + SH_OPTION + DISTORTION_OPT], iFactor, controllers[SHAPERS + sh * SH_SIZE + SH_OPTION + LIMIT_DB_OPT]);
+							break;
+
+						case BShaprTargetIndex::DECIMATE:
+							decimate (input1, input2, &wet1, &wet2, iFactor, sh);
+							break;
+
+						case BShaprTargetIndex::BITCRUSH:
+							bitcrush (input1, input2, &wet1, &wet2, iFactor);
 							break;
 					}
 

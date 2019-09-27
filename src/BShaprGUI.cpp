@@ -107,6 +107,16 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 					shapeGui[i].optionWidgets[j]->setHardChangeable (false);
 					break;
 
+				case POPUP_WIDGET:
+					shapeGui[i].optionWidgets[j] = new BWidgets::PopupListBox
+					(
+						0, 0, 120, 20, 0, -120, 120, 120, "menu",
+						BItems::ItemList ({{0, "Hardclip"}, {1, "Softclip"}, {2, "Foldback"}, {3, "Overdrive"}, {4, "Fuzz"}}),
+						options[j].value
+					);
+					if (!shapeGui[i].optionWidgets[j]) throw std::bad_alloc();
+					break;
+
 				default:
 					shapeGui[i].optionWidgets[j] = nullptr;
 					break;
@@ -458,7 +468,6 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 			int shapeNr = (port - CONTROLLERS - SHAPERS) / SH_SIZE;
 			int shapeWidgetNr = port - CONTROLLERS - SHAPERS - shapeNr * SH_SIZE;
 			float value = shapeControllerLimits[shapeWidgetNr].validate (*pval);
-			// controllers[controllerNr] = value;
 			if (controllerWidgets[controllerNr]) controllerWidgets[controllerNr]->setValue (value);
 		}
 	}
@@ -509,9 +518,27 @@ void BShaprGUI::resizeGUI()
 		for (int j = 0; j < MAXOPTIONWIDGETS; ++j)
 		{
 			int optionNr = methods[methodNr].optionIndexes[j];
-			if (optionNr != NO_OPTION)
+			if (optionNr != NO_OPT)
 			{
-				if (shapeGui[i].optionWidgets[optionNr]) RESIZE ((*shapeGui[i].optionWidgets[optionNr]), 225 + j * 70, 434, 50, 60, sz);
+				if (shapeGui[i].optionWidgets[optionNr])
+				{
+					switch (options[optionNr].widgetType)
+					{
+						case DIAL_WIDGET:
+							RESIZE ((*shapeGui[i].optionWidgets[optionNr]), 225 + j * 70, 434, 50, 60, sz);
+							break;
+
+						case POPUP_WIDGET:
+							RESIZE ((*shapeGui[i].optionWidgets[optionNr]), 230 + j * 70, 460, 120, 20, sz);
+							((BWidgets::PopupListBox*) shapeGui[i].optionWidgets[optionNr])->resizeListBox (120 * sz, 120 * sz);
+							((BWidgets::PopupListBox*) shapeGui[i].optionWidgets[optionNr])->moveListBox (0, -120 * sz);
+							break;
+
+						default:
+							break;
+					}
+				}
+
 				RESIZE (shapeGui[i].optionLabels[optionNr], 220 + j * 70, 494, 60, 16, sz);
 			}
 		}
@@ -556,7 +583,7 @@ void BShaprGUI::applyChildThemes ()
 		for (int j = 0; j < MAXOPTIONWIDGETS; ++j)
 		{
 			int optionNr = methods[methodNr].optionIndexes[j];
-			if (optionNr != NO_OPTION)
+			if (optionNr != NO_OPT)
 			{
 				if (shapeGui[i].optionWidgets[optionNr]) shapeGui[i].optionWidgets[optionNr]->applyTheme (theme);
 				shapeGui[i].optionLabels[optionNr].applyTheme (theme);
@@ -722,7 +749,7 @@ void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 						for (int i = 0; i < MAXOPTIONWIDGETS; ++i)
 						{
 							int optionNr = methods[oldMethodNr].optionIndexes[i];
-							if (optionNr != NO_OPTION)
+							if (optionNr != NO_OPT)
 							{
 								if (ui->shapeGui[shapeNr].optionWidgets[optionNr]) ui->shapeGui[shapeNr].optionWidgets[optionNr]->hide ();
 								ui->shapeGui[shapeNr].optionLabels[optionNr].hide ();
@@ -734,14 +761,31 @@ void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 						for (int i = 0; i < MAXOPTIONWIDGETS; ++i)
 						{
 							int optionNr = methods[methodNr].optionIndexes[i];
-							if (optionNr != NO_OPTION)
+							if (optionNr != NO_OPT)
 							{
 								if (ui->shapeGui[shapeNr].optionWidgets[optionNr])
 								{
-									RESIZE ((*ui->shapeGui[shapeNr].optionWidgets[optionNr]), 225 + i * 70, 434, 50, 60, ui->sz);
+									switch (options[optionNr].widgetType)
+									{
+										case DIAL_WIDGET:
+											RESIZE ((*ui->shapeGui[shapeNr].optionWidgets[optionNr]), 225 + i * 70, 434, 50, 60, ui->sz);
+											break;
+
+										case POPUP_WIDGET:
+											RESIZE ((*ui->shapeGui[shapeNr].optionWidgets[optionNr]), 230 + i * 70, 460, 120, 20, ui->sz);
+											((BWidgets::PopupListBox*) ui->shapeGui[shapeNr].optionWidgets[optionNr])->resizeListBox (120 * ui->sz, 120 * ui->sz);
+											((BWidgets::PopupListBox*) ui->shapeGui[shapeNr].optionWidgets[optionNr])->moveListBox (0, -120 * ui->sz);
+											break;
+
+										default:
+											break;
+									}
+
 									ui->shapeGui[shapeNr].optionWidgets[optionNr]->applyTheme (ui->theme);
 									ui->shapeGui[shapeNr].optionWidgets[optionNr]->show ();
 								}
+								ui->shapeGui[shapeNr].optionLabels[optionNr].applyTheme (ui->theme);
+								ui->shapeGui[shapeNr].optionLabels[optionNr].setText (options[optionNr].name);
 								ui->shapeGui[shapeNr].optionLabels[optionNr].show ();
 							}
 						}
