@@ -1,5 +1,5 @@
 /* B.Shapr
- * Step Sequencer Effect Plugin
+ * Beat / envelope shaper LV2 plugin
  *
  * Copyright (C) 2019 by Sven Jähnichen
  *
@@ -25,7 +25,7 @@ SelectWidget::SelectWidget () : SelectWidget (0, 0, 0, 0, "tool", 0, 0, 0, 0) {}
 SelectWidget::SelectWidget (const double  x, const double y, const double width, const double height, const std::string& name,
 							const double selectionWidth, const double selectionHeight, const double nrTools, const double value) :
 	RangeWidget (x, y, width, height, name, value, 0, nrTools, 1),
-	bgColors (BColors::greys), nrTools (nrTools), 
+	bgColors (BColors::greys), nrTools (nrTools),
 	selectionWidth (selectionWidth), selectionHeight (selectionHeight) {}
 
 void SelectWidget::resizeSelection (const double width, const double height)

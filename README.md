@@ -10,7 +10,7 @@ Build your own binaries in the following three steps.
 
 Step 1: Clone or download this repository.
 
-Step 2: Install the development packages for x11, cairo, and lv2 if not done yet.
+Step 2: Satisfy dependencies for libx11-dev, libcairo2-dev, lv2-dev, and pkg-config, if not done yet.
 
 Step 3: Building and installing into the default lv2 directory (/usr/lib/lv2/) is easy. Simply call:
 ```

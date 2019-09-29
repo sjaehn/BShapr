@@ -1,5 +1,5 @@
 /* B.Shapr
- * Step Sequencer Effect Plugin
+ * Beat / envelope shaper LV2 plugin
  *
  * Copyright (C) 2019 by Sven Jähnichen
  *

@@ -1,3 +1,23 @@
+/* B.Shapr
+ * Beat / envelope shaper LV2 plugin
+ *
+ * Copyright (C) 2019 by Sven Jähnichen
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3, or (at your option)
+ * any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+
 #ifndef NODE_HPP_
 #define NODE_HPP_
 
@@ -5,12 +25,12 @@
 
 enum NodeType
 {
-	END_NODE				= 0,	// End positions, only point data are used
-	POINT_NODE				= 1,	// Only point data are used
-	AUTO_SMOOTH_NODE		= 2,	// Uses two handles, both are calculated automatically
+	END_NODE		= 0,	// End positions, only point data are used
+	POINT_NODE		= 1,	// Only point data are used
+	AUTO_SMOOTH_NODE	= 2,	// Uses two handles, both are calculated automatically
 	SYMMETRIC_SMOOTH_NODE	= 3, 	// Uses two handles, the second handle is set to be symmetric to the first one
-	SMOOTH_NODE				= 4,	// Uses two handles, the second handle points to the opposite direction of the first one
-	CORNER_NODE				= 5		// Uses two independent handles
+	SMOOTH_NODE		= 4,	// Uses two handles, the second handle points to the opposite direction of the first one
+	CORNER_NODE		= 5	// Uses two independent handles
 };
 
 struct Node

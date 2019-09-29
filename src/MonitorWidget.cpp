@@ -1,5 +1,5 @@
 /* B.Shapr
- * Step Sequencer Effect Plugin
+ * Beat / envelope shaper LV2 plugin
  *
  * Copyright (C) 2019 by Sven Jähnichen
  *
@@ -18,8 +18,8 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
- #include "MonitorWidget.hpp"
- #include <cmath>
+#include "MonitorWidget.hpp"
+#include <cmath>
 
 MonitorWidget::MonitorWidget () : MonitorWidget (0, 0, 0, 0, "monitor") {}
 

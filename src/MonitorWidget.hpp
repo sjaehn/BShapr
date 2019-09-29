@@ -1,5 +1,5 @@
 /* B.Shapr
- * Step Sequencer Effect Plugin
+ * Beat / envelope shaper LV2 plugin
  *
  * Copyright (C) 2019 by Sven Jähnichen
  *
@@ -18,16 +18,16 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
- #ifndef MONITORWIDGET_HPP_
- #define MONITORWIDGET_HPP_
+#ifndef MONITORWIDGET_HPP_
+#define MONITORWIDGET_HPP_
 
- #include "BWidgets/Widget.hpp"
- #include "definitions.hpp"
- #include "Range.hpp"
+#include "BWidgets/Widget.hpp"
+#include "definitions.hpp"
+#include "Range.hpp"
 
- class MonitorWidget : public BWidgets::Widget
- {
- public:
+class MonitorWidget : public BWidgets::Widget
+{
+public:
         MonitorWidget ();
         MonitorWidget (const double x, const double y, const double width, const double height, const std::string& name);
         ~MonitorWidget ();
@@ -50,6 +50,6 @@ protected:
         BColors::ColorSet fgColors;
         double zoom;
         cairo_pattern_t* pat;
- };
+};
 
- #endif /* MONITORWIDGET_HPP_ */
+#endif /* MONITORWIDGET_HPP_ */
