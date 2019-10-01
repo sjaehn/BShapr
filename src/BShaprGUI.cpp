@@ -506,6 +506,7 @@ void BShaprGUI::resizeGUI()
 		RESIZE (shapeGui[i].targetListBox, 20, 443, 174, 54, sz);
 		shapeGui[i].targetListBox.resizeListBox (154 * sz, 380 * sz);
 		shapeGui[i].targetListBox.moveListBox (0, -380 * sz);
+		shapeGui[i].targetListBox.resizeListBoxItems (154 * sz, 54 * sz);
 		RESIZE (shapeGui[i].drywetLabel, 500, 494, 50, 16, sz);
 		RESIZE (shapeGui[i].drywetDial, 500, 434, 50, 60, sz);
 		RESIZE (shapeGui[i].shapeWidget, 4, 4, 1152, 352, sz);
@@ -515,6 +516,7 @@ void BShaprGUI::resizeGUI()
 		shapeGui[i].toolSelect.resizeSelection (44 * sz, 44 * sz);
 
 		int methodNr = shapeGui[i].targetListBox.getValue ();
+
 		for (int j = 0; j < MAXOPTIONWIDGETS; ++j)
 		{
 			int optionNr = methods[methodNr].optionIndexes[j];
@@ -532,6 +534,7 @@ void BShaprGUI::resizeGUI()
 							RESIZE ((*shapeGui[i].optionWidgets[optionNr]), 230 + j * 70, 460, 120, 20, sz);
 							((BWidgets::PopupListBox*) shapeGui[i].optionWidgets[optionNr])->resizeListBox (120 * sz, 120 * sz);
 							((BWidgets::PopupListBox*) shapeGui[i].optionWidgets[optionNr])->moveListBox (0, -120 * sz);
+							((BWidgets::PopupListBox*) shapeGui[i].optionWidgets[optionNr])->resizeListBoxItems (120 * sz, 20 * sz);
 							break;
 
 						default:

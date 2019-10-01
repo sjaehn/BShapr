@@ -57,7 +57,7 @@
 #include "SelectWidget.hpp"
 
 #define BG_FILE "inc/surface.png"
-#define RESIZE(widget, x, y, w, h, sz) {widget.moveTo ((x) * (sz), (y) * (sz)); widget.resize ((w) * (sz), (h) * (sz));}
+#define RESIZE(widget, x, y, w, h, sz) {(widget).moveTo ((x) * (sz), (y) * (sz)); (widget).resize ((w) * (sz), (h) * (sz));}
 
 const std::string messageStrings[MAXMESSAGES] =
 {
