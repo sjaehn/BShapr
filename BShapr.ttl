@@ -182,7 +182,7 @@
 		lv2:portProperty lv2:integer, lv2:enumeration ;
 		lv2:scalePoint [ rdfs:label "Internal"; rdf:value 0 ] ;
 		lv2:scalePoint [ rdfs:label "Audio out"; rdf:value 1 ] ;
-		lv2:default 0 ;
+		lv2:default 1 ;
 		lv2:minimum 0 ;
 		lv2:maximum 1 ;
 	] , [
@@ -505,7 +505,7 @@
 		lv2:portProperty lv2:integer, lv2:enumeration ;
 		lv2:scalePoint [ rdfs:label "Internal"; rdf:value 0 ] ;
 		lv2:scalePoint [ rdfs:label "Audio out"; rdf:value 1 ] ;
-		lv2:default 1 ;
+		lv2:default 0 ;
 		lv2:minimum 0 ;
 		lv2:maximum 1 ;
 	] , [

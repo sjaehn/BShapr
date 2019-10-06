@@ -8,14 +8,19 @@ Description: Beat / envelope shaper LV2 plugin
 
 Build your own binaries in the following three steps.
 
-Step 1: Clone or download this repository.
+Step 1: [Download the latest published version](https://github.com/sjaehn/BShapr/releases) of B.Shapr. Or clone or
+[download the master](https://github.com/sjaehn/BShapr/archive/master.zip) of this repository.
 
-Step 2: Satisfy dependencies for libx11-dev, libcairo2-dev, lv2-dev, and pkg-config, if not done yet.
+Step 2: Install pkg-config and the development packages for x11, cairo, and lv2 if not done yet. On
+Debian-based systems you may run:
+```
+sudo apt-get install pkg-config libx11-dev libcairo2-dev lv2-dev
+```
 
 Step 3: Building and installing into the default lv2 directory (/usr/lib/lv2/) is easy. Simply call:
 ```
 make
-sudo make install PREFIX=/usr
+sudo make install
 ```
 from the directory where you downloaded the repository files. For installation into an
 alternative directory (e.g., /usr/local/lib/lv2/), change the variable `PREFIX` while installing:
@@ -50,7 +55,34 @@ filters, pitch shift, delay, and distortion effecs and can be combined together.
 
 ### Shape selector
 
-Select between the four user-defineable shapes.
+Select the shape to edit. You can choose between up to four user-defineable shapes. You can remove shapes if not
+required or add new shapes (max. 4).
+
+**In the GUI**, the audio input signals are routed through the shapers in the order of their numbers to the audio
+output. This means:
+
+```
+audio in > shape1 > (shape2 > (shape3 > (shape4))) > audio out.
+```
+
+**In the lv2 backend**, you can also build more complex audio routes. You have to follow the rules:
+
+* You can only route in forward direction, shape2 > shape1 will not work
+* But you can skip shapes
+* sh1_input must be audio in
+* All other shape inputs can also take audio in or the output of any previous shape
+* At least the last used shape must send to audio out
+* All other shape outputs can also directly send to audio out (or to internal)
+
+An example for complex routing would be:
+
+```
+audio in > shape1 > shape3 ─┐
+      ╰──> shape2 ──────────┤
+               ╰──> shape4 ─┴> audio out
+```
+
+**Warning: Complex routing made in lv2 backend will be simplified if you add or delete shapes in GUI!**
 
 ### Shape editor
 
@@ -64,7 +96,7 @@ scrolling zooms the display in or out.
 In the background of the shape editor a stereo monitor visualizes the input and the output levels. You can change
 the zoom by pressing SHIFT key AND scrolling the mouse wheel.
 
-### Effect
+### Effects
 
 Select a effect that will be applied on the input signal by the use of the shape. You can choose between:
 
@@ -92,27 +124,31 @@ On the bottom of the widget, you can set the lenght of the whole shape sequence 
 beats or bars. Change the value by dragging, scrolling or clicking on its up and down arrows and select
 a base.
 
-### What's new
+## What's new
 
 * Usage simplified
-* * No routing in GUI
-* * Routing can only be done in LV2 backend now
+  * Linear routing in GUI
+  * Add / remove shapes
+  * Complex routing can only be done in LV2 backend now
 * New GUI
 * Additional configuration parameters for effects (optional dials)
 * New effects
-* * Distortion
-* * * Hardclip
-* * * Softclip
-* * * Foldback
-* * * Overdrive
-* * * Fuzz
-* * Decimate
-* * Bitcrush
+  * Distortion
+    * Hardclip
+    * Softclip
+    * Foldback
+    * Overdrive
+    * Fuzz
+  * Decimate
+  * Bitcrush
 
 ## TODO
 
 * Additional effects (any ideas welcome)
 * Copy & paste nodes
+* Snap to grid
+* Rational Bezier curves
+* Move shapes
 
 ## See also
 

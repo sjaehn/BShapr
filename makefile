@@ -65,6 +65,8 @@ GUI_INCL = \
 	src/DownClick.cpp \
 	src/UpClick.cpp \
 	src/ShapeWidget.cpp \
+	src/BWidgets/MessageBox.cpp \
+	src/BWidgets/TextButton.cpp \
 	src/BWidgets/HPianoRoll.cpp \
 	src/BWidgets/PianoWidget.cpp \
 	src/BWidgets/DrawingSurface.cpp \

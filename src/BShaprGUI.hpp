@@ -44,11 +44,13 @@
 #include "BWidgets/PopupListBox.hpp"
 #include "BWidgets/VSwitch.hpp"
 #include "BWidgets/HPianoRoll.hpp"
-#include "BWidgets/Text.hpp"
+#include "BWidgets/MessageBox.hpp"
 #include "ShapeWidget.hpp"
 #include "ValueSelect.hpp"
 #include "HorizonWidget.hpp"
 #include "MonitorWidget.hpp"
+#include "CloseWidget.hpp"
+#include "AddWidget.hpp"
 #include "Globals.hpp"
 #include "Urids.hpp"
 #include "BShaprNotifications.hpp"
@@ -88,11 +90,16 @@ public:
 	static void shapeChangedCallback (BEvents::Event* event);
 	static void toolChangedCallback (BEvents::Event* event);
 	static void tabClickedCallback (BEvents::Event* event);
+	static void tabClosedCallback (BEvents::Event* event);
 	static void wheelScrolledCallback (BEvents::Event* event);
 	static void pianoCallback (BEvents::Event* event);
 
 
 private:
+	void setController (const int controllerNr, const float value);
+	void deleteShape (const int shapeNr);
+	void insertShape (const int shapeNr);
+	void switchShape (const int shapeNr);
 	void resizeGUI ();
 	void calculateXSteps ();
 	void initMonitors ();
@@ -107,9 +114,13 @@ private:
 	int beatUnit;
 
 	// Widgets
-	typedef struct
+	struct ShapeGui
 	{
 		BWidgets::Widget shapeContainer;
+		BWidgets::Widget tabContainer;
+		CloseWidget tabClose;
+		AddWidget tabAdd;
+		BWidgets::MessageBox tabMsgBox;
 		BWidgets::ImageIcon tabIcon;
 		BWidgets::PopupListBox targetListBox;
 		BWidgets::Label drywetLabel;
@@ -120,7 +131,7 @@ private:
 		std::array<BWidgets::ValueWidget*, MAXOPTIONS> optionWidgets;
 		std::array<BWidgets::Label, MAXOPTIONS> optionLabels;
 		SelectWidget toolSelect;
-	} ShapeGui;
+	} ;
 
 	BWidgets::ImageIcon mContainer;
 	BWidgets::Label messageLabel;
@@ -159,6 +170,7 @@ private:
 	BColors::ColorSet fgColors = {{{0.75, 0.0, 0.75, 1.0}, {1.0, 0.0, 1.0, 1.0}, {0.25, 0.0, 0.25, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
 	BColors::ColorSet txColors = {{{1.0, 1.0, 1.0, 1.0}, {1.0, 1.0, 1.0, 1.0}, {0.2, 0.2, 0.2, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
 	BColors::ColorSet bgColors = {{{0.15, 0.15, 0.15, 1.0}, {0.3, 0.3, 0.3, 1.0}, {0.05, 0.05, 0.05, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
+	BColors::ColorSet blkColors = {{{0.0, 0.0, 0.0, 1.0}, {0.0, 0.0, 0.0, 1.0}, {0.0, 0.0, 0.0, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
 	BColors::ColorSet menuBgColors = {{{0.05, 0.05, 0.05, 1.0}, {0.05, 0.05, 0.05, 1.0}, {0.05, 0.05, 0.05, 1.0}, {0.0, 0.0, 0.0, 1.0}}};
 	BColors::ColorSet buttonBgColors = {{{0.1, 0.1, 0.1, 1.0}, {0.2, 0.2, 0.2, 1.0}, {0.05, 0.05, 0.05, 1.0}, {0.0, 0.0, 0.0, 1.0}}};
 	BColors::ColorSet clickColors = {{{0.2, 0.2, 0.2, 1.0}, {1, 1, 1, 1.0}, {0, 0, 0, 1.0}, {0, 0, 0, 0.0}}};
@@ -214,6 +226,8 @@ private:
 					 {"bgcolors", STYLEPTR (&bgColors)},
 					 {"textcolors", STYLEPTR (&fgColors)},
 					 {"font", STYLEPTR (&defaultFont)}}},
+		{"symbol", 		{{"uses", STYLEPTR (&defaultStyles)},
+					 {"fgcolors", STYLEPTR (&blkColors)}}},
 		{"label", 		{{"uses", STYLEPTR (&labelStyles)}}},
 		{"smlabel",	 	{{"uses", STYLEPTR (&defaultStyles)},
 					 {"textcolors", STYLEPTR (&txColors)},
@@ -224,6 +238,19 @@ private:
 					 {"font", STYLEPTR (&defaultFont)}}},
 		{"select/click",	{{"uses", STYLEPTR (&defaultStyles)},
 					 {"bgcolors", STYLEPTR (&clickColors)}}},
+		{"msgbox",	 	{{"border", STYLEPTR (&menuBorder)},
+					 {"background", STYLEPTR (&BStyles::blackFill)}}},
+ 		{"msgbox/title",	{{"uses", STYLEPTR (&defaultStyles)},
+ 					 {"textcolors", STYLEPTR (&BColors::whites)},
+ 					 {"font", STYLEPTR (&defaultFont)}}},
+ 		{"msgbox/text",		{{"uses", STYLEPTR (&defaultStyles)},
+ 					 {"textcolors", STYLEPTR (&BColors::whites)},
+ 					 {"font", STYLEPTR (&lfLabelFont)}}},
+		{"msgbox/button", 	{{"border", STYLEPTR (&menuBorder)},
+			 		 {"background", STYLEPTR (&BStyles::blackFill)},
+					 {"textcolors", STYLEPTR (&BColors::whites)},
+					 {"font", STYLEPTR (&defaultFont)},
+					 {"bgcolors", STYLEPTR (&buttonBgColors)}}},
 		{"menu",	 	{{"border", STYLEPTR (&menuBorder)},
 					 {"background", STYLEPTR (&BStyles::blackFill)}}},
 		{"menu/item",		{{"uses", STYLEPTR (&defaultStyles)},
@@ -231,7 +258,7 @@ private:
 					 {"textcolors", STYLEPTR (&BColors::whites)},
 					 {"font", STYLEPTR (&lfLabelFont)}}},
 		{"menu/button",	 	{{"border", STYLEPTR (&menuBorder)},
-			 		 {"background", STYLEPTR (&BStyles::blackFill)},
+			 		 {"background", STYLEPTR (&BStyles::noFill)},
 					 {"bgcolors", STYLEPTR (&buttonBgColors)}}},
 		{"menu/listbox",	{{"border", STYLEPTR (&menuBorder)},
 					 {"background", STYLEPTR (&BStyles::blackFill)}}},

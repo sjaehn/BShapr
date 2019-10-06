@@ -29,7 +29,7 @@ Widget::Widget (const double x, const double y, const double width, const double
 
 Widget::Widget(const double x, const double y, const double width, const double height, const std::string& name) :
 		extensionData (nullptr), x_ (x), y_ (y), width_ (width), height_ (height), visible (true), clickable (true), draggable (false),
-		scrollable (false), focusable (false),
+		scrollable (false), focusable (true),
 		main_ (nullptr), parent_ (nullptr), children_ (), border_ (BWIDGETS_DEFAULT_BORDER), background_ (BWIDGETS_DEFAULT_BACKGROUND),
 		name_ (name), widgetSurface (), widgetState (BWIDGETS_DEFAULT_STATE), focusWidget (nullptr)
 {
@@ -456,7 +456,7 @@ void Widget::update ()
 bool Widget::isPointInWidget (const double x, const double y) const {return ((x >= 0.0) && (x <= width_) && (y >= 0.0) && (y <= height_));}
 
 Widget* Widget::getWidgetAt (const double x, const double y, const bool checkVisibility, const bool checkClickability,
-							 const bool checkDraggability, const bool checkScrollability, const bool checkFocusability)
+			     const bool checkDraggability, const bool checkScrollability, const bool checkFocusability)
 {
 	if (main_ &&
 	    isPointInWidget (x, y) &&

@@ -28,7 +28,10 @@ class HorizonWidget : public BWidgets::Widget
 public:
 	HorizonWidget () : HorizonWidget (0, 0, 0, 0, "horizon") {}
 	HorizonWidget (const double x, const double y, const double width, const double height, const std::string& name) :
-		Widget (x, y, width, height, name) {}
+		Widget (x, y, width, height, name)
+	{
+		focusable = false;
+	}
 
 protected:
 	virtual void draw (const double x, const double y, const double width, const double height) override
