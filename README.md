@@ -55,8 +55,8 @@ filters, pitch shift, delay, and distortion effecs and can be combined together.
 
 ### Shape selector
 
-Select the shape to edit. You can choose between up to four user-defineable shapes. You can remove shapes if not
-required or add new shapes (max. 4).
+Select the shape to edit. You can choose between up to four user-defineable shapes. You can remove (-) shapes if not
+required or add (+) new shapes (max. 4).
 
 **In the GUI**, the audio input signals are routed through the shapers in the order of their numbers to the audio
 output. This means:

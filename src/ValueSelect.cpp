@@ -39,6 +39,10 @@ ValueSelect::ValueSelect (const double  x, const double y, const double width, c
 	add (upClick);
 	add (display);
 	add (downClick);
+
+	upClick.setScrollable (false);
+	downClick.setScrollable (false);
+	display.setScrollable (false);
 }
 
 void ValueSelect::applyTheme (BStyles::Theme& theme) {applyTheme (theme, name_);}

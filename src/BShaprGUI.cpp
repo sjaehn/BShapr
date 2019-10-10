@@ -203,6 +203,10 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	midiPiano.hide();
 	midiLabel.hide();
 	monitorContainer.setScrollable (true);
+	input1Monitor.setScrollable (false);
+	output1Monitor.setScrollable (false);
+	input2Monitor.setScrollable (false);
+	output2Monitor.setScrollable (false);
 	shapeGui[0].tabContainer.rename ("activetab");
 	for (unsigned int i = 0; i < MAXSHAPES; ++i)
 	{
@@ -219,6 +223,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 			shapeGui[i].optionLabels[j].hide ();
 		}
 
+		shapeGui[i].shapeContainer.setScrollable (false);
 		if (i >= 1) shapeGui[i].shapeContainer.hide ();
 	}
 	applyChildThemes ();
@@ -475,7 +480,6 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 			else if ((controllerNr == BASE) || (controllerNr == BASE_VALUE))
 			{
 				if (controllerWidgets[controllerNr]) controllerWidgets[controllerNr]->setValue (value);
-				calculateXSteps ();
 			}
 		}
 
@@ -550,6 +554,7 @@ void BShaprGUI::resizeGUI()
 		RESIZE (shapeGui[i].tabIcon, 0, 12.5, 120, 15, sz);
 		RESIZE (shapeGui[i].tabClose, 124, 4, 12, 12, sz);
 		RESIZE (shapeGui[i].tabAdd, 124, 20, 12, 12, sz);
+		RESIZE (shapeGui[i].tabMsgBox, 500, 240, 200, 120, sz);
 		RESIZE (shapeGui[i].shapeContainer, 20, 130, 1160, 590, sz);
 		RESIZE (shapeGui[i].targetListBox, 20, 443, 174, 54, sz);
 		shapeGui[i].targetListBox.resizeListBox (154 * sz, 380 * sz);
@@ -1059,6 +1064,11 @@ void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 					}
 				}
 
+				else if ((widgetNr == BASE) || (widgetNr == BASE_VALUE))
+				{
+					ui->calculateXSteps ();
+				}
+
 				else if (widgetNr >= SHAPERS)
 				{
 					int shapeNr = (widgetNr - SHAPERS) / SH_SIZE;
@@ -1303,7 +1313,7 @@ void BShaprGUI::pianoCallback (BEvents::Event* event)
 
 void BShaprGUI::calculateXSteps ()
 {
-	majorXSteps = 1.0 / controllers[BASE_VALUE];
+	majorXSteps = (controllers[BASE_VALUE] != 0.0 ? 1.0 / controllers[BASE_VALUE] : 1.0);
 
 	switch ((BShaprBaseIndex)controllers[BASE])
 	{
@@ -1316,6 +1326,9 @@ void BShaprGUI::calculateXSteps ()
 
 		case BARS:	if (beatsPerBar != 0.0f) minorXSteps = majorXSteps / beatsPerBar;
 				else minorXSteps = majorXSteps / 4;
+				break;
+
+		default:	minorXSteps = 1.0;
 				break;
 	}
 
