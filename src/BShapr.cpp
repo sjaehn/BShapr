@@ -218,9 +218,9 @@ double BShapr::getPositionFromBeats (double beats)
 	switch (int (controllers[BASE]))
 	{
 		case SECONDS: 	return beats / (controllers[BASE_VALUE] * (bpm / 60));
-		case BEATS:		return beats / controllers[BASE_VALUE];
-		case BARS:		return beats / (controllers[BASE_VALUE] * beatsPerBar);
-		default:		return 0;
+		case BEATS:	return beats / controllers[BASE_VALUE];
+		case BARS:	return beats / (controllers[BASE_VALUE] * beatsPerBar);
+		default:	return 0;
 	}
 }
 
@@ -229,9 +229,9 @@ double BShapr::getPositionFromFrames (uint64_t frames)
 	switch (int (controllers[BASE]))
 	{
 		case SECONDS: 	return frames * (1.0 / rate) / controllers[BASE_VALUE] ;
-		case BEATS:		return frames * (speed / (rate / (bpm / 60))) / controllers[BASE_VALUE];
-		case BARS:		return frames * (speed / (rate / (bpm / 60))) / (controllers[BASE_VALUE] * beatsPerBar);
-		default:		return 0;
+		case BEATS:	return frames * (speed / (rate / (bpm / 60))) / controllers[BASE_VALUE];
+		case BARS:	return frames * (speed / (rate / (bpm / 60))) / (controllers[BASE_VALUE] * beatsPerBar);
+		default:	return 0;
 	}
 }
 
