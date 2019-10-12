@@ -89,6 +89,7 @@ public:
 	static void valueChangedCallback (BEvents::Event* event);
 	static void shapeChangedCallback (BEvents::Event* event);
 	static void toolChangedCallback (BEvents::Event* event);
+	static void gridChangedCallback (BEvents::Event* event);
 	static void tabClickedCallback (BEvents::Event* event);
 	static void tabClosedCallback (BEvents::Event* event);
 	static void wheelScrolledCallback (BEvents::Event* event);
@@ -131,6 +132,7 @@ private:
 		std::array<BWidgets::ValueWidget*, MAXOPTIONS> optionWidgets;
 		std::array<BWidgets::Label, MAXOPTIONS> optionLabels;
 		SelectWidget toolSelect;
+		SelectWidget gridSelect;
 	} ;
 
 	BWidgets::ImageIcon mContainer;

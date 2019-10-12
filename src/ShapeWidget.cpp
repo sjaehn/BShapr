@@ -31,6 +31,7 @@ ShapeWidget::ShapeWidget (const double x, const double y, const double width, co
 		scaleAnchorYPos (0), scaleAnchorValue (0), scaleRatio (1),
 		minorXSteps (1), majorXSteps (1),
 		loLimit (-1000000), hiLimit (1000000), hardLoLimit (false), hardHiLimit (false),
+		gridVisible (true), gridSnap (true),
 		prefix (""), unit (""),
 		fgColors (BColors::reds), bgColors (BColors::darks), lbfont (BWIDGETS_DEFAULT_FONT)
 {
@@ -137,6 +138,23 @@ void ShapeWidget::setHigherLimit (double value, bool hard)
 	}
 }
 
+void ShapeWidget::showGrid ()
+{
+	gridVisible = true;
+	update ();
+}
+
+void ShapeWidget::hideGrid ()
+{
+	gridVisible = false;
+	update ();
+}
+
+void ShapeWidget::setSnap (const bool status)
+{
+	gridSnap = status;
+}
+
 void ShapeWidget::onButtonPressed (BEvents::PointerEvent* event)
 {
 	double x0 = getXOffset ();
@@ -222,9 +240,16 @@ void ShapeWidget::onButtonReleased (BEvents::PointerEvent* event)
 		double w = getEffectiveWidth ();
 		double h = getEffectiveHeight ();
 		double ymin = scaleAnchorValue - scaleRatio * scaleAnchorYPos;
-		//double ymax = ymin + scaleRatio;
+		// double ymax = ymin + scaleRatio;
 		double px = (event->getX () - x0) / w;
 		double py = (y0 + h - event->getY ()) / h * scaleRatio + ymin;
+
+		// Snap to grid
+		if (gridSnap)
+		{
+			px = snapX (px);
+			py = snapY (py);
+		}
 
 		// Add new nodes, but not on top of a selected node or handle
 		if (!selected)
@@ -291,6 +316,13 @@ void ShapeWidget::onPointerDragged (BEvents::PointerEvent* event)
 		// Node or handle dragged
 		if ((activeNode >= 0) && (activeNode < ((int)nodes.size)))
 		{
+			// Snap to grid
+			if (gridSnap)
+			{
+				px = snapX (px);
+				py = snapY (py);
+			}
+			
 			// Drag right handle
 			if (activeHandle == 2)
 			{
@@ -389,6 +421,27 @@ void ShapeWidget::applyTheme (BStyles::Theme& theme, const std::string& name)
 
 }
 
+double ShapeWidget::snapX (const double x)
+{
+	if (minorXSteps == 0) return x;
+
+	double nrXDashes = (minorXSteps < 0.05 ? 4 : (minorXSteps < 0.1 ? 8 : 16));
+	double xDash = minorXSteps / nrXDashes;
+	return round (x / xDash) * xDash;
+}
+
+double ShapeWidget::snapY (const double y)
+{
+	if (scaleRatio == 0.0) return y;
+
+	double ymin = scaleAnchorValue - scaleRatio * scaleAnchorYPos;
+	double ymax = ymin + scaleRatio;
+	double ygrid = pow (10, floor (log10 (scaleRatio / 1.5)));
+	double nrYDashes = (ygrid / (ymax - ymin) < 0.2 ? 4 : 8);
+	double yDash = ygrid / nrYDashes;
+	return round (y / yDash) * yDash;
+}
+
 void ShapeWidget::drawLineOnMap (Point p1, Point p2)
 {
 	Shape::drawLineOnMap (p1, p2);
@@ -421,7 +474,6 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 		BColors::Color activeNodeColor = *syColors.getColor (BColors::ACTIVE);
 		BColors::Color gridColor = *bgColors.getColor (BColors::NORMAL);
 
-		// Draw Y grid
 		double ygrid = pow (10, floor (log10 (scaleRatio / 1.5)));
 		int ldYgrid = log10 (ygrid);
 		std::string nrformat = "%" + ((ygrid < 1) ? ("1." + std::to_string (-ldYgrid)) : (std::to_string (ldYgrid + 1) + ".0")) + "f";
@@ -429,6 +481,7 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 		cairo_select_font_face (cr, lbfont.getFontFamily ().c_str (), lbfont.getFontSlant (), lbfont.getFontWeight ());
 		cairo_set_font_size (cr, lbfont.getFontSize ());
 
+		// Draw Y steps
 		for (double yp = ceil (ymin / ygrid) * ygrid; yp <= ymax; yp += ygrid)
 		{
 			cairo_move_to (cr, x0, y0 + h - h * (yp - ymin) / (ymax - ymin));
@@ -488,22 +541,49 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 			cairo_stroke (cr);
 		}
 
-		// Draw X grid
-		cairo_set_line_width (cr, 0.5);
+		// Draw X steps
 		for (double x = 0; x < 1; x += minorXSteps)
 		{
-			cairo_move_to (cr, x * width, 0);
-			cairo_line_to (cr, x * width, height);
+			cairo_move_to (cr, x * w, 0);
+			cairo_line_to (cr, x * w, h);
 		}
+		cairo_set_source_rgba (cr, CAIRO_RGBA (gridColor));
+		cairo_set_line_width (cr, 1.0);
 		cairo_stroke (cr);
 
-		cairo_set_line_width (cr, 1);
 		for (double x = 0; x < 1; x += majorXSteps)
 		{
-			cairo_move_to (cr, x * width, 0);
-			cairo_line_to (cr, x * width, height);
+			cairo_move_to (cr, x * w, 0);
+			cairo_line_to (cr, x * w, h);
 		}
+		cairo_set_source_rgba (cr, CAIRO_RGBA (gridColor));
+		cairo_set_line_width (cr, 2.0);
 		cairo_stroke (cr);
+
+		// Draw grid
+		if (gridVisible)
+		{
+			if (w * minorXSteps > 16)
+			{
+				cairo_save (cr);
+				double nrXDashes = (minorXSteps < 0.05 ? 4 : (minorXSteps < 0.1 ? 8 : 16));
+				double xDash = minorXSteps / nrXDashes;
+				double nrYDashes = (ygrid / (ymax - ymin) < 0.2 ? 4 : 8);
+				double yDash = ygrid / nrYDashes;
+				double dashes[2] = {1.0, w * xDash - 1.0};
+				cairo_set_dash (cr, dashes, 2, 0.0);
+				for (double yp = ceil (ymin / yDash) * yDash; yp <= ymax; yp += yDash)
+				{
+					double y = (yp - ymin) / (ymax - ymin) * h;
+					cairo_move_to (cr, x0, y0 + h - y);
+					cairo_line_to (cr, x0 + w, y0 + h - y);
+				}
+				cairo_set_source_rgba (cr, CAIRO_RGBA (gridColor));
+				cairo_set_line_width (cr, 1.0);
+				cairo_stroke (cr);
+				cairo_restore (cr);
+			}
+		}
 
 		// Draw curve
 		cairo_move_to (cr, x0, y0 + h - h * (map[0] - ymin) / (ymax - ymin));

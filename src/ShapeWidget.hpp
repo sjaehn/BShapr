@@ -54,6 +54,9 @@ public:
 	void setUnit (std::string text);
 	void setLowerLimit (double value, bool hard = false);
 	void setHigherLimit (double value, bool hard = false);
+	void showGrid ();
+	void hideGrid ();
+	void setSnap (const bool status);
 	virtual void onButtonPressed (BEvents::PointerEvent* event) override;
 	virtual void onButtonReleased (BEvents::PointerEvent* event) override;
 	virtual void onPointerDragged (BEvents::PointerEvent* event) override;
@@ -75,12 +78,17 @@ protected:
 	double majorXSteps;
 	double loLimit, hiLimit;
 	bool hardLoLimit, hardHiLimit;	// TODO, not in use yet
+	bool gridVisible;
+	bool gridSnap;
 	std::string prefix;
 	std::string unit;
 	BColors::ColorSet fgColors;
 	BColors::ColorSet syColors;
 	BColors::ColorSet bgColors;
 	BStyles::Font lbfont;
+
+	double snapX (const double x);
+	double snapY (const double y);
 
 	virtual void drawLineOnMap (Point p1, Point p2) override;
 	virtual void draw (const double x, const double y, const double width, const double height) override;

@@ -89,6 +89,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].shapeWidget = ShapeWidget (4, 4, 1152, 352, "shape");
 		shapeGui[i].focusText = BWidgets::Text (0, 0, 400, 80, "label", focusString);
 		shapeGui[i].toolSelect = SelectWidget (333, 368, 284, 44, "tool", 44, 44, 5, 1);
+		shapeGui[i].gridSelect = SelectWidget (1043, 368, 104, 44, "tool", 44, 44, 2, 2);
 		shapeGui[i].drywetLabel = BWidgets::Label (500, 494, 50, 16, "smlabel", "dry/wet");
 		shapeGui[i].drywetDial = BWidgets::DialValue (500, 434, 50, 60, "dial", 1.0, 0.0, 1.0, 0, "%1.2f");
 
@@ -137,6 +138,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].shapeWidget.rename ("shape");
 		shapeGui[i].focusText.rename ("label");
 		shapeGui[i].toolSelect.rename ("tool");
+		shapeGui[i].gridSelect.rename ("tool");
 		shapeGui[i].drywetLabel.rename ("smlabel");
 		shapeGui[i].drywetDial.rename ("dial");
 	}
@@ -179,6 +181,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].drywetDial.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 		shapeGui[i].shapeWidget.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::shapeChangedCallback);
 		shapeGui[i].toolSelect.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::toolChangedCallback);
+		shapeGui[i].gridSelect.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::gridChangedCallback);
 
 		for (int j = 0 ; j < MAXOPTIONS; ++j)
 		{
@@ -249,6 +252,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].shapeContainer.add (shapeGui[i].drywetDial);
 		shapeGui[i].shapeContainer.add (shapeGui[i].shapeWidget);
 		shapeGui[i].shapeContainer.add (shapeGui[i].toolSelect);
+		shapeGui[i].shapeContainer.add (shapeGui[i].gridSelect);
 
 		for (int j = 0; j < MAXOPTIONS; ++j)
 		{
@@ -567,6 +571,8 @@ void BShaprGUI::resizeGUI()
 		shapeGui[i].shapeWidget.getFocusWidget()->resize();
 		RESIZE (shapeGui[i].toolSelect, 333, 368, 284, 44, sz);
 		shapeGui[i].toolSelect.resizeSelection (44 * sz, 44 * sz);
+		RESIZE (shapeGui[i].gridSelect, 1043, 368, 104, 44, sz);
+		shapeGui[i].gridSelect.resizeSelection (44 * sz, 44 * sz);
 
 		int methodNr = shapeGui[i].targetListBox.getValue ();
 
@@ -638,6 +644,7 @@ void BShaprGUI::applyChildThemes ()
 		shapeGui[i].shapeWidget.getFocusWidget()->applyTheme (theme);
 		shapeGui[i].focusText.applyTheme (theme);
 		shapeGui[i].toolSelect.applyTheme (theme);
+		shapeGui[i].gridSelect.applyTheme (theme);
 
 		int methodNr = shapeGui[i].targetListBox.getValue ();
 		for (int j = 0; j < MAXOPTIONWIDGETS; ++j)
@@ -1066,6 +1073,7 @@ void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 
 				else if ((widgetNr == BASE) || (widgetNr == BASE_VALUE))
 				{
+					ui->controllers[widgetNr] = value;
 					ui->calculateXSteps ();
 				}
 
@@ -1262,6 +1270,44 @@ void BShaprGUI::toolChangedCallback (BEvents::Event* event)
 	}
 }
 
+void BShaprGUI::gridChangedCallback (BEvents::Event* event)
+{
+	if ((event) && (event->getWidget ()))
+	{
+		BWidgets::ValueWidget* widget = (BWidgets::ValueWidget*) event->getWidget ();
+
+		if (widget->getMainWindow ())
+		{
+			BShaprGUI* ui = (BShaprGUI*) widget->getMainWindow ();
+
+			for (int i = 0; i < MAXSHAPES; ++i)
+			{
+				if (widget == (BWidgets::ValueWidget*) &ui->shapeGui[i].gridSelect)
+				{
+					int value =  ui->shapeGui[i].gridSelect.getValue ();
+					switch (value)
+					{
+						case 0: ui->shapeGui[i].shapeWidget.hideGrid ();
+							ui->shapeGui[i].shapeWidget.setSnap (false);
+							break;
+
+						case 1: ui->shapeGui[i].shapeWidget.showGrid ();
+							ui->shapeGui[i].shapeWidget.setSnap (false);
+							break;
+
+						case 2: ui->shapeGui[i].shapeWidget.showGrid ();
+							ui->shapeGui[i].shapeWidget.setSnap (true);
+							break;
+
+						default:break;
+					}
+					break;
+				}
+			}
+		}
+	}
+}
+
 void BShaprGUI::wheelScrolledCallback (BEvents::Event* event)
 {
 	if ((event) && (event->getWidget ()))
@@ -1321,11 +1367,11 @@ void BShaprGUI::calculateXSteps ()
 				break;
 
 		case BEATS:	if (beatUnit != 0) minorXSteps = majorXSteps / (16.0 / ((double)beatUnit));
-				else minorXSteps = majorXSteps / 4;
+				else minorXSteps = majorXSteps / 4.0;
 				break;
 
 		case BARS:	if (beatsPerBar != 0.0f) minorXSteps = majorXSteps / beatsPerBar;
-				else minorXSteps = majorXSteps / 4;
+				else minorXSteps = majorXSteps / 4.0;
 				break;
 
 		default:	minorXSteps = 1.0;

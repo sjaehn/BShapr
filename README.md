@@ -90,7 +90,7 @@ Mark and select a node type on the bottom of the editor. Click on the desired po
 this node (or to delete it if the deletion tool is marked). Mark a node by clicking on it. You can drag a node
 or its handles.
 
-However, dragging the background results only in dragging the whole **display** of the envelope. Similarly,
+However, dragging the background results only in (vertical) dragging the whole **display** of the envelope. Similarly,
 scrolling zooms the display in or out.
 
 In the background of the shape editor a stereo monitor visualizes the input and the output levels. You can change
@@ -126,21 +126,7 @@ a base.
 
 ## What's new
 
-* Usage simplified
-  * Linear routing in GUI
-  * Add / remove shapes
-  * Complex routing can only be done in LV2 backend now
-* New GUI
-* Additional configuration parameters for effects (optional dials)
-* New effects
-  * Distortion
-    * Hardclip
-    * Softclip
-    * Foldback
-    * Overdrive
-    * Fuzz
-  * Decimate
-  * Bitcrush
+* GUI: Grid / snap to grid
 
 ## TODO
 
