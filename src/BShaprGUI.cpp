@@ -54,6 +54,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].tabClose = CloseWidget (124, 4, 12, 12, "symbol");
 		shapeGui[i].tabAdd = AddWidget (124, 20, 12, 12, "symbol");
 		shapeGui[i].tabMsgBox = BWidgets::MessageBox (500, 240, 200, 120, "msgbox", "Delete shape " + std::to_string (i + 1), "Do you really want to delete this shape and all its content and settings ?", {"No", "Yes"});
+		shapeGui[i].tabMsgBoxBg = BWidgets::Widget (0, 0, 1200, 710, "widget");
 		shapeGui[i].shapeContainer = BWidgets::Widget (20, 130, 1160, 510, "widget");
 
 		// Method menu
@@ -134,6 +135,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].tabContainer.rename ("tab");
 		shapeGui[i].tabIcon.rename ("widget");
 		shapeGui[i].tabMsgBox.rename ("msgbox");
+		shapeGui[i].tabMsgBoxBg.rename ("widget");
 		shapeGui[i].targetListBox.rename ("menu2");
 		shapeGui[i].shapeWidget.rename ("shape");
 		shapeGui[i].focusText.rename ("label");
@@ -213,7 +215,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	shapeGui[0].tabContainer.rename ("activetab");
 	for (unsigned int i = 0; i < MAXSHAPES; ++i)
 	{
-		shapeGui[i].tabMsgBox.hide ();
+		shapeGui[i].tabMsgBoxBg.hide ();
 		shapeGui[i].tabAdd.hide ();
 		shapeGui[i].shapeWidget.setTool (ToolType::POINT_NODE_TOOL);
 		shapeGui[i].shapeWidget.setLowerLimit (methods[0].limit.min);
@@ -247,6 +249,8 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].tabContainer.add (shapeGui[i].tabAdd);
 		mContainer.add (shapeGui[i].tabContainer);
 
+		shapeGui[i].tabMsgBoxBg.add (shapeGui[i].tabMsgBox);
+
 		shapeGui[i].shapeContainer.add (shapeGui[i].targetListBox);
 		shapeGui[i].shapeContainer.add (shapeGui[i].drywetLabel);
 		shapeGui[i].shapeContainer.add (shapeGui[i].drywetDial);
@@ -268,7 +272,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	mContainer.add (messageLabel);
 	mContainer.add (baseValueSelect);
 	mContainer.add (baseListBox);
-	for (unsigned int i = 0; i < MAXSHAPES; ++i) mContainer.add (shapeGui[i].tabMsgBox);
+	for (unsigned int i = 0; i < MAXSHAPES; ++i) mContainer.add (shapeGui[i].tabMsgBoxBg);
 	add (mContainer);
 
 	// Post addition configurations
@@ -559,6 +563,7 @@ void BShaprGUI::resizeGUI()
 		RESIZE (shapeGui[i].tabClose, 124, 4, 12, 12, sz);
 		RESIZE (shapeGui[i].tabAdd, 124, 20, 12, 12, sz);
 		RESIZE (shapeGui[i].tabMsgBox, 500, 240, 200, 120, sz);
+		RESIZE (shapeGui[i].tabMsgBoxBg, 0, 0, 1200, 710, sz);
 		RESIZE (shapeGui[i].shapeContainer, 20, 130, 1160, 590, sz);
 		RESIZE (shapeGui[i].targetListBox, 20, 443, 174, 54, sz);
 		shapeGui[i].targetListBox.resizeListBox (154 * sz, 380 * sz);
@@ -637,6 +642,7 @@ void BShaprGUI::applyChildThemes ()
 		shapeGui[i].tabClose.applyTheme (theme);
 		shapeGui[i].tabAdd.applyTheme (theme);
 		shapeGui[i].tabMsgBox.applyTheme (theme);
+		shapeGui[i].tabMsgBoxBg.applyTheme (theme);
 		shapeGui[i].targetListBox.applyTheme (theme);
 		shapeGui[i].drywetLabel.applyTheme (theme);
 		shapeGui[i].drywetDial.applyTheme (theme);
@@ -1192,6 +1198,7 @@ void BShaprGUI::tabClickedCallback (BEvents::Event* event)
 				{
 					ui->shapeGui[i].tabMsgBox.setValue (0);
 					ui->shapeGui[i].tabMsgBox.show ();
+					ui->shapeGui[i].tabMsgBoxBg.show ();
 					break;
 				}
 
@@ -1215,10 +1222,19 @@ void BShaprGUI::tabClosedCallback (BEvents::Event* event)
 			BShaprGUI* ui = (BShaprGUI*) widget->getMainWindow ();
 			for (int i = 0; i < MAXSHAPES; ++i)
 			{
-				if ((widget == &ui->shapeGui[i].tabMsgBox) && ((BEvents::ValueChangedEvent*) event)->getValue () == 2)
+				if (widget == &ui->shapeGui[i].tabMsgBox)
 				{
-					ui->deleteShape (i);
-					break;
+					double value = ((BEvents::ValueChangedEvent*) event)->getValue ();
+
+					// Any selection
+					if (value != 0) ui->shapeGui[i].tabMsgBoxBg.hide ();
+
+					// Yes
+					if (value == 2)
+					{
+						ui->deleteShape (i);
+						break;
+					}
 				}
 			}
 		}

@@ -121,6 +121,7 @@ private:
 		BWidgets::Widget tabContainer;
 		CloseWidget tabClose;
 		AddWidget tabAdd;
+		BWidgets::Widget tabMsgBoxBg;
 		BWidgets::MessageBox tabMsgBox;
 		BWidgets::ImageIcon tabIcon;
 		BWidgets::PopupListBox targetListBox;

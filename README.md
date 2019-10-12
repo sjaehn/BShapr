@@ -132,9 +132,10 @@ a base.
 
 * Additional effects (any ideas welcome)
 * Copy & paste nodes
-* Snap to grid
 * Rational Bezier curves
 * Move shapes
+* Clone shapes
+* Load / save shapes
 
 ## See also
 
