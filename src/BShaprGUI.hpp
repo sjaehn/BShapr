@@ -49,8 +49,7 @@
 #include "ValueSelect.hpp"
 #include "HorizonWidget.hpp"
 #include "MonitorWidget.hpp"
-#include "CloseWidget.hpp"
-#include "AddWidget.hpp"
+#include "SymbolWidget.hpp"
 #include "Globals.hpp"
 #include "Urids.hpp"
 #include "BShaprNotifications.hpp"
@@ -100,8 +99,10 @@ private:
 	void setController (const int controllerNr, const float value);
 	void deleteShape (const int shapeNr);
 	void insertShape (const int shapeNr);
+	void swapShapes (const int source, const int dest);
 	void switchShape (const int shapeNr);
 	void resizeGUI ();
+	void updateTabs ();
 	void calculateXSteps ();
 	void initMonitors ();
 	std::pair<int, int> translateNotification (BShaprNotifications* notifications, uint32_t notificationsCount);
@@ -119,8 +120,7 @@ private:
 	{
 		BWidgets::Widget shapeContainer;
 		BWidgets::Widget tabContainer;
-		CloseWidget tabClose;
-		AddWidget tabAdd;
+		std::array<SymbolWidget, 4> tabSymbol;
 		BWidgets::Widget tabMsgBoxBg;
 		BWidgets::MessageBox tabMsgBox;
 		BWidgets::ImageIcon tabIcon;

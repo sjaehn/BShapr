@@ -126,14 +126,14 @@ a base.
 
 ## What's new
 
-* GUI: Grid / snap to grid
+* Shape editor: Grid / snap to grid
+* Move shapes
 
 ## TODO
 
 * Additional effects (any ideas welcome)
 * Copy & paste nodes
 * Rational Bezier curves
-* Move shapes
 * Clone shapes
 * Load / save shapes
 

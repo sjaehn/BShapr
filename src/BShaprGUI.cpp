@@ -49,10 +49,9 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	// Init shapes
 	for (int i = 0; i < MAXSHAPES; ++i)
 	{
-		shapeGui[i].tabContainer = BWidgets::Widget (20 + i * 140, 90, 139, 40, "tab");
+		shapeGui[i].tabContainer = BWidgets::Widget (20 + i * 148, 90, 147, 40, "tab");
 		shapeGui[i].tabIcon = BWidgets::ImageIcon (0, 12.5, 120, 15, "widget", pluginPath + "inc/Shape" + std::to_string (i + 1) + ".png");
-		shapeGui[i].tabClose = CloseWidget (124, 4, 12, 12, "symbol");
-		shapeGui[i].tabAdd = AddWidget (124, 20, 12, 12, "symbol");
+		for (int j = 0; j< NRSYMBOLS; ++j) shapeGui[i].tabSymbol[j] = SymbolWidget (120 + (j % 2) * 14 , 8 + int (j / 2) * 14, 10, 10, "symbol", SWSymbol(j));
 		shapeGui[i].tabMsgBox = BWidgets::MessageBox (500, 240, 200, 120, "msgbox", "Delete shape " + std::to_string (i + 1), "Do you really want to delete this shape and all its content and settings ?", {"No", "Yes"});
 		shapeGui[i].tabMsgBoxBg = BWidgets::Widget (0, 0, 1200, 710, "widget");
 		shapeGui[i].shapeContainer = BWidgets::Widget (20, 130, 1160, 510, "widget");
@@ -176,8 +175,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	{
 		shapeGui[i].tabContainer.setCallbackFunction (BEvents::EventType::BUTTON_PRESS_EVENT, BShaprGUI::tabClickedCallback);
 		shapeGui[i].tabIcon.setCallbackFunction (BEvents::EventType::BUTTON_PRESS_EVENT, BShaprGUI::tabClickedCallback);
-		shapeGui[i].tabClose.setCallbackFunction (BEvents::EventType::BUTTON_PRESS_EVENT, BShaprGUI::tabClickedCallback);
-		shapeGui[i].tabAdd.setCallbackFunction (BEvents::EventType::BUTTON_PRESS_EVENT, BShaprGUI::tabClickedCallback);
+		for (int j = 0; j< NRSYMBOLS; ++j) shapeGui[i].tabSymbol[j].setCallbackFunction (BEvents::EventType::BUTTON_PRESS_EVENT, BShaprGUI::tabClickedCallback);
 		shapeGui[i].tabMsgBox.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::tabClosedCallback);
 		shapeGui[i].targetListBox.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 		shapeGui[i].drywetDial.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
@@ -216,7 +214,10 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	for (unsigned int i = 0; i < MAXSHAPES; ++i)
 	{
 		shapeGui[i].tabMsgBoxBg.hide ();
-		shapeGui[i].tabAdd.hide ();
+		for (int j = 0; j< NRSYMBOLS; ++j)
+		{
+			if (j != CLOSESYMBOL) shapeGui[i].tabSymbol[j].hide ();
+		}
 		shapeGui[i].shapeWidget.setTool (ToolType::POINT_NODE_TOOL);
 		shapeGui[i].shapeWidget.setLowerLimit (methods[0].limit.min);
 		shapeGui[i].shapeWidget.setHigherLimit (methods[0].limit.max);
@@ -245,8 +246,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	for (unsigned int i = 0; i < MAXSHAPES; ++i)
 	{
 		shapeGui[i].tabContainer.add (shapeGui[i].tabIcon);
-		shapeGui[i].tabContainer.add (shapeGui[i].tabClose);
-		shapeGui[i].tabContainer.add (shapeGui[i].tabAdd);
+		for (int j = 0; j< NRSYMBOLS; ++j) shapeGui[i].tabContainer.add (shapeGui[i].tabSymbol[j]);
 		mContainer.add (shapeGui[i].tabContainer);
 
 		shapeGui[i].tabMsgBoxBg.add (shapeGui[i].tabMsgBox);
@@ -501,32 +501,37 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 			if (controllerWidgets[controllerNr]) controllerWidgets[controllerNr]->setValue (value);
 
 			// SH_OUTPUT
-			if (shapeWidgetNr == SH_OUTPUT)
-			{
-				int lastShape = 0;
-				for (int i = 0; i < MAXSHAPES; ++i)
-				{
-					if (controllers[SHAPERS + i * SH_SIZE + SH_OUTPUT] == AUDIO_OUT) lastShape = i;
-				}
-
-				// Show or hide tabs
-				for (int i = 0; i < MAXSHAPES; ++i)
-				{
-					if (i <= lastShape) shapeGui[i].tabContainer.show ();
-					else shapeGui[i].tabContainer.hide ();
-				}
-
-				// Show or hide tabAdd widgets
-				if (lastShape + 1 < MAXSHAPES)
-				 {
-					 for (int i = 0; i < MAXSHAPES; ++i) shapeGui[i].tabAdd.show ();
-				 }
-				 else
-				 {
-					 for (int i = 0; i < MAXSHAPES; ++i) shapeGui[i].tabAdd.hide ();
-				 }
-			}
+			if (shapeWidgetNr == SH_OUTPUT) updateTabs ();
 		}
+	}
+}
+
+void BShaprGUI::updateTabs ()
+{
+	int lastShape = 0;
+	for (int i = 0; i < MAXSHAPES; ++i)
+	{
+		if (controllers[SHAPERS + i * SH_SIZE + SH_OUTPUT] == AUDIO_OUT) lastShape = i;
+	}
+
+	// Show or hide tabs
+	for (int i = 0; i < MAXSHAPES; ++i)
+	{
+		if (i <= lastShape) shapeGui[i].tabContainer.show ();
+		else shapeGui[i].tabContainer.hide ();
+	}
+
+	// Show or hide tabSymbols
+	for (int i = 0; i < MAXSHAPES; ++i)
+	{
+		if (lastShape + 1 < MAXSHAPES) shapeGui[i].tabSymbol[ADDSYMBOL].show ();
+		else shapeGui[i].tabSymbol[ADDSYMBOL].hide ();
+
+		if ((i > 0) && (i <= lastShape)) shapeGui[i].tabSymbol[LEFTSYMBOL].show ();
+		else shapeGui[i].tabSymbol[LEFTSYMBOL].hide ();
+
+		if (i < lastShape) shapeGui[i].tabSymbol[RIGHTSYMBOL].show ();
+		else shapeGui[i].tabSymbol[RIGHTSYMBOL].hide ();
 	}
 }
 
@@ -558,10 +563,9 @@ void BShaprGUI::resizeGUI()
 	RESIZE (output2Monitor, 0, 176, 1152, 176, sz);
 	for (int i = 0; i < MAXSHAPES; ++i)
 	{
-		RESIZE (shapeGui[i].tabContainer, 20 + i * 140, 90, 139, 40, sz);
+		RESIZE (shapeGui[i].tabContainer, 20 + i * 148, 90, 147, 40, sz);
 		RESIZE (shapeGui[i].tabIcon, 0, 12.5, 120, 15, sz);
-		RESIZE (shapeGui[i].tabClose, 124, 4, 12, 12, sz);
-		RESIZE (shapeGui[i].tabAdd, 124, 20, 12, 12, sz);
+		for (int j = 0; j< NRSYMBOLS; ++j) RESIZE (shapeGui[i].tabSymbol[j], 120 + (j % 2) * 14 , 8 + int (j / 2) * 14, 10, 10, sz);
 		RESIZE (shapeGui[i].tabMsgBox, 500, 240, 200, 120, sz);
 		RESIZE (shapeGui[i].tabMsgBoxBg, 0, 0, 1200, 710, sz);
 		RESIZE (shapeGui[i].shapeContainer, 20, 130, 1160, 590, sz);
@@ -639,8 +643,7 @@ void BShaprGUI::applyChildThemes ()
 		shapeGui[i].shapeContainer.applyTheme (theme);
 		shapeGui[i].tabContainer.applyTheme (theme);
 		shapeGui[i].tabIcon.applyTheme (theme);
-		shapeGui[i].tabClose.applyTheme (theme);
-		shapeGui[i].tabAdd.applyTheme (theme);
+		for (int j = 0; j< NRSYMBOLS; ++j) shapeGui[i].tabSymbol[j].applyTheme (theme);
 		shapeGui[i].tabMsgBox.applyTheme (theme);
 		shapeGui[i].tabMsgBoxBg.applyTheme (theme);
 		shapeGui[i].targetListBox.applyTheme (theme);
@@ -904,8 +907,7 @@ void BShaprGUI::deleteShape (const int shapeNr)
 		if (controllers[SHAPERS + SH_INPUT] != AUDIO_IN) setController (SHAPERS + SH_INPUT, AUDIO_IN);
 	}
 
-	// Show tabAdd widgets
-	for (int i = 0; i < MAXSHAPES; ++i) shapeGui[i].tabAdd.show ();
+	updateTabs ();
 }
 
 void BShaprGUI::insertShape (const int shapeNr)
@@ -1014,15 +1016,73 @@ void BShaprGUI::insertShape (const int shapeNr)
 		switchShape (shapeNr + 1);
 	}
 
-	// Show or hide tabAdd widgets
-	if (lastShape + 2 < MAXSHAPES)
-	 {
-		 for (int i = 0; i < MAXSHAPES; ++i) shapeGui[i].tabAdd.show ();
-	 }
-	 else
-	 {
-		 for (int i = 0; i < MAXSHAPES; ++i) shapeGui[i].tabAdd.hide ();
-	 }
+	updateTabs ();
+}
+
+void BShaprGUI::swapShapes (const int source, const int dest)
+{
+	if ((source < 0) || (dest < 0)) return;
+
+	// Scan SH_OUTPUT for the last shaper sending data to audio out
+	// Limited backward compatibilty to v0.3.2 or older
+	int lastShape = 0;
+	for (int i = 0; i < MAXSHAPES; ++i)
+	{
+		if (controllers[SHAPERS + i * SH_SIZE + SH_OUTPUT] == AUDIO_OUT) lastShape = i;
+	}
+
+	if ((source > lastShape) || (dest > lastShape)) return;
+
+	float value;
+	int destNr = SHAPERS + dest * SH_SIZE;
+	int srcNr = SHAPERS + source * SH_SIZE;
+
+	value = controllers[destNr + SH_TARGET];
+	shapeGui[dest].targetListBox.setValue (controllers[srcNr + SH_TARGET]);
+	shapeGui[source].targetListBox.setValue (value);
+
+	value = controllers[dest + SH_DRY_WET];
+	shapeGui[dest].drywetDial.setValue (controllers[srcNr + SH_DRY_WET]);
+	shapeGui[source].drywetDial.setValue (value);
+
+	for (int j = 0; j < MAXOPTIONS; ++j)
+	{
+		if (shapeGui[source].optionWidgets[j] && shapeGui[dest].optionWidgets[j])
+		{
+			value = shapeGui[dest].optionWidgets[j]->getValue ();
+			shapeGui[dest].optionWidgets[j]->setValue (shapeGui[source].optionWidgets[j]->getValue ());
+			shapeGui[source].optionWidgets[j]->setValue (value);
+		}
+	}
+
+	// Swap shapes
+	Shape<MAXNODES> shBuffer;
+	shBuffer.clearShape ();
+	for (unsigned int j = 0; j < shapeGui[dest].shapeWidget.size (); ++j)
+	{
+		Node n = shapeGui[dest].shapeWidget.getNode (j);
+		shBuffer.appendNode (n);
+	}
+
+	shapeGui[dest].shapeWidget.clearShape ();
+	for (unsigned int j = 0; j < shapeGui[source].shapeWidget.size (); ++j)
+	{
+		Node n = shapeGui[source].shapeWidget.getNode (j);
+		shapeGui[dest].shapeWidget.appendNode (n);
+	}
+	shapeGui[dest].shapeWidget.validateShape ();
+
+	shapeGui[source].shapeWidget.clearShape ();
+	for (unsigned int j = 0; j < shBuffer.size (); ++j)
+	{
+		Node n = shBuffer.getNode (j);
+		shapeGui[source].shapeWidget.appendNode (n);
+	}
+	shapeGui[source].shapeWidget.validateShape ();
+
+	if (controllers[ACTIVE_SHAPE] - 1 == source) switchShape (dest);
+	else if (controllers[ACTIVE_SHAPE] - 1 == dest) switchShape (source);
+	updateTabs ();
 }
 
 void BShaprGUI::switchShape (const int shapeNr)
@@ -1194,7 +1254,7 @@ void BShaprGUI::tabClickedCallback (BEvents::Event* event)
 					break;
 				}
 
-				else if (widget == &ui->shapeGui[i].tabClose)
+				else if (widget == &ui->shapeGui[i].tabSymbol[CLOSESYMBOL])
 				{
 					ui->shapeGui[i].tabMsgBox.setValue (0);
 					ui->shapeGui[i].tabMsgBox.show ();
@@ -1202,9 +1262,21 @@ void BShaprGUI::tabClickedCallback (BEvents::Event* event)
 					break;
 				}
 
-				else if (widget == &ui->shapeGui[i].tabAdd)
+				else if (widget == &ui->shapeGui[i].tabSymbol[ADDSYMBOL])
 				{
 					ui->insertShape (i);
+					break;
+				}
+
+				else if (widget == &ui->shapeGui[i].tabSymbol[LEFTSYMBOL])
+				{
+					ui->swapShapes (i, i - 1);
+					break;
+				}
+
+				else if (widget == &ui->shapeGui[i].tabSymbol[RIGHTSYMBOL])
+				{
+					ui->swapShapes (i, i + 1);
 					break;
 				}
 			}

@@ -18,22 +18,33 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef CLOSEWIDGET_HPP_
-#define CLOSEWIDGET_HPP_
+#ifndef SYMBOLWIDGET_HPP_
+#define SYMBOLWIDGET_HPP_
 
-#include <cmath>
 #include "BWidgets/Widget.hpp"
 
-class CloseWidget : public BWidgets::Widget
+enum SWSymbol
+{
+        NOSYMBOL        = -1,
+        ADDSYMBOL       = 0,
+        CLOSESYMBOL     = 1,
+        LEFTSYMBOL      = 2,
+        RIGHTSYMBOL     = 3,
+        NRSYMBOLS       = 4
+};
+
+class SymbolWidget : public BWidgets::Widget
 {
 protected:
         BColors::ColorSet fgColors;
+        SWSymbol symbol;
 
 public:
-        CloseWidget () : CloseWidget (0.0, 0.0, 0.0, 0.0, "symbol") {}
-        CloseWidget (const double x, const double y, const double width, const double height, const std::string& name) :
+        SymbolWidget () : SymbolWidget (0.0, 0.0, 0.0, 0.0, "symbol", NOSYMBOL) {}
+        SymbolWidget (const double x, const double y, const double width, const double height, const std::string& name, SWSymbol symbol) :
                 Widget (x, y, width, height, name),
-                fgColors (BColors::whites) {}
+                fgColors (BColors::whites),
+                symbol (symbol) {}
 
 	virtual void applyTheme (BStyles::Theme& theme, const std::string& name) override
         {
@@ -69,13 +80,31 @@ protected:
 			double w = getEffectiveWidth ();
 			double h = getEffectiveHeight ();
 
-/*                      cairo_move_to (cr, x0, y0);
-                        cairo_line_to (cr, x0 + w, y0 + h);
-                        cairo_move_to (cr, x0 + w, y0);
-                        cairo_line_to (cr, x0, y0 + h);
-*/
-                        cairo_move_to (cr, x0, y0 + h / 2);
-                        cairo_line_to (cr, x0 + w, y0 + h / 2);
+                        switch (symbol)
+                        {
+                                case ADDSYMBOL:         cairo_move_to (cr, x0, y0 + h / 2);
+                                                        cairo_line_to (cr, x0 + w, y0 + h / 2);
+                                                        cairo_move_to (cr, x0 + w / 2, y0);
+                                                        cairo_line_to (cr, x0 + w / 2, y0 + h);
+                                                        break;
+
+                                case CLOSESYMBOL:       cairo_move_to (cr, x0, y0 + h / 2);
+                                                        cairo_line_to (cr, x0 + w, y0 + h / 2);
+                                                        break;
+
+                                case LEFTSYMBOL:        cairo_move_to (cr, x0 + 0.75 * w, y0);
+                                                        cairo_line_to (cr, x0 + 0.25 * w, y0 + 0.5 * h);
+                                                        cairo_line_to (cr, x0 + 0.75 * w, y0 + h);
+                                                        break;
+
+                                case RIGHTSYMBOL:       cairo_move_to (cr, x0 + 0.25 * w, y0);
+                                                        cairo_line_to (cr, x0 + 0.75 * w, y0 + 0.5 * h);
+                                                        cairo_line_to (cr, x0 + 0.25 * w, y0 + h);
+                                                        break;
+
+                                default:                break;
+                        }
+
                         cairo_set_line_width (cr, 2.0);
                         cairo_set_source_rgba (cr, CAIRO_RGBA (*fgColors.getColor (getState ())));
                         cairo_stroke (cr);
@@ -86,4 +115,4 @@ protected:
 
 };
 
-#endif /* CLOSEWIDGET_HPP_ */
+#endif /* SYMBOLWIDGET_HPP_ */
