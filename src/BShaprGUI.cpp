@@ -224,6 +224,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 			if (j != CLOSESYMBOL) shapeGui[i].tabSymbol[j].hide ();
 		}
 		shapeGui[i].shapeWidget.setTool (ToolType::POINT_NODE_TOOL);
+		shapeGui[i].shapeWidget.setScaleParameters (methods[0].anchorYPos, methods[0].anchorValue, methods[0].ratio);
 		shapeGui[i].shapeWidget.setLowerLimit (methods[0].limit.min);
 		shapeGui[i].shapeWidget.setHigherLimit (methods[0].limit.max);
 		shapeGui[i].drywetDial.setHardChangeable (false);

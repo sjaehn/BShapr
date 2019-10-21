@@ -77,12 +77,12 @@ enum OptionIndex
 
 const Method methods[MAXEFFECTS] =
 {
-	{0, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {NodeType::END_NODE, {0, 1}, {0, 0}, {0, 0}}, {0, 10, 0}, 0.05, 0, 1.1, "", "", "inc/Level.png"},
+	{0, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {NodeType::END_NODE, {0, 1}, {0, 0}, {0, 0}}, {0, 2, 0}, 0.05, 0, 1.1, "", "", "inc/Level.png"},
 	{2, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}}, {-1, 1, 0}, 0.5, 0, 2.2, "", "", "inc/Balance.png"},
 	{3, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {NodeType::END_NODE, {0, 1}, {0, 0}, {0, 0}}, {0, 100, 0}, 0.05, 0, 2.2, "", "", "inc/Width.png"},
 	{4, {DB_PER_OCT_OPT, NO_OPT, NO_OPT, NO_OPT}, {NodeType::END_NODE, {0, 2000}, {0, 0}, {0, 0}}, {20, 20000, 0}, 0, 0, 5050, "", "Hz", "inc/Low_pass.png"},
 	{6, {DB_PER_OCT_OPT, NO_OPT, NO_OPT, NO_OPT}, {NodeType::END_NODE, {0, 200}, {0, 0}, {0, 0}}, {20, 20000, 0}, 0, 0, 810, "", "Hz", "inc/High_pass.png"},
-	{1, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}}, {-90, 30, 0}, 0.75, 0, 90, "", "dB", "inc/Amplify.png"},
+	{1, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}}, {-90, 12, 0}, 0.85, 0, 112, "", "dB", "inc/Amplify.png"},
 	{5, {DB_PER_OCT_OPT, NO_OPT, NO_OPT, NO_OPT}, {NodeType::END_NODE, {0, 3.301}, {0, 0}, {0, 0}}, {1.301, 4.301, 0}, 0.1, 1.3, 3.5, "10^", "Hz", "inc/Low_pass_log.png"},
 	{7, {DB_PER_OCT_OPT, NO_OPT, NO_OPT, NO_OPT}, {NodeType::END_NODE, {0, 2.301}, {0, 0}, {0, 0}}, {1.301, 4.301, 0}, 0.1, 1.3, 3.5, "10^", "Hz", "inc/High_pass_log.png"},
 	{8, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}}, {-12, 12, 0}, 0.5, 0, 25, "", "semitones", "inc/Pitch_shift.png"},
