@@ -126,15 +126,17 @@ a base.
 
 ## What's new
 
-* Shape editor: Grid / snap to grid
+* Grid / snap to grid
+* Selection tool
+* Cut, copy, paste and delete
 * Move shapes
 
 ## TODO
 
 * Additional effects (any ideas welcome)
-* Copy & paste nodes
 * Rational Bezier curves
-* Clone shapes
+* Cut, copy, paste *relative* shape nodes
+* Translate shape nodes if effect changed
 * Load / save shapes
 
 ## See also

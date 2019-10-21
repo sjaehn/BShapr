@@ -89,6 +89,7 @@ public:
 	static void shapeChangedCallback (BEvents::Event* event);
 	static void toolChangedCallback (BEvents::Event* event);
 	static void editClickedCallback (BEvents::Event* event);
+	static void editReleasedCallback (BEvents::Event* event);
 	static void gridChangedCallback (BEvents::Event* event);
 	static void tabClickedCallback (BEvents::Event* event);
 	static void tabClosedCallback (BEvents::Event* event);
@@ -207,6 +208,8 @@ private:
 		{"B.Shapr", 		{{"background", STYLEPTR (&BStyles::blackFill)},
 					 {"border", STYLEPTR (&BStyles::noBorder)}}},
 		{"widget", 		{{"uses", STYLEPTR (&defaultStyles)}}},
+		{"frame", 		{{"uses", STYLEPTR (&defaultStyles)},
+					 {"border", STYLEPTR (&BStyles::whiteBorder1pt)}}},
 		{"screen", 		{{"background", STYLEPTR (&screenBg)}}},
 		{"icon", 		{{"uses", STYLEPTR (&defaultStyles)},
 					 {"border", STYLEPTR (&labelBorder)}}},

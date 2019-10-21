@@ -185,6 +185,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].shapeWidget.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::shapeChangedCallback);
 		shapeGui[i].toolSelect.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::toolChangedCallback);
 		for (int j = 0; j < 4; ++j) shapeGui[i].editWidgets[j].setCallbackFunction (BEvents::EventType::BUTTON_PRESS_EVENT, BShaprGUI::editClickedCallback);
+		for (int j = 0; j < 4; ++j) shapeGui[i].editWidgets[j].setCallbackFunction (BEvents::EventType::BUTTON_RELEASE_EVENT, BShaprGUI::editReleasedCallback);
 		shapeGui[i].gridSelect.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::gridChangedCallback);
 
 		for (int j = 0 ; j < MAXOPTIONS; ++j)
@@ -1381,6 +1382,9 @@ void BShaprGUI::editClickedCallback (BEvents::Event* event)
 				{
 					if (widget == &ui->shapeGui[i].editWidgets[j])
 					{
+						ui->shapeGui[i].editWidgets[j].rename ("frame");
+						ui->shapeGui[i].editWidgets[j].applyTheme (ui->theme);
+
 						switch (j)
 						{
 							case 0:		ui->clipboard = ui->shapeGui[i].shapeWidget.cutSelection ();
@@ -1397,6 +1401,31 @@ void BShaprGUI::editClickedCallback (BEvents::Event* event)
 
 							default:	return;
 						}
+					}
+				}
+			}
+		}
+	}
+}
+
+void BShaprGUI::editReleasedCallback (BEvents::Event* event)
+{
+	if ((event) && (event->getWidget ()))
+	{
+		BWidgets::Widget* widget = (BWidgets::Widget*) event->getWidget ();
+
+		if (widget->getMainWindow ())
+		{
+			BShaprGUI* ui = (BShaprGUI*) widget->getMainWindow ();
+
+			for (int i = 0; i < MAXSHAPES; ++i)
+			{
+				for (int j = 0; j < 4; ++j)
+				{
+					if (widget == &ui->shapeGui[i].editWidgets[j])
+					{
+						ui->shapeGui[i].editWidgets[j].rename ("widget");
+						ui->shapeGui[i].editWidgets[j].applyTheme (ui->theme);
 					}
 				}
 			}

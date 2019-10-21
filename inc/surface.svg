@@ -1584,8 +1584,8 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="0.70710678"
-     inkscape:cx="812.10769"
+     inkscape:zoom="1"
+     inkscape:cx="738.9331"
      inkscape:cy="204.56494"
      inkscape:document-units="px"
      inkscape:current-layer="layer2"
@@ -1640,7 +1640,7 @@
          id="tspan4801"
          x="4.4167776"
          y="124.90794"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.11111069px;font-family:'Good Times';-inkscape-font-specification:'Good Times, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;stroke-width:0.26458332">B.S</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:14.11111069px;font-family:'Good Times';-inkscape-font-specification:'Good Times';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;stroke-width:0.26458332;">B.S</tspan></text>
     <g
        style="display:inline;opacity:0.5"
        id="g3239-2-5-1-7"
@@ -1668,7 +1668,7 @@
          id="tspan4805"
          x="32.928719"
          y="124.93616"
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.28888893px;font-family:'Good Times';-inkscape-font-specification:'Good Times, Normal';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;stroke-width:0.26458332">HAPR</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:11.28888893px;font-family:'Good Times';-inkscape-font-specification:'Good Times';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;stroke-width:0.26458332;">HAPR</tspan></text>
     <g
        id="g1181"
        transform="translate(5.2916668,-79.374937)">
@@ -1840,7 +1840,7 @@
          id="tspan2040-9-7"
          x="231.01805"
          y="185.13777"
-         style="fill:#ffffff;stroke-width:0.26458332">MIDI:</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Good Times';-inkscape-font-specification:'Good Times';fill:#ffffff;stroke-width:0.26458332">MIDI:</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:6.61458302px;font-family:'Good Times';-inkscape-font-specification:'Good Times';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458332"
@@ -1851,7 +1851,7 @@
          id="tspan1001"
          x="200.50865"
          y="180.01721"
-         style="font-size:3.52777767px;fill:#ffffff;stroke-width:0.26458332">on</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;font-family:'Good Times';-inkscape-font-specification:'Good Times';fill:#ffffff;stroke-width:0.26458332">on</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:6.61458302px;font-family:'Good Times';-inkscape-font-specification:'Good Times';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458332"
@@ -1862,7 +1862,7 @@
          id="tspan1005"
          x="200.50865"
          y="187.98645"
-         style="font-size:3.52777767px;fill:#ffffff;stroke-width:0.26458332">off</tspan></text>
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;font-family:'Good Times';-inkscape-font-specification:'Good Times';fill:#ffffff;stroke-width:0.26458332">off</tspan></text>
     <rect
        style="display:inline;fill:#000000;fill-opacity:0.81176471;stroke:none;stroke-width:0;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.74901961"
        id="rect1922-3-0"
@@ -2470,32 +2470,7 @@
          style="fill:none;stroke:#ffffff;stroke-width:0.38644865;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#ExperimentalArrow)" />
     </g>
     <g
-       id="g2360"
-       transform="translate(8.9900142e-6,-1.927817e-6)">
-      <rect
-         y="157.42708"
-         x="169.33333"
-         height="6.6145725"
-         width="5.2916551"
-         id="rect1234-1"
-         style="display:inline;opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.52916664;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
-      <rect
-         style="opacity:1;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.52916664;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
-         id="rect2385"
-         width="5.2916665"
-         height="6.614583"
-         x="166.68748"
-         y="158.75" />
-      <rect
-         y="158.75"
-         x="166.6875"
-         height="6.6145725"
-         width="5.2916603"
-         id="rect1234"
-         style="opacity:1;fill:#ffffff;fill-opacity:0;stroke:#ffffff;stroke-width:0.52916539;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:0.52916541, 1.58749623;stroke-dashoffset:0;stroke-opacity:1" />
-    </g>
-    <g
-       transform="translate(15.875009,-1.927817e-6)"
+       transform="matrix(0.75,0,0,0.75,58.539068,40.348956)"
        style="display:inline"
        id="g2360-9">
       <rect
@@ -2527,18 +2502,47 @@
          x="167.21666"
          y="159.14688" />
     </g>
-    <path
-       style="fill:none;stroke:#ffffff;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 168.01041,162.71875 c 1.32292,1.32291 1.32292,1.32291 1.32292,1.32291"
-       id="path2389"
-       inkscape:connector-curvature="0" />
-    <path
-       style="fill:none;stroke:#ffffff;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       d="m 168.01041,164.04166 c 1.32292,-1.32291 1.32292,-1.32291 1.32292,-1.32291"
-       id="path2391"
-       inkscape:connector-curvature="0" />
     <g
-       transform="translate(31.750009,-1.927817e-6)"
+       id="g1180"
+       transform="matrix(0.75,0,0,0.75,42.664061,40.348957)">
+      <g
+         transform="translate(8.9900142e-6,-1.927817e-6)"
+         id="g2360">
+        <rect
+           style="display:inline;opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.52916664;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+           id="rect1234-1"
+           width="5.2916551"
+           height="6.6145725"
+           x="169.33333"
+           y="157.42708" />
+        <rect
+           y="158.75"
+           x="166.68748"
+           height="6.614583"
+           width="5.2916665"
+           id="rect2385"
+           style="opacity:1;fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:0.52916664;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+        <rect
+           style="opacity:1;fill:#ffffff;fill-opacity:0;stroke:#ffffff;stroke-width:0.52916539;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:0.52916541, 1.58749623;stroke-dashoffset:0;stroke-opacity:1"
+           id="rect1234"
+           width="5.2916603"
+           height="6.6145725"
+           x="166.6875"
+           y="158.75" />
+      </g>
+      <path
+         inkscape:connector-curvature="0"
+         id="path2389"
+         d="m 168.01041,162.71875 c 1.32292,1.32291 1.32292,1.32291 1.32292,1.32291"
+         style="fill:none;stroke:#ffffff;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+      <path
+         inkscape:connector-curvature="0"
+         id="path2391"
+         d="m 168.01041,164.04166 c 1.32292,-1.32291 1.32292,-1.32291 1.32292,-1.32291"
+         style="fill:none;stroke:#ffffff;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
+    </g>
+    <g
+       transform="matrix(0.75,0,0,0.75,74.414069,40.348954)"
        style="display:inline"
        id="g2360-9-8">
       <rect
@@ -2558,7 +2562,7 @@
     </g>
     <g
        id="g2441"
-       transform="translate(1.3229218,-1.3229119)">
+       transform="matrix(0.75,0,0,0.75,55.562504,39.356774)">
       <path
          inkscape:connector-curvature="0"
          id="path2435"
