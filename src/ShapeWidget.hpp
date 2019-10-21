@@ -25,15 +25,16 @@
 #include "StaticArrayList.hpp"
 #include "BWidgets/ValueWidget.hpp"
 #include "Shape.hpp"
+#include "Selection.hpp"
 
 enum ToolType
 {
 	NO_TOOL				= 0,
-	POINT_NODE_TOOL			= 1,
-	AUTO_SMOOTH_NODE_TOOL		= 2,
-	SYMMETRIC_SMOOTH_NODE_TOOL	= 3,
-	CORNER_NODE_TOOL		= 4,
-	DELETE_TOOL			= 5
+	EDIT_TOOL			= 1,
+	POINT_NODE_TOOL			= 2,
+	AUTO_SMOOTH_NODE_TOOL		= 3,
+	SYMMETRIC_SMOOTH_NODE_TOOL	= 4,
+	CORNER_NODE_TOOL		= 5
 };
 
 class ShapeWidget : public Shape<MAXNODES>, public BWidgets::ValueWidget
@@ -41,10 +42,6 @@ class ShapeWidget : public Shape<MAXNODES>, public BWidgets::ValueWidget
 public:
 	ShapeWidget ();
 	ShapeWidget (const double x, const double y, const double width, const double height, const std::string& name);
-	//ShapeWidget (const ShapeWidget& that);
-
-	//ShapeWidget& operator= (const ShapeWidget& that);
-
 	void setTool (const ToolType tool);
 	void setValueEnabled (const bool status);
 	void setScaleParameters (double anchorYPos, double anchorValue, double ratio);
@@ -57,6 +54,10 @@ public:
 	void showGrid ();
 	void hideGrid ();
 	void setSnap (const bool status);
+	std::vector<Node> cutSelection ();
+	std::vector<Node> copySelection ();
+	void pasteSelection (const std::vector<Node>& newNodes);
+	void deleteSelection ();
 	virtual void onButtonPressed (BEvents::PointerEvent* event) override;
 	virtual void onButtonReleased (BEvents::PointerEvent* event) override;
 	virtual void onPointerDragged (BEvents::PointerEvent* event) override;
@@ -66,10 +67,20 @@ public:
 	virtual void applyTheme (BStyles::Theme& theme, const std::string& name) override;
 
 protected:
+	enum ClickMode
+	{
+		NEW_NODE	= 0,
+		DRAG_NODE	= 1,
+		DRAG_HANDLE	= 2,
+		DRAG_SELECTION	= 3,
+		DRAG_SCREEN	= 4
+	};
+
+	ClickMode clickMode;
+	Selection selection;
 	ToolType tool;
-	int activeNode;
-	int activeHandle;
-	bool selected, dragged;
+	int grabbedNode;
+	int grabbedHandle;
 	bool valueEnabled;
 	double scaleAnchorYPos;
 	double scaleAnchorValue;

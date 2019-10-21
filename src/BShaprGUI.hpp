@@ -88,6 +88,7 @@ public:
 	static void valueChangedCallback (BEvents::Event* event);
 	static void shapeChangedCallback (BEvents::Event* event);
 	static void toolChangedCallback (BEvents::Event* event);
+	static void editClickedCallback (BEvents::Event* event);
 	static void gridChangedCallback (BEvents::Event* event);
 	static void tabClickedCallback (BEvents::Event* event);
 	static void tabClosedCallback (BEvents::Event* event);
@@ -133,6 +134,7 @@ private:
 		std::array<BWidgets::ValueWidget*, MAXOPTIONS> optionWidgets;
 		std::array<BWidgets::Label, MAXOPTIONS> optionLabels;
 		SelectWidget toolSelect;
+		std::array<BWidgets::Widget, 4> editWidgets;
 		SelectWidget gridSelect;
 	} ;
 
@@ -158,6 +160,8 @@ private:
 	double monitorScale;
 	double minorXSteps;
 	double majorXSteps;
+
+	std::vector<Node> clipboard;
 
 	std::string pluginPath;
 	double sz;

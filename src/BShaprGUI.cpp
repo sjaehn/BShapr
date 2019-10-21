@@ -41,6 +41,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	output2Monitor (0, 176, 1152, 176, "monitor.out"),
 
 	horizonPos (0), monitorScale (0.25), minorXSteps (1.0), majorXSteps (1.0),
+	clipboard (),
 	pluginPath (bundlePath ? std::string (bundlePath) : std::string ("")),
 	sz (1.0),
 	bgImageSurface (nullptr), forge (), urids (), map (NULL)
@@ -88,7 +89,8 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 
 		shapeGui[i].shapeWidget = ShapeWidget (4, 4, 1152, 352, "shape");
 		shapeGui[i].focusText = BWidgets::Text (0, 0, 400, 80, "label", focusString);
-		shapeGui[i].toolSelect = SelectWidget (333, 368, 284, 44, "tool", 44, 44, 5, 1);
+		shapeGui[i].toolSelect = SelectWidget (273, 368, 284, 44, "tool", 44, 44, 5, 2);
+		for (int j = 0; j < 4; ++j) shapeGui[i].editWidgets[j] = BWidgets::Widget (603 + j * 60, 368, 44, 44, "widget");
 		shapeGui[i].gridSelect = SelectWidget (1043, 368, 104, 44, "tool", 44, 44, 2, 2);
 		shapeGui[i].drywetLabel = BWidgets::Label (500, 494, 50, 16, "smlabel", "dry/wet");
 		shapeGui[i].drywetDial = BWidgets::DialValue (500, 434, 50, 60, "dial", 1.0, 0.0, 1.0, 0, "%1.2f");
@@ -139,6 +141,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].shapeWidget.rename ("shape");
 		shapeGui[i].focusText.rename ("label");
 		shapeGui[i].toolSelect.rename ("tool");
+		for (int j = 0; j < 4; ++j) shapeGui[i].editWidgets[j].rename ("widget");
 		shapeGui[i].gridSelect.rename ("tool");
 		shapeGui[i].drywetLabel.rename ("smlabel");
 		shapeGui[i].drywetDial.rename ("dial");
@@ -181,6 +184,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].drywetDial.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 		shapeGui[i].shapeWidget.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::shapeChangedCallback);
 		shapeGui[i].toolSelect.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::toolChangedCallback);
+		for (int j = 0; j < 4; ++j) shapeGui[i].editWidgets[j].setCallbackFunction (BEvents::EventType::BUTTON_PRESS_EVENT, BShaprGUI::editClickedCallback);
 		shapeGui[i].gridSelect.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::gridChangedCallback);
 
 		for (int j = 0 ; j < MAXOPTIONS; ++j)
@@ -256,6 +260,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].shapeContainer.add (shapeGui[i].drywetDial);
 		shapeGui[i].shapeContainer.add (shapeGui[i].shapeWidget);
 		shapeGui[i].shapeContainer.add (shapeGui[i].toolSelect);
+		for (int j = 0; j < 4; ++j) shapeGui[i].shapeContainer.add (shapeGui[i].editWidgets[j]);
 		shapeGui[i].shapeContainer.add (shapeGui[i].gridSelect);
 
 		for (int j = 0; j < MAXOPTIONS; ++j)
@@ -578,8 +583,9 @@ void BShaprGUI::resizeGUI()
 		RESIZE (shapeGui[i].shapeWidget, 4, 4, 1152, 352, sz);
 		RESIZE (shapeGui[i].focusText, 0, 0, 400, 80, sz);
 		shapeGui[i].shapeWidget.getFocusWidget()->resize();
-		RESIZE (shapeGui[i].toolSelect, 333, 368, 284, 44, sz);
+		RESIZE (shapeGui[i].toolSelect, 273, 368, 284, 44, sz);
 		shapeGui[i].toolSelect.resizeSelection (44 * sz, 44 * sz);
+		for (int j = 0; j < 4; ++j) RESIZE (shapeGui[i].editWidgets[j], 603 + j * 60, 368, 44, 44, sz);
 		RESIZE (shapeGui[i].gridSelect, 1043, 368, 104, 44, sz);
 		shapeGui[i].gridSelect.resizeSelection (44 * sz, 44 * sz);
 
@@ -653,6 +659,7 @@ void BShaprGUI::applyChildThemes ()
 		shapeGui[i].shapeWidget.getFocusWidget()->applyTheme (theme);
 		shapeGui[i].focusText.applyTheme (theme);
 		shapeGui[i].toolSelect.applyTheme (theme);
+		for (int j = 0; j < 4; ++j) shapeGui[i].editWidgets[j].applyTheme (theme);
 		shapeGui[i].gridSelect.applyTheme (theme);
 
 		int methodNr = shapeGui[i].targetListBox.getValue ();
@@ -1352,6 +1359,45 @@ void BShaprGUI::toolChangedCallback (BEvents::Event* event)
 				{
 					ui->shapeGui[i].shapeWidget.setTool((ToolType) ui->shapeGui[i].toolSelect.getValue ());
 					break;
+				}
+			}
+		}
+	}
+}
+
+void BShaprGUI::editClickedCallback (BEvents::Event* event)
+{
+	if ((event) && (event->getWidget ()))
+	{
+		BWidgets::Widget* widget = (BWidgets::Widget*) event->getWidget ();
+
+		if (widget->getMainWindow ())
+		{
+			BShaprGUI* ui = (BShaprGUI*) widget->getMainWindow ();
+
+			for (int i = 0; i < MAXSHAPES; ++i)
+			{
+				for (int j = 0; j < 4; ++j)
+				{
+					if (widget == &ui->shapeGui[i].editWidgets[j])
+					{
+						switch (j)
+						{
+							case 0:		ui->clipboard = ui->shapeGui[i].shapeWidget.cutSelection ();
+									return;
+
+							case 1:		ui->clipboard = ui->shapeGui[i].shapeWidget.copySelection ();
+									return;
+
+							case 2:		ui->shapeGui[i].shapeWidget.pasteSelection (ui->clipboard);
+									return;
+
+							case 3:		ui->shapeGui[i].shapeWidget.deleteSelection ();
+									return;
+
+							default:	return;
+						}
+					}
 				}
 			}
 		}
