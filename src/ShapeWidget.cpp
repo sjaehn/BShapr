@@ -227,6 +227,8 @@ void ShapeWidget::onButtonPressed (BEvents::PointerEvent* event)
 	double px;
 	double py;
 
+	if ((w == 0) || (h == 0) || (ymax == ymin)) return;
+
 	// Left button: select / deselect nodes or handles
 	if (event->getButton() == BEvents::InputDevice::LEFT_BUTTON)
 	{
@@ -303,7 +305,7 @@ void ShapeWidget::onButtonPressed (BEvents::PointerEvent* event)
 			clickMode = DRAG_SELECTION;
 			grabbedNode = -1;
 			selection.clear ();
-			py = (y0 + h - event->getY ()) / h * scaleRatio + ymin;
+			py = ((y0 + h - event->getY ()) / h) * scaleRatio + ymin;
 			px = (event->getX () - x0) / w;
 			selection.setOrigin ({px, py});
 			update ();
@@ -327,9 +329,11 @@ void ShapeWidget::onButtonReleased (BEvents::PointerEvent* event)
 		double w = getEffectiveWidth ();
 		double h = getEffectiveHeight ();
 		double ymin = scaleAnchorValue - scaleRatio * scaleAnchorYPos;
-		// double ymax = ymin + scaleRatio;
+
+		if ((w == 0) || (h == 0)) return;
+
 		double px = (event->getX () - x0) / w;
-		double py = (y0 + h - event->getY ()) / h * scaleRatio + ymin;
+		double py = ((y0 + h - event->getY ()) / h) * scaleRatio + ymin;
 
 		// Snap to grid
 		if (gridSnap)
@@ -395,9 +399,10 @@ void ShapeWidget::onPointerDragged (BEvents::PointerEvent* event)
 		double w = getEffectiveWidth ();
 		double h = getEffectiveHeight ();
 		double ymin = scaleAnchorValue - scaleRatio * scaleAnchorYPos;
-		//double ymax = ymin + scaleRatio;
 
-		double py = (y0 + h - event->getY ()) / h * scaleRatio + ymin;
+		if ((w == 0) || (h == 0)) return;
+
+		double py = ((y0 + h - event->getY ()) / h) * scaleRatio + ymin;
 		double px = (event->getX () - x0) / w;
 
 		// Node or handle dragged
@@ -615,6 +620,20 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 
 	ValueWidget::draw (x, y, width, height);
 
+	double x0 = getXOffset ();
+	double y0 = getYOffset ();
+	double w = getEffectiveWidth ();
+	double h = getEffectiveHeight ();
+	double ymin = scaleAnchorValue - scaleRatio * scaleAnchorYPos;
+	double ymax = ymin + scaleRatio;
+	BColors::Color lineColor = *fgColors.getColor (BColors::NORMAL);
+	BColors::Color fillColor = *fgColors.getColor (BColors::NORMAL);
+	BColors::Color nodeColor = *syColors.getColor (BColors::NORMAL);
+	BColors::Color activeNodeColor = *syColors.getColor (BColors::ACTIVE);
+	BColors::Color gridColor = *bgColors.getColor (BColors::NORMAL);
+
+	if (ymin == ymax) return;
+
 	cairo_t* cr = cairo_create (widgetSurface);
 
 	if (cairo_status (cr) == CAIRO_STATUS_SUCCESS)
@@ -622,18 +641,6 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 		// Limit cairo-drawing area
 		cairo_rectangle (cr, x, y, width, height);
 		cairo_clip (cr);
-
-		double x0 = getXOffset ();
-		double y0 = getYOffset ();
-		double w = getEffectiveWidth ();
-		double h = getEffectiveHeight ();
-		double ymin = scaleAnchorValue - scaleRatio * scaleAnchorYPos;
-		double ymax = ymin + scaleRatio;
-		BColors::Color lineColor = *fgColors.getColor (BColors::NORMAL);
-		BColors::Color fillColor = *fgColors.getColor (BColors::NORMAL);
-		BColors::Color nodeColor = *syColors.getColor (BColors::NORMAL);
-		BColors::Color activeNodeColor = *syColors.getColor (BColors::ACTIVE);
-		BColors::Color gridColor = *bgColors.getColor (BColors::NORMAL);
 
 		double ygrid = pow (10, floor (log10 (scaleRatio / 1.5)));
 		int ldYgrid = log10 (ygrid);
