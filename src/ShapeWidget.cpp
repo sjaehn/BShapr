@@ -838,7 +838,7 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 		{
 			Point p1 = selection.getOrigin ();
 			Point ext = selection.getExtend ();
-			cairo_rectangle (cr, x0 + p1.x * w, y0 + h - h * (p1.y - ymin) / (ymax - ymin), ext.x * w, - h * (ext.y - ymin) / (ymax - ymin));
+			cairo_rectangle (cr, x0 + p1.x * w, y0 + h - h * (p1.y - ymin) / (ymax - ymin), ext.x * w, - h * ext.y / (ymax - ymin));
 			cairo_set_source_rgba (cr, CAIRO_RGBA (lineColor));
 			cairo_set_line_width (cr, 1);
 			double dashes[2] = {2.0, 2.0};
