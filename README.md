@@ -135,6 +135,7 @@ a base.
 
 * Additional effects (any ideas welcome)
 * Rational Bezier curves
+* Fix click on MIDI on problem
 * Cut, copy, paste *relative* shape nodes
 * Translate shape nodes if effect changed
 * Load / save shapes

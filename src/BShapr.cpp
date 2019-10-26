@@ -169,6 +169,9 @@ void BShapr::connect_port(uint32_t port, void *data)
 	case CONTROL:
 		controlPort = (LV2_Atom_Sequence*) data;
 		break;
+	case MIDI_IN:
+		midiPort = (LV2_Atom_Sequence*) data;
+		break;
 	case NOTIFY:
 		notifyPort = (LV2_Atom_Sequence*) data;
 		break;
@@ -238,7 +241,7 @@ double BShapr::getPositionFromFrames (uint64_t frames)
 void BShapr::run (uint32_t n_samples)
 {
 	// Check ports
-	if ((!controlPort) || (!notifyPort) || (!audioInput1) || (!audioInput2) || (!audioOutput1) || (!audioOutput2)) return;
+	if ((!controlPort) || (!midiPort) || (!notifyPort) || (!audioInput1) || (!audioInput2) || (!audioOutput1) || (!audioOutput2)) return;
 
 	for (int i = 0; i < NR_CONTROLLERS; ++i) if (!new_controllers[i]) return;
 
@@ -333,60 +336,51 @@ void BShapr::run (uint32_t n_samples)
 	if (!isAudioOutputConnected (activeShape)) message.setMessage (NO_OUTPUT_MSG);
 	else message.deleteMessage (NO_OUTPUT_MSG);
 
+	// Control and MIDI messages
 	uint32_t last_t = 0;
-	LV2_ATOM_SEQUENCE_FOREACH (controlPort, ev)
+	const LV2_Atom_Event* controlEvent = lv2_atom_sequence_begin (&controlPort->body);
+	const LV2_Atom_Event* midiEvent = lv2_atom_sequence_begin (&midiPort->body);
+	while
+	(
+		(!lv2_atom_sequence_is_end (&controlPort->body, controlPort->atom.size, controlEvent)) ||
+		(!lv2_atom_sequence_is_end (&midiPort->body, midiPort->atom.size, midiEvent))
+	)
 	{
-		// Read incoming MIDI events
-		if (ev->body.type == urids.midi_Event)
+		bool isControl = !lv2_atom_sequence_is_end (&controlPort->body, controlPort->atom.size, controlEvent);
+		bool isMidi = !lv2_atom_sequence_is_end (&midiPort->body, midiPort->atom.size, midiEvent);
+
+		// Skip irrelevant messages
+		if
+		(
+			isControl &&
+			(controlEvent->body.type != urids.atom_Object) &&
+			(controlEvent->body.type != urids.atom_Blank) &&
+			(((const LV2_Atom_Object*)&controlEvent->body)->body.otype != urids.ui_on) &&
+			(((const LV2_Atom_Object*)&controlEvent->body)->body.otype != urids.ui_off) &&
+			(((const LV2_Atom_Object*)&controlEvent->body)->body.otype != urids.notify_shapeEvent) &&
+			(((const LV2_Atom_Object*)&controlEvent->body)->body.otype != urids.time_Position)
+		)
 		{
-			if (controllers[MIDI_CONTROL] == 1.0f)
-			{
-				const uint8_t* const msg = (const uint8_t*)(ev + 1);
-				uint8_t typ = lv2_midi_message_type(msg);
-				// uint8_t chn = msg[0] & 0x0F;
-				uint8_t note = msg[1];
-				uint32_t filter = controllers[MIDI_KEYS];
-
-				switch (typ)
-				{
-					case LV2_MIDI_MSG_NOTE_ON:
-					{
-						if (filter & (1 << (note % 12)))
-						{
-							key = note;
-							offset = position;
-							position = 0;
-							refFrame = ev->time.frames;
-						}
-					}
-					break;
-
-					case LV2_MIDI_MSG_NOTE_OFF:
-					{
-						if (key == note)
-						{
-							key = 0xFF;
-						}
-					}
-					break;
-
-					case LV2_MIDI_MSG_CONTROLLER:
-					{
-						if ((note == LV2_MIDI_CTL_ALL_NOTES_OFF) ||
-						    (note == LV2_MIDI_CTL_ALL_SOUNDS_OFF))
-						{
-							key = 0xFF;
-						}
-					}
-					break;
-
-					default: break;
-				}
-			}
+			controlEvent = lv2_atom_sequence_next (controlEvent);
+			continue;
 		}
 
-		// Read all other events
-		else if ((ev->body.type == urids.atom_Object) || (ev->body.type == urids.atom_Blank))
+		if (isMidi && (midiEvent->body.type != urids.midi_Event))
+		{
+			midiEvent = lv2_atom_sequence_next (midiEvent);
+			continue;
+		}
+
+		// Get first message of both sequences
+		const LV2_Atom_Event* ev =
+		(
+			isControl && isMidi ?
+			(controlEvent->time.frames < midiEvent->time.frames ? controlEvent : midiEvent) :
+			(isControl ? controlEvent : midiEvent)
+		);
+
+		// Read host & GUI events
+		if (isControl && ((ev->body.type == urids.atom_Object) || (ev->body.type == urids.atom_Blank)))
 		{
 			const LV2_Atom_Object* obj = (const LV2_Atom_Object*)&ev->body;
 
@@ -404,9 +398,13 @@ void BShapr::run (uint32_t n_samples)
 			else if (obj->body.otype == urids.notify_shapeEvent)
 			{
 				LV2_Atom *sNr = NULL, *sData = NULL;
-				lv2_atom_object_get (obj, urids.notify_shapeNr, &sNr,
-										  urids.notify_shapeData, &sData,
-										  NULL);
+				lv2_atom_object_get
+				(
+					obj,
+					urids.notify_shapeNr, &sNr,
+					urids.notify_shapeData, &sData,
+					NULL
+				);
 
 				if (sNr && (sNr->type == urids.atom_Int) &&
 					sData && (sData->type == urids.atom_Vector))
@@ -550,8 +548,61 @@ void BShapr::run (uint32_t n_samples)
 			}
 		}
 
-		play (last_t, ev->time.frames);
-		last_t = ev->time.frames;
+		// Read incoming MIDI events
+		if (isMidi && (ev->body.type == urids.midi_Event))
+		{
+			if (controllers[MIDI_CONTROL] == 1.0f)
+			{
+				const uint8_t* const msg = (const uint8_t*)(ev + 1);
+				uint8_t typ = lv2_midi_message_type(msg);
+				// uint8_t chn = msg[0] & 0x0F;
+				uint8_t note = msg[1];
+				uint32_t filter = controllers[MIDI_KEYS];
+
+				switch (typ)
+				{
+					case LV2_MIDI_MSG_NOTE_ON:
+					{
+						if (filter & (1 << (note % 12)))
+						{
+							key = note;
+							offset = position;
+							position = 0;
+							refFrame = ev->time.frames;
+						}
+					}
+					break;
+
+					case LV2_MIDI_MSG_NOTE_OFF:
+					{
+						if (key == note)
+						{
+							key = 0xFF;
+						}
+					}
+					break;
+
+					case LV2_MIDI_MSG_CONTROLLER:
+					{
+						if ((note == LV2_MIDI_CTL_ALL_NOTES_OFF) ||
+						    (note == LV2_MIDI_CTL_ALL_SOUNDS_OFF))
+						{
+							key = 0xFF;
+						}
+					}
+					break;
+
+					default: break;
+				}
+			}
+		}
+
+		uint32_t next_t = (ev->time.frames < n_samples ? ev->time.frames : n_samples);
+		play (last_t, next_t);
+		last_t = next_t;
+
+		if (ev == controlEvent) controlEvent = lv2_atom_sequence_next (controlEvent);
+		else midiEvent = lv2_atom_sequence_next (midiEvent);
 	}
 
 	// Play remaining samples
@@ -1032,6 +1083,8 @@ void BShapr::bitcrush (const float input1, const float input2, float* output1, f
 
 void BShapr::play (uint32_t start, uint32_t end)
 {
+	if (end < start) return;
+
 	// Return if halted or bpm == 0
 	if (((speed == 0.0f) && (controllers[BASE] != SECONDS)) || (bpm < 1.0f))
 	{
