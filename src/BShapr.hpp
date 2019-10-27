@@ -146,7 +146,6 @@ private:
 	BShaprURIDs urids;
 
 	LV2_Atom_Sequence* controlPort;
-	LV2_Atom_Sequence* midiPort;
 	LV2_Atom_Sequence* notifyPort;
 
 	LV2_Atom_Forge forge;

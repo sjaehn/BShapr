@@ -24,14 +24,13 @@
 typedef enum
 {
 	CONTROL		= 0,
-	MIDI_IN		= 1,
-	NOTIFY		= 2,
-	AUDIO_IN_1	= 3,
-	AUDIO_IN_2	= 4,
-	AUDIO_OUT_1	= 5,
-	AUDIO_OUT_2	= 6,
+	NOTIFY		= 1,
+	AUDIO_IN_1	= 2,
+	AUDIO_IN_2	= 3,
+	AUDIO_OUT_1	= 4,
+	AUDIO_OUT_2	= 5,
 
-	CONTROLLERS	= 7,
+	CONTROLLERS	= 6,
 	MIDI_CONTROL	= 0,
 	MIDI_KEYS	= 1,
 	BASE		= 2,

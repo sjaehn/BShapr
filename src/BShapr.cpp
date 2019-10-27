@@ -169,9 +169,6 @@ void BShapr::connect_port(uint32_t port, void *data)
 	case CONTROL:
 		controlPort = (LV2_Atom_Sequence*) data;
 		break;
-	case MIDI_IN:
-		midiPort = (LV2_Atom_Sequence*) data;
-		break;
 	case NOTIFY:
 		notifyPort = (LV2_Atom_Sequence*) data;
 		break;
@@ -241,7 +238,7 @@ double BShapr::getPositionFromFrames (uint64_t frames)
 void BShapr::run (uint32_t n_samples)
 {
 	// Check ports
-	if ((!controlPort) || (!midiPort) || (!notifyPort) || (!audioInput1) || (!audioInput2) || (!audioOutput1) || (!audioOutput2)) return;
+	if ((!controlPort) || (!notifyPort) || (!audioInput1) || (!audioInput2) || (!audioOutput1) || (!audioOutput2)) return;
 
 	for (int i = 0; i < NR_CONTROLLERS; ++i) if (!new_controllers[i]) return;
 
@@ -338,49 +335,10 @@ void BShapr::run (uint32_t n_samples)
 
 	// Control and MIDI messages
 	uint32_t last_t = 0;
-	const LV2_Atom_Event* controlEvent = lv2_atom_sequence_begin (&controlPort->body);
-	const LV2_Atom_Event* midiEvent = lv2_atom_sequence_begin (&midiPort->body);
-	while
-	(
-		(!lv2_atom_sequence_is_end (&controlPort->body, controlPort->atom.size, controlEvent)) ||
-		(!lv2_atom_sequence_is_end (&midiPort->body, midiPort->atom.size, midiEvent))
-	)
+	LV2_ATOM_SEQUENCE_FOREACH(controlPort, ev)
 	{
-		bool isControl = !lv2_atom_sequence_is_end (&controlPort->body, controlPort->atom.size, controlEvent);
-		bool isMidi = !lv2_atom_sequence_is_end (&midiPort->body, midiPort->atom.size, midiEvent);
-
-/*		// Skip irrelevant messages
-		if
-		(
-			isControl &&
-			(controlEvent->body.type != urids.atom_Object) &&
-			(controlEvent->body.type != urids.atom_Blank) &&
-			(((const LV2_Atom_Object*)&controlEvent->body)->body.otype != urids.ui_on) &&
-			(((const LV2_Atom_Object*)&controlEvent->body)->body.otype != urids.ui_off) &&
-			(((const LV2_Atom_Object*)&controlEvent->body)->body.otype != urids.notify_shapeEvent) &&
-			(((const LV2_Atom_Object*)&controlEvent->body)->body.otype != urids.time_Position)
-		)
-		{
-			controlEvent = lv2_atom_sequence_next (controlEvent);
-			continue;
-		}
-
-		if (isMidi && (midiEvent->body.type != urids.midi_Event))
-		{
-			midiEvent = lv2_atom_sequence_next (midiEvent);
-			continue;
-		}
-*/
-		// Get first message of both sequences
-		const LV2_Atom_Event* ev =
-		(
-			isControl && isMidi ?
-			(controlEvent->time.frames < midiEvent->time.frames ? controlEvent : midiEvent) :
-			(isControl ? controlEvent : midiEvent)
-		);
-
 		// Read host & GUI events
-		if (/*isControl &&*/ ((ev->body.type == urids.atom_Object) || (ev->body.type == urids.atom_Blank)))
+		if ((ev->body.type == urids.atom_Object) || (ev->body.type == urids.atom_Blank))
 		{
 			const LV2_Atom_Object* obj = (const LV2_Atom_Object*)&ev->body;
 
@@ -397,7 +355,6 @@ void BShapr::run (uint32_t n_samples)
 			// Process (full) shape data
 			else if (obj->body.otype == urids.notify_shapeEvent)
 			{
-				fprintf (stderr, "notify_shapeEvent %li of %i\n", ev->time.frames, n_samples);
 				LV2_Atom *sNr = NULL, *sData = NULL;
 				lv2_atom_object_get
 				(
@@ -434,7 +391,6 @@ void BShapr::run (uint32_t n_samples)
 			// Process time / position data
 			else if (obj->body.otype == urids.time_Position)
 			{
-				fprintf (stderr, "%s time_Position %li of %i\n", isMidi ? "midi:" : "control", ev->time.frames, n_samples);
 				bool scheduleUpdatePosition = false;
 
 				// Update bpm, speed, position
@@ -551,9 +507,8 @@ void BShapr::run (uint32_t n_samples)
 		}
 
 		// Read incoming MIDI events
-		if (isMidi && (ev->body.type == urids.midi_Event))
+		if (ev->body.type == urids.midi_Event)
 		{
-			fprintf (stderr, "midi_Event %li of %i\n", ev->time.frames, n_samples);
 			if (controllers[MIDI_CONTROL] == 1.0f)
 			{
 				const uint8_t* const msg = (const uint8_t*)(ev + 1);
@@ -603,9 +558,6 @@ void BShapr::run (uint32_t n_samples)
 		uint32_t next_t = (ev->time.frames < n_samples ? ev->time.frames : n_samples);
 		play (last_t, next_t);
 		last_t = next_t;
-
-		if (ev == controlEvent) controlEvent = lv2_atom_sequence_next (controlEvent);
-		else midiEvent = lv2_atom_sequence_next (midiEvent);
 	}
 
 	// Play remaining samples
