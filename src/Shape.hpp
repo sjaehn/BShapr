@@ -25,6 +25,7 @@
 #include <cstdio>
 #include <cstdint>
 #include <cmath>
+// #include <iostream>
 #include "Point.hpp"
 #include "Node.hpp"
 #include "StaticArrayList.hpp"
@@ -43,8 +44,8 @@ public:
 	bool operator!= (const Shape<sz>& rhs);
 
 	void clearShape ();
-	void setDefaultShape ();
-	void setDefaultShape (const Node& endNode);
+	virtual void setDefaultShape ();
+	virtual void setDefaultShape (const Node& endNode);
 	bool isDefault ();
 	size_t size ();
 	Node getNode (size_t nr);
@@ -468,4 +469,11 @@ template<size_t shapesize> double Shape<shapesize>::getMapValue (double x)
 
 template<size_t sz> double* Shape<sz>::getMap () {return &map[0];}
 
+/*
+template<size_t sz> std::ostream &operator<<(std::ostream &output, Shape<sz>& shape)
+{
+	output << shape.nodes;
+	return output;
+}
+*/
 #endif /* SHAPE_HPP_ */

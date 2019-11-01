@@ -21,6 +21,8 @@
 #ifndef POINT_HPP_
 #define POINT_HPP_
 
+// #include <iostream>
+
 struct Point
 {
 	double x, y;
@@ -48,5 +50,11 @@ struct Point
 	friend Point operator- (Point lhs, const Point& rhs) {return (lhs -= rhs);}
 
 };
-
+/*
+std::ostream &operator<<(std::ostream &output, const Point point)
+{
+	output << "{" << point.x << ", " << point.y << "}";
+	return output;
+}
+*/
 #endif /* POINT_HPP_ */

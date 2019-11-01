@@ -129,6 +129,7 @@ a base.
 * Grid / snap to grid
 * Selection tool
 * Cut, copy, paste and delete
+* Undo and redo
 * Move shapes
 
 ## TODO

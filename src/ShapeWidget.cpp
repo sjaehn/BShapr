@@ -194,6 +194,8 @@ void ShapeWidget::pasteSelection (const std::vector<Node>& newNodes)
 			}
 		}
 	}
+
+	undoSnapshots.push (*this);
 }
 
 void ShapeWidget::deleteSelection ()
@@ -214,6 +216,55 @@ void ShapeWidget::deleteSelection ()
 		selection.clear ();
 		update ();
 	}
+
+	undoSnapshots.push (*this);
+}
+
+void ShapeWidget::unselect ()
+{
+	grabbedNode = -1;
+	selection.clear ();
+}
+
+void ShapeWidget::undo ()
+{
+	unselect ();
+	clearShape ();
+	this->Shape::operator= (undoSnapshots.undo ());
+	validateShape ();
+}
+
+void ShapeWidget::redo ()
+{
+	unselect ();
+	clearShape ();
+	this->Shape::operator= (undoSnapshots.redo ());
+	validateShape ();
+}
+
+void ShapeWidget::pushToSnapshots ()
+{
+	undoSnapshots.push (*this);
+}
+
+void ShapeWidget::resetSnapshots ()
+{
+	undoSnapshots.clear ();
+	undoSnapshots.push (*this);
+}
+
+void ShapeWidget::setDefaultShape ()
+{
+	unselect ();
+	Shape::setDefaultShape ();
+	resetSnapshots ();
+}
+
+void ShapeWidget::setDefaultShape (const Node& endNode)
+{
+	unselect ();
+	Shape::setDefaultShape (endNode);
+	resetSnapshots ();
 }
 
 void ShapeWidget::onButtonPressed (BEvents::PointerEvent* event)
@@ -379,12 +430,15 @@ void ShapeWidget::onButtonReleased (BEvents::PointerEvent* event)
 
 				default: break;
 			}
+
+			undoSnapshots.push (*this);
 		}
 
 		else if (clickMode == DRAG_SELECTION)
 		{
 			selection.setOrigin ({0, 0});
 			selection.setExtend ({0, 0});
+			undoSnapshots.push (*this);
 			update ();
 		}
 	}

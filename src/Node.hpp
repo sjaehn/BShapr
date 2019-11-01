@@ -22,6 +22,7 @@
 #define NODE_HPP_
 
 #include "Point.hpp"
+// #include <iostream>
 
 enum NodeType
 {
@@ -49,4 +50,11 @@ struct Node
 	friend bool operator!= (const Node& lhs, const Node& rhs) {return !(lhs == rhs);}
 };
 
+/*
+std::ostream &operator<<(std::ostream &output, Node& node)
+{
+	output << "{" << int (node.nodeType) << ", " << node.point << ", " << node.handle1 << ", " << node.handle2 << "}";
+	return output;
+}
+*/
 #endif /* NODE_HPP_ */

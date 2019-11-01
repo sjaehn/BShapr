@@ -90,7 +90,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].shapeWidget = ShapeWidget (4, 4, 1152, 352, "shape");
 		shapeGui[i].focusText = BWidgets::Text (0, 0, 400, 80, "label", focusString);
 		shapeGui[i].toolSelect = SelectWidget (273, 368, 284, 44, "tool", 44, 44, 5, 2);
-		for (int j = 0; j < 4; ++j) shapeGui[i].editWidgets[j] = BWidgets::Widget (603 + j * 60, 368, 44, 44, "widget");
+		for (int j = 0; j < 6; ++j) shapeGui[i].editWidgets[j] = BWidgets::Widget (603 + j * 60, 368, 44, 44, "widget");
 		shapeGui[i].gridSelect = SelectWidget (1043, 368, 104, 44, "tool", 44, 44, 2, 2);
 		shapeGui[i].drywetLabel = BWidgets::Label (500, 494, 50, 16, "smlabel", "dry/wet");
 		shapeGui[i].drywetDial = BWidgets::DialValue (500, 434, 50, 60, "dial", 1.0, 0.0, 1.0, 0, "%1.2f");
@@ -141,7 +141,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].shapeWidget.rename ("shape");
 		shapeGui[i].focusText.rename ("label");
 		shapeGui[i].toolSelect.rename ("tool");
-		for (int j = 0; j < 4; ++j) shapeGui[i].editWidgets[j].rename ("widget");
+		for (int j = 0; j < 6; ++j) shapeGui[i].editWidgets[j].rename ("widget");
 		shapeGui[i].gridSelect.rename ("tool");
 		shapeGui[i].drywetLabel.rename ("smlabel");
 		shapeGui[i].drywetDial.rename ("dial");
@@ -184,8 +184,8 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].drywetDial.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 		shapeGui[i].shapeWidget.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::shapeChangedCallback);
 		shapeGui[i].toolSelect.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::toolChangedCallback);
-		for (int j = 0; j < 4; ++j) shapeGui[i].editWidgets[j].setCallbackFunction (BEvents::EventType::BUTTON_PRESS_EVENT, BShaprGUI::editClickedCallback);
-		for (int j = 0; j < 4; ++j) shapeGui[i].editWidgets[j].setCallbackFunction (BEvents::EventType::BUTTON_RELEASE_EVENT, BShaprGUI::editReleasedCallback);
+		for (int j = 0; j < 6; ++j) shapeGui[i].editWidgets[j].setCallbackFunction (BEvents::EventType::BUTTON_PRESS_EVENT, BShaprGUI::editClickedCallback);
+		for (int j = 0; j < 6; ++j) shapeGui[i].editWidgets[j].setCallbackFunction (BEvents::EventType::BUTTON_RELEASE_EVENT, BShaprGUI::editReleasedCallback);
 		shapeGui[i].gridSelect.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::gridChangedCallback);
 
 		for (int j = 0 ; j < MAXOPTIONS; ++j)
@@ -262,7 +262,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].shapeContainer.add (shapeGui[i].drywetDial);
 		shapeGui[i].shapeContainer.add (shapeGui[i].shapeWidget);
 		shapeGui[i].shapeContainer.add (shapeGui[i].toolSelect);
-		for (int j = 0; j < 4; ++j) shapeGui[i].shapeContainer.add (shapeGui[i].editWidgets[j]);
+		for (int j = 0; j < 6; ++j) shapeGui[i].shapeContainer.add (shapeGui[i].editWidgets[j]);
 		shapeGui[i].shapeContainer.add (shapeGui[i].gridSelect);
 
 		for (int j = 0; j < MAXOPTIONS; ++j)
@@ -283,8 +283,11 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	add (mContainer);
 
 	// Post addition configurations
-	for (int i = 0; i < MAXSHAPES; ++i) shapeGui[i].shapeWidget.setDefaultShape(methods[0].defaultEndNode);
-	for (int i = 0; i < MAXSHAPES; ++i) shapeGui[i].shapeWidget.setValueEnabled (true);
+	for (int i = 0; i < MAXSHAPES; ++i)
+	{
+		shapeGui[i].shapeWidget.setDefaultShape (methods[0].defaultEndNode);
+		shapeGui[i].shapeWidget.setValueEnabled (true);
+	}
 
 	//Scan host features for URID map
 	LV2_URID_Map* m = NULL;
@@ -424,6 +427,7 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 								shapeGui[shapeNr].shapeWidget.appendNode (node);
 							}
 							shapeGui[shapeNr].shapeWidget.validateShape();
+							shapeGui[shapeNr].shapeWidget.pushToSnapshots ();
 							shapeGui[shapeNr].shapeWidget.update ();
 							shapeGui[shapeNr].shapeWidget.setValueEnabled (true);
 						}
@@ -587,7 +591,7 @@ void BShaprGUI::resizeGUI()
 		shapeGui[i].shapeWidget.getFocusWidget()->resize();
 		RESIZE (shapeGui[i].toolSelect, 273, 368, 284, 44, sz);
 		shapeGui[i].toolSelect.resizeSelection (44 * sz, 44 * sz);
-		for (int j = 0; j < 4; ++j) RESIZE (shapeGui[i].editWidgets[j], 603 + j * 60, 368, 44, 44, sz);
+		for (int j = 0; j < 6; ++j) RESIZE (shapeGui[i].editWidgets[j], 603 + j * 60, 368, 44, 44, sz);
 		RESIZE (shapeGui[i].gridSelect, 1043, 368, 104, 44, sz);
 		shapeGui[i].gridSelect.resizeSelection (44 * sz, 44 * sz);
 
@@ -661,7 +665,7 @@ void BShaprGUI::applyChildThemes ()
 		shapeGui[i].shapeWidget.getFocusWidget()->applyTheme (theme);
 		shapeGui[i].focusText.applyTheme (theme);
 		shapeGui[i].toolSelect.applyTheme (theme);
-		for (int j = 0; j < 4; ++j) shapeGui[i].editWidgets[j].applyTheme (theme);
+		for (int j = 0; j < 6; ++j) shapeGui[i].editWidgets[j].applyTheme (theme);
 		shapeGui[i].gridSelect.applyTheme (theme);
 
 		int methodNr = shapeGui[i].targetListBox.getValue ();
@@ -889,14 +893,7 @@ void BShaprGUI::deleteShape (const int shapeNr)
 			}
 
 			// Copy shapes
-			shapeGui[i].shapeWidget.clearShape ();
-			for (unsigned int j = 0; j < shapeGui[i + 1].shapeWidget.size (); ++j)
-			{
-				Node n = shapeGui[i + 1].shapeWidget.getNode (j);
-				shapeGui[i].shapeWidget.appendNode (n);
-			}
-
-			shapeGui[i].shapeWidget.validateShape ();
+			shapeGui[i].shapeWidget = shapeGui [i + 1].shapeWidget;
 		}
 
 		// Unlink lastShape
@@ -993,14 +990,7 @@ void BShaprGUI::insertShape (const int shapeNr)
 			}
 
 			// Copy shapes
-			shapeGui[i + 1].shapeWidget.clearShape ();
-			for (unsigned int j = 0; j < shapeGui[i].shapeWidget.size (); ++j)
-			{
-				Node n = shapeGui[i].shapeWidget.getNode (j);
-				shapeGui[i + 1].shapeWidget.appendNode (n);
-			}
-
-			shapeGui[i + 1].shapeWidget.validateShape ();
+			shapeGui[i + 1].shapeWidget = shapeGui[i].shapeWidget;
 		}
 
 		// Init shape widgets shapeNr + 1
@@ -1065,29 +1055,10 @@ void BShaprGUI::swapShapes (const int source, const int dest)
 	}
 
 	// Swap shapes
-	Shape<MAXNODES> shBuffer;
-	shBuffer.clearShape ();
-	for (unsigned int j = 0; j < shapeGui[dest].shapeWidget.size (); ++j)
-	{
-		Node n = shapeGui[dest].shapeWidget.getNode (j);
-		shBuffer.appendNode (n);
-	}
-
-	shapeGui[dest].shapeWidget.clearShape ();
-	for (unsigned int j = 0; j < shapeGui[source].shapeWidget.size (); ++j)
-	{
-		Node n = shapeGui[source].shapeWidget.getNode (j);
-		shapeGui[dest].shapeWidget.appendNode (n);
-	}
-	shapeGui[dest].shapeWidget.validateShape ();
-
-	shapeGui[source].shapeWidget.clearShape ();
-	for (unsigned int j = 0; j < shBuffer.size (); ++j)
-	{
-		Node n = shBuffer.getNode (j);
-		shapeGui[source].shapeWidget.appendNode (n);
-	}
-	shapeGui[source].shapeWidget.validateShape ();
+	ShapeWidget shBuffer;
+	shBuffer = shapeGui[dest].shapeWidget;
+	shapeGui[dest].shapeWidget = shapeGui[source].shapeWidget;
+	shapeGui[source].shapeWidget = shBuffer;
 
 	if (controllers[ACTIVE_SHAPE] - 1 == source) switchShape (dest);
 	else if (controllers[ACTIVE_SHAPE] - 1 == dest) switchShape (source);
@@ -1379,7 +1350,7 @@ void BShaprGUI::editClickedCallback (BEvents::Event* event)
 
 			for (int i = 0; i < MAXSHAPES; ++i)
 			{
-				for (int j = 0; j < 4; ++j)
+				for (int j = 0; j < 6; ++j)
 				{
 					if (widget == &ui->shapeGui[i].editWidgets[j])
 					{
@@ -1398,6 +1369,12 @@ void BShaprGUI::editClickedCallback (BEvents::Event* event)
 									return;
 
 							case 3:		ui->shapeGui[i].shapeWidget.deleteSelection ();
+									return;
+
+							case 4:		ui->shapeGui[i].shapeWidget.undo ();
+									return;
+
+							case 5:		ui->shapeGui[i].shapeWidget.redo ();
 									return;
 
 							default:	return;
@@ -1421,7 +1398,7 @@ void BShaprGUI::editReleasedCallback (BEvents::Event* event)
 
 			for (int i = 0; i < MAXSHAPES; ++i)
 			{
-				for (int j = 0; j < 4; ++j)
+				for (int j = 0; j < 6; ++j)
 				{
 					if (widget == &ui->shapeGui[i].editWidgets[j])
 					{

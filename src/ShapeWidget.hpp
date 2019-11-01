@@ -26,6 +26,7 @@
 #include "BWidgets/ValueWidget.hpp"
 #include "Shape.hpp"
 #include "Selection.hpp"
+#include "Snapshots.hpp"
 
 enum ToolType
 {
@@ -58,6 +59,13 @@ public:
 	std::vector<Node> copySelection ();
 	void pasteSelection (const std::vector<Node>& newNodes);
 	void deleteSelection ();
+	void unselect ();
+	void undo ();
+	void redo ();
+	void pushToSnapshots ();
+	void resetSnapshots ();
+	virtual void setDefaultShape () override;
+	virtual void setDefaultShape (const Node& endNode) override;
 	virtual void onButtonPressed (BEvents::PointerEvent* event) override;
 	virtual void onButtonReleased (BEvents::PointerEvent* event) override;
 	virtual void onPointerDragged (BEvents::PointerEvent* event) override;
@@ -100,6 +108,8 @@ protected:
 
 	double snapX (const double x);
 	double snapY (const double y);
+
+	Snapshots<Shape<MAXNODES>, MAXUNDO> undoSnapshots;
 
 	virtual void drawLineOnMap (Point p1, Point p2) override;
 	virtual void draw (const double x, const double y, const double width, const double height) override;

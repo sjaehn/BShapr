@@ -22,6 +22,7 @@
 #define STATICARRAYLIST_HPP_
 
 #include <cstddef>
+// #include <iostream>
 
 template<typename T, std::size_t sz> struct StaticArrayList
 {
@@ -187,10 +188,15 @@ template<typename T, std::size_t sz> struct StaticArrayList
 /*
 template<typename T, std::size_t sz> std::ostream &operator<<(std::ostream &output, StaticArrayList<T, sz>& list)
 {
-	for (T** it = list.begin (); it != list.end (); ++it) output << **it << " ";
-    return output;
+	output << "{";
+	for (T** it = list.begin (); it != list.end (); ++it)
+	{
+		if (it != list.begin ()) output << ", ";
+		output << **it;
+	}
+	output << "}";
+	return output;
 }
 */
-
 
 #endif /* STATICARRAYLIST_HPP_ */
