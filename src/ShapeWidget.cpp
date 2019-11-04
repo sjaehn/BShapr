@@ -226,6 +226,13 @@ void ShapeWidget::unselect ()
 	selection.clear ();
 }
 
+void ShapeWidget::reset (const Node& endNode)
+{
+	unselect ();
+	Shape::setDefaultShape (endNode);
+	undoSnapshots.push (*this);
+}
+
 void ShapeWidget::undo ()
 {
 	unselect ();

@@ -60,6 +60,7 @@ public:
 	void pasteSelection (const std::vector<Node>& newNodes);
 	void deleteSelection ();
 	void unselect ();
+	void reset (const Node& endNode);
 	void undo ();
 	void redo ();
 	void pushToSnapshots ();

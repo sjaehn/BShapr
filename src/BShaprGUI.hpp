@@ -135,7 +135,7 @@ private:
 		std::array<BWidgets::ValueWidget*, MAXOPTIONS> optionWidgets;
 		std::array<BWidgets::Label, MAXOPTIONS> optionLabels;
 		SelectWidget toolSelect;
-		std::array<BWidgets::Widget, 6> editWidgets;
+		std::array<BWidgets::Widget, 7> editWidgets;
 		SelectWidget gridSelect;
 	} ;
 
