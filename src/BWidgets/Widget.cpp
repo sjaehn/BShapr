@@ -34,7 +34,7 @@ Widget::Widget(const double x, const double y, const double width, const double 
 		name_ (name), widgetSurface (), widgetState (BWIDGETS_DEFAULT_STATE), focusWidget (nullptr)
 {
 	mergeable.fill (false);
-	mergeable[BEvents::EXPOSE_EVENT] = true;
+	mergeable[BEvents::EXPOSE_REQUEST_EVENT] = true;
 	mergeable[BEvents::POINTER_MOTION_EVENT] = true;
 	mergeable[BEvents::POINTER_DRAG_EVENT] = true;
 	mergeable[BEvents::WHEEL_SCROLL_EVENT] = true;
@@ -57,9 +57,8 @@ Widget::Widget (const Widget& that) :
 
 Widget::~Widget()
 {
-	// Hide widget first (prevents filling the event stack with superfluous expose
-	// events from released child widgets)
-	hide ();
+	// Release from parent (and main) if still linked
+	if (parent_) parent_->release (this);
 
 	// Release children
 	while (!children_.empty ())
@@ -70,9 +69,6 @@ Widget::~Widget()
 		// Hard kick out if release failed
 		if (w == children_.back ()) children_.pop_back ();
 	}
-
-	// Release from parent (and main) if still linked
-	if (parent_) parent_->release (this);
 
 	cairo_surface_destroy (widgetSurface);
 }
@@ -159,30 +155,16 @@ void Widget::release (Widget* child)
 {
 	if (child)
 	{
-		//std::cout << "Release " << child->name_ << ":" << &(*child) << "\n";
+		//std::cerr << "Release " << child->name_ << ":" << &(*child) << "\n";
 		bool wasVisible = child->isVisible ();
 
 		// Delete child's connection to this widget
 		child->parent_ = nullptr;
 
-		// Release child from main window and from main windows input connections
-		if (child->main_)
-		{
-			for (int i = (int) BEvents::NO_BUTTON; i < (int) BEvents::NR_OF_BUTTONS; ++i)
-			{
-				if (child->main_->getInputWidget ((BEvents::InputDevice) i) == child)
-				{
-					child->main_->setInput ((BEvents::InputDevice) i, nullptr, 0.0, 0.0);
-				}
-			}
-
-			child->main_->purgeEventQueue (child);
-			child->main_->removeKeyGrab (child);
-			child->main_ = nullptr;
-		}
-
-		// And the same for all children of child
+		// Release child and all children of child
+		// from main window and from main windows input connections
 		std::vector<Widget*> queue = child->getChildrenAsQueue ();
+		queue.push_back (child);
 		for (Widget* w : queue)
 		{
 			if (w->main_)
@@ -194,7 +176,6 @@ void Widget::release (Widget* child)
 						w->main_->setInput ((BEvents::InputDevice) i, nullptr, 0.0, 0.0);
 					}
 				}
-
 				w->main_->purgeEventQueue (w);
 				w->main_->removeKeyGrab (w);
 				w->main_ = nullptr;
@@ -515,9 +496,20 @@ void Widget::applyTheme (BStyles::Theme& theme, const std::string& name)
 	}
 }
 
-void Widget::onConfigure (BEvents::ExposeEvent* event) {} // Empty, only Windows handle configure events
-void Widget::onExpose (BEvents::ExposeEvent* event) {} // Empty, only Windows handle expose events
-void Widget::onClose () {} // Empty, only Windows handle close events
+void Widget::onConfigureRequest (BEvents::ExposeEvent* event) {cbfunction[BEvents::EventType::CONFIGURE_REQUEST_EVENT] (event);}
+void Widget::onExposeRequest (BEvents::ExposeEvent* event) {cbfunction[BEvents::EventType::EXPOSE_REQUEST_EVENT] (event);}
+
+void Widget::onCloseRequest (BEvents::WidgetEvent* event)
+{
+	cbfunction[BEvents::EventType::CLOSE_REQUEST_EVENT] (event);
+
+	if ((event) && (event->getWidget () == this))
+	{
+		Widget* c = event->getRequestWidget ();
+		if (isChild (c)) release (c);
+	}
+}
+
 void Widget::onKeyPressed (BEvents::KeyEvent* event) {cbfunction[BEvents::EventType::KEY_PRESS_EVENT] (event);}
 void Widget::onKeyReleased (BEvents::KeyEvent* event) {cbfunction[BEvents::EventType::KEY_RELEASE_EVENT] (event);}
 void Widget::onButtonPressed (BEvents::PointerEvent* event) {cbfunction[BEvents::EventType::BUTTON_PRESS_EVENT] (event);}
@@ -529,6 +521,7 @@ void Widget::onWheelScrolled (BEvents::WheelEvent* event){cbfunction[BEvents::Ev
 void Widget::onValueChanged (BEvents::ValueChangedEvent* event) {cbfunction[BEvents::EventType::VALUE_CHANGED_EVENT] (event);}
 void Widget::onFocusIn (BEvents::FocusEvent* event) {cbfunction[BEvents::EventType::FOCUS_IN_EVENT] (event);}
 void Widget::onFocusOut (BEvents::FocusEvent* event) {cbfunction[BEvents::EventType::FOCUS_OUT_EVENT] (event);}
+void Widget::onMessage (BEvents::MessageEvent* event) {cbfunction[BEvents::EventType::MESSAGE_EVENT] (event);}
 
 void Widget::defaultCallback (BEvents::Event* event) {}
 
@@ -605,13 +598,31 @@ std::vector <Widget*> Widget::getChildrenAsQueue (std::vector <Widget*> queue) c
 	return queue;
 }
 
+void Widget::postMessage (const std::string& name, const BUtilities::Any content)
+{
+	if (main_)
+	{
+		BEvents::MessageEvent* event = new BEvents::MessageEvent (this, name, content);
+		main_->addEventToQueue (event);
+	}
+}
+
 void Widget::postRedisplay () {postRedisplay (getOriginX (), getOriginY (), width_, height_);}
 
 void Widget::postRedisplay (const double xabs, const double yabs, const double width, const double height)
 {
 	if (main_)
 	{
-		BEvents::ExposeEvent* event = new BEvents::ExposeEvent (this, BEvents::EXPOSE_EVENT, xabs, yabs, width, height);
+		BEvents::ExposeEvent* event = new BEvents::ExposeEvent (main_, this, BEvents::EXPOSE_REQUEST_EVENT, xabs, yabs, width, height);
+		main_->addEventToQueue (event);
+	}
+}
+
+void Widget::postCloseRequest ()
+{
+	if (main_)
+	{
+		BEvents::WidgetEvent* event = new BEvents::WidgetEvent (main_, this, BEvents::CLOSE_REQUEST_EVENT);
 		main_->addEventToQueue (event);
 	}
 }

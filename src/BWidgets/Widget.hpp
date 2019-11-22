@@ -490,6 +490,11 @@ public:
 	void postRedisplay ();
 
 	/**
+	 * Requests close of this widget by emitting a BEvents::WidgetEvent
+	 */
+	void postCloseRequest ();
+
+	/**
 	 * (Re-)Defines the callback function for an event. It is on the onXXX
 	 * methods whether a callback function will be called or not. By default,
 	 * the callback is set to defaultCallback.
@@ -519,25 +524,22 @@ public:
 
 	/**
 	 * Predefined empty method to handle a BEvents::EventType::CONFIGURE_EVENT.
-	 * BEvents::EventType::CONFIGURE_EVENTs will only be handled by
-	 * BWidget::Window.
+	 * @param event Expose event
 	 */
-	virtual void onConfigure (BEvents::ExposeEvent* event);
+	virtual void onConfigureRequest (BEvents::ExposeEvent* event);
 
 	/**
 	 * Predefined empty method to handle a BEvents::EventType::EXPOSE_EVENT.
-	 * BEvents::EventType::EXPOSE_EVENTs will only be handled by
-	 * BWidget::Window.
 	 * @param event Expose event
 	 */
-	virtual void onExpose (BEvents::ExposeEvent* event);
+	virtual void onExposeRequest (BEvents::ExposeEvent* event);
 
 	/**
-	 * Predefined empty method to handle a BEvents::EventType::CLOSE_EVENT.
-	 * BEvents::EventType::CLOSE_EVENTs will only be handled by
-	 * BWidget::Window.
+	 * Predefined method to handle a BEvents::EventType::CLOSE_EVENT.
+	 * Releases the request widget.
+	 * @param event Widget event
 	 */
-	virtual void onClose ();
+	virtual void onCloseRequest (BEvents::WidgetEvent* event);
 
 	/**
 	 * Predefined empty method to handle a
@@ -618,6 +620,13 @@ public:
 	virtual void onFocusOut (BEvents::FocusEvent* event);
 
 	/**
+	 * Predefined empty method to handle a
+	 * BEvents::EventType::MESSAGE_EVENT.
+	 * @param event Event
+	 */
+	virtual void onMessage (BEvents::MessageEvent* event);
+
+	/**
 	 * Scans theme for widget properties and applies these properties.
 	 * @param theme Theme to be scanned
 	 */
@@ -652,8 +661,10 @@ protected:
 			     const bool checkClickability, const bool checkDraggability,
 			     const bool checkScrollability, const bool checkFocusability);
 
+	void postMessage (const std::string& name, const BUtilities::Any content);
 	void postRedisplay (const double x, const double y, const double width, const double height);
 	void redisplay (cairo_surface_t* surface, double x, double y, double width, double height);
+
 	virtual bool filter (Widget* widget);
 
 	virtual void draw (const double x, const double y, const double width, const double height);

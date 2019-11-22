@@ -23,6 +23,7 @@
 
 #include <chrono>
 #include <deque>
+#include <list>
 #include "Widget.hpp"
 #include "FocusWidget.hpp"
 
@@ -87,21 +88,22 @@ public:
 	/**
 	 * Executes an reexposure of the area given by the expose event.
 	 * @param event Expose event containing the widget that emitted the event
-	 * 				and the area that should be reexposed.
+	 * 		and the area that should be reexposed.
 	 */
-	virtual void onExpose (BEvents::ExposeEvent* event) override;
+	virtual void onExposeRequest (BEvents::ExposeEvent* event) override;
 
 	/**
 	 * Predefined empty method to handle a BEvents::EventType::CONFIGURE_EVENT.
-	 * BEvents::EventType::CONFIGURE_EVENTs will only be handled by
-	 * BWidget::Window.
+	 * @param event Expose event containing the widget that emitted the event
+	 * 		and the area that should be reexposed.
 	 */
-	virtual void onConfigure (BEvents::ExposeEvent* event) override;
+	virtual void onConfigureRequest (BEvents::ExposeEvent* event) override;
 
 	/**
 	 * Sets the close flag and thus ends the run method.
+	 * @param event Widget event containing the widget that emitted the event
 	 */
-	virtual void onClose () override;
+	virtual void onCloseRequest (BEvents::WidgetEvent* event) override;
 
 	/*
 	 * Links or unlinks a mouse button to a widget.
@@ -154,6 +156,13 @@ public:
 	 */
 	void removeKeyGrab (Widget* widget);
 
+	/* Gets the widget that is resposible for emitting BEvents::KeyEvent's if
+	 * the respective key has been pressed or released.
+	 * @param key	Unicode of the key (or BEvent::KeyCode).
+	 * @return	Responsible widget or nullptr.
+	 */
+	Widget* getKeyGrabWidget (uint32_t key);
+
 	/*
 	 * Removes events (emited by a given widget) from the event queue
 	 * @param widget	Emitting widget (nullptr for all widgets)
@@ -170,13 +179,6 @@ protected:
 	void translateTimeEvent ();
 
 	void mergeEvents ();
-
-	/* Gets the widget that is resposible for emitting BEvents::KeyEvent's if
-	 * the respective key has been pressed or released.
-	 * @param key		Unicode of the key (or BEvent::KeyCode).
-	 * @return			Responsible widget or nullptr.
-	 */
-	Widget* getKeyGrabWidget (uint32_t key);
 
 	std::string title_;
 	PuglView* view_;
@@ -208,11 +210,11 @@ protected:
 
 	typedef struct
 	{
-		std::vector<uint32_t> keys;
 		Widget* widget;
+		std::vector<uint32_t> keys;
 	} KeyGrab;
 
-	std::vector<KeyGrab> keyGrabStack;
+	std::list<KeyGrab> keyGrabStack;
 
 	std::deque<BEvents::Event*> eventQueue;
 };

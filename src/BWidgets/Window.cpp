@@ -57,6 +57,12 @@ Window::Window (const double width, const double height, const std::string& titl
 Window::~Window ()
 {
 	purgeEventQueue ();
+	keyGrabStack.clear ();
+	while (!children_.empty ())
+	{
+		Widget* w = children_.front ();
+		if (w) release (w);
+	}
 	puglDestroy(view_);
 	main_ = nullptr;	// Important switch for the super destructor. It took
 						// days of debugging ...
@@ -78,20 +84,21 @@ void Window::run ()
 	}
 }
 
-void Window::onConfigure (BEvents::ExposeEvent* event)
+void Window::onConfigureRequest (BEvents::ExposeEvent* event)
 {
 	if (width_ != event->getWidth ()) setWidth (event->getWidth ());
 	if (height_ != event->getHeight ()) setHeight (event->getHeight ());
 }
 
-void Window::onClose ()
+void Window::onCloseRequest (BEvents::WidgetEvent* event)
 {
-	quit_ = true;
+	if ((event) && (event->getRequestWidget () == this)) quit_ = true;
+	else Widget::onCloseRequest (event);
 }
 
-void Window::onExpose (BEvents::ExposeEvent* event)
+void Window::onExposeRequest (BEvents::ExposeEvent* event)
 {
-	if (event)
+	if (event && (event->getWidget () == this))
 	{
 		// Create a temporal storage surface and store all children surfaces on this
 		cairo_surface_t* storageSurface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width_, height_);
@@ -118,10 +125,19 @@ void Window::addEventToQueue (BEvents::Event* event)
 
 		// Check for mergeable events
 		// EXPOSE_EVENT
-		if ((event->getEventType() == BEvents::EXPOSE_EVENT) && (precursor->getEventType() == BEvents::EXPOSE_EVENT))
+		if
+		(
+			(event->getEventType() == BEvents::EXPOSE_REQUEST_EVENT) &&
+			(precursor->getEventType() == BEvents::EXPOSE_REQUEST_EVENT) &&
+			(event->getWidget () == precursor->getWidget ())
+		)
 		{
-			// Only merge if this Window allows merging (ignore children mergeable flags)
-			if (isMergeable(BEvents::EXPOSE_EVENT))
+			if
+			(
+				(precursor->getWidget ()->isMergeable(BEvents::EXPOSE_REQUEST_EVENT)) &&
+				(event->getWidget ()->isMergeable(BEvents::EXPOSE_REQUEST_EVENT))
+			)
+
 			{
 				BEvents::ExposeEvent* firstEvent = (BEvents::ExposeEvent*) precursor;
 				BEvents::ExposeEvent* nextEvent = (BEvents::ExposeEvent*) event;
@@ -255,7 +271,7 @@ void Window::setKeyGrab (Widget* widget, std::vector<uint32_t>& keys)
 {
 	if ((widget == this) || isChild (widget))
 	{
-		KeyGrab newKeyGrab = {keys, widget};
+		KeyGrab newKeyGrab = {widget, keys};
 		removeKeyGrab (widget);
 		keyGrabStack.push_back (newKeyGrab);
 	}
@@ -263,19 +279,29 @@ void Window::setKeyGrab (Widget* widget, std::vector<uint32_t>& keys)
 
 void Window::removeKeyGrab (Widget* widget)
 {
-	for (std::vector<KeyGrab>::iterator it = keyGrabStack.begin(); it != keyGrabStack.end(); )
+	bool done = true;
+	do
 	{
-		KeyGrab* gr = (KeyGrab*) &it;
-		if (gr->widget == widget) it = keyGrabStack.erase (it);
-		else ++it;
-	}
+		done = true;
+
+		for (std::list<KeyGrab>::iterator it = keyGrabStack.begin(); it != keyGrabStack.end(); ++it)
+		{
+			KeyGrab* gr = &*it;
+			if (gr->widget == widget)
+			{
+				done = false;
+				keyGrabStack.erase (it); //TODO erase first element
+				break;
+			}
+		}
+	} while (!done);
 }
 
 Widget* Window::getKeyGrabWidget (uint32_t key)
 {
-	for (int i = keyGrabStack.size () - 1; i >= 0; --i)
+	for (std::list<KeyGrab>::reverse_iterator rit = keyGrabStack.rbegin (); rit != keyGrabStack.rend (); ++rit)
 	{
-		KeyGrab gr = keyGrabStack.at (i);
+		KeyGrab& gr = *rit;
 		for (uint32_t k : gr.keys)
 		{
 			if ((k == 0) || (k == key)) return gr.widget;
@@ -304,30 +330,25 @@ void Window::handleEvents ()
 
 				switch (eventType)
 				{
-				case BEvents::CONFIGURE_EVENT:
-					onConfigure ((BEvents::ExposeEvent*) event);
+				case BEvents::CONFIGURE_REQUEST_EVENT:
+					widget->onConfigureRequest ((BEvents::ExposeEvent*) event);
 					break;
 
-				case BEvents::EXPOSE_EVENT:
-					onExpose ((BEvents::ExposeEvent*) event);
+				case BEvents::EXPOSE_REQUEST_EVENT:
+					widget->onExposeRequest ((BEvents::ExposeEvent*) event);
 					break;
 
-				case BEvents::CLOSE_EVENT:
-					onClose ();
+				case BEvents::CLOSE_REQUEST_EVENT:
+					widget->onCloseRequest ((BEvents::WidgetEvent*) event);
 					break;
 
 				case BEvents::KEY_PRESS_EVENT:
-					{
-						BEvents::KeyEvent* be = (BEvents::KeyEvent*) event;
-						widget->onKeyPressed (be);
-					}
+
+					widget->onKeyPressed ((BEvents::KeyEvent*) event);
 					break;
 
 				case BEvents::KEY_RELEASE_EVENT:
-					{
-						BEvents::KeyEvent* be = (BEvents::KeyEvent*) event;
-						widget->onKeyReleased (be);
-					}
+					widget->onKeyReleased ((BEvents::KeyEvent*) event);
 					break;
 
 				case BEvents::BUTTON_PRESS_EVENT:
@@ -376,6 +397,10 @@ void Window::handleEvents ()
 
 				case BEvents::FOCUS_OUT_EVENT:
 					widget->onFocusOut((BEvents::FocusEvent*) event);
+					break;
+
+				case BEvents::MESSAGE_EVENT:
+					widget->onMessage ((BEvents::MessageEvent*) event);
 					break;
 
 				default:
@@ -556,12 +581,18 @@ void Window::translatePuglEvent (PuglView* view, const PuglEvent* event)
 		break;
 
 	case PUGL_CONFIGURE:
-		w->addEventToQueue (new BEvents::ExposeEvent (w,
-													  BEvents::CONFIGURE_EVENT,
-													  event->configure.x,
-													  event->configure.y,
-													  event->configure.width,
-													  event->configure.height));
+		w->addEventToQueue
+		(
+			new BEvents::ExposeEvent
+			(
+				w, w,
+				BEvents::CONFIGURE_REQUEST_EVENT,
+				event->configure.x,
+				event->configure.y,
+				event->configure.width,
+				event->configure.height
+			)
+		);
 		break;
 
 	case PUGL_EXPOSE:
@@ -569,7 +600,7 @@ void Window::translatePuglEvent (PuglView* view, const PuglEvent* event)
 		break;
 
 	case PUGL_CLOSE:
-		w->addEventToQueue (new BEvents::Event (w, BEvents::CLOSE_EVENT));
+		w->addEventToQueue (new BEvents::WidgetEvent (w, w, BEvents::CLOSE_REQUEST_EVENT));
 		break;
 
 	default:
@@ -620,7 +651,25 @@ void Window::purgeEventQueue (Widget* widget)
 	for (std::deque<BEvents::Event*>::iterator it = eventQueue.begin (); it != eventQueue.end (); )
 	{
 		BEvents::Event* event = *it;
-		if ((event) && ((widget == nullptr) || (widget == event->getWidget ())))
+		if
+		(
+			(event) &&
+			(
+				// Invalid events
+				(widget == nullptr) ||
+				// Hit
+				(widget == event->getWidget ()) ||
+				(
+					// Hit in request widgets
+					(
+						(event->getEventType () == BEvents::CONFIGURE_REQUEST_EVENT) ||
+						(event->getEventType () == BEvents::EXPOSE_REQUEST_EVENT) ||
+						(event->getEventType () == BEvents::CLOSE_REQUEST_EVENT)
+					) &&
+					(widget == ((BEvents::WidgetEvent*)event)->getRequestWidget ())
+				)
+			)
+		)
 		{
 			it = eventQueue.erase (it);
 			delete event;
