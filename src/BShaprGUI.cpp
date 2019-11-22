@@ -1585,7 +1585,6 @@ LV2UI_Handle instantiate (const LV2UI_Descriptor *descriptor, const char *plugin
 						  LV2UI_Write_Function write_function, LV2UI_Controller controller, LV2UI_Widget *widget,
 						  const LV2_Feature *const *features)
 {
-	std::cerr << "\nin";
 	PuglNativeWindow parentWindow = 0;
 	LV2UI_Resize* resize = NULL;
 
@@ -1621,14 +1620,9 @@ LV2UI_Handle instantiate (const LV2UI_Descriptor *descriptor, const char *plugin
 	if ((screenWidth < 1240) || (screenHeight < 720)) sz = 0.66;
 	if ((screenWidth < 840) || (screenHeight < 530)) sz = 0.50;
 
-	std::cerr << "stan";
 	if (resize) resize->ui_resize (resize->handle, 1200 * sz, 710 * sz);
-	std::cerr << "ti";
-
 	*widget = (LV2UI_Widget) puglGetNativeWindow (ui->getPuglView ());
-	std::cerr << "a";
 	ui->sendGuiOn();
-	std::cerr << "te: " << long (ui) << "\n";
 
 	return (LV2UI_Handle) ui;
 }
@@ -1636,7 +1630,6 @@ LV2UI_Handle instantiate (const LV2UI_Descriptor *descriptor, const char *plugin
 void cleanup(LV2UI_Handle ui)
 {
 	BShaprGUI* pluginGui = (BShaprGUI*) ui;
-	std::cerr << "cleanup\n";
 	delete pluginGui;
 }
 
@@ -1644,16 +1637,13 @@ void portEvent(LV2UI_Handle ui, uint32_t port_index, uint32_t buffer_size,
 	uint32_t format, const void* buffer)
 {
 	BShaprGUI* pluginGui = (BShaprGUI*) ui;
-	std::cerr << "portevent\n";
 	pluginGui->portEvent(port_index, buffer_size, format, buffer);
 }
 
 static int callIdle (LV2UI_Handle ui)
 {
 	BShaprGUI* pluginGui = (BShaprGUI*) ui;
-	std::cerr << "callidle: " << long (ui) << "\n";
 	pluginGui->handleEvents ();
-	std::cerr << "done\n";
 	return 0;
 }
 
