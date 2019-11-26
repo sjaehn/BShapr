@@ -35,7 +35,7 @@
 #include "Urids.hpp"
 #include "Point.hpp"
 #include "Node.hpp"
-#include "Shape.hpp"
+#include "SmoothShape.hpp"
 #include "BShaprNotifications.hpp"
 
 
@@ -140,7 +140,7 @@ private:
 	float controllers [NR_CONTROLLERS];
 
 	// Nodes and Maps
-	Shape<MAXNODES> shapes[MAXSHAPES];
+	SmoothShape<MAXNODES> shapes[MAXSHAPES];
 
 	// Atom port
 	BShaprURIDs urids;

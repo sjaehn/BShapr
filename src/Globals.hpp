@@ -44,6 +44,7 @@ const Limit shapeControllerLimits [SH_SIZE] =
 	{0, 1, 0},
 	{0, 1, 1},
 	{0, 1, 0},
+	{0, 0.1, 0},
 	{MIN_OPT_VAL, MAX_OPT_VAL, 0},
 	{MIN_OPT_VAL, MAX_OPT_VAL, 0},
 	{MIN_OPT_VAL, MAX_OPT_VAL, 0},

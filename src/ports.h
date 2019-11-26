@@ -44,10 +44,11 @@ typedef enum
 	SH_DRY_WET	= 3,
 	SH_OUTPUT	= 4,
 	SH_OUTPUT_AMP	= 5,
-	SH_OPTION	= 6,
-	SH_SIZE		= 10,
+	SH_SMOOTHING	= 6,
+	SH_OPTION	= 7,
+	SH_SIZE		= 11,
 
-	NR_CONTROLLERS	= 45
+	NR_CONTROLLERS	= 49
 } BShaprPortIndex;
 
 typedef enum

@@ -312,6 +312,11 @@ void BShapr::run (uint32_t n_samples)
 					}
 				}
 
+				else if (shapeControllerNr == SH_SMOOTHING)
+				{
+					shapes[shapeNr].setSmoothing (newValue);
+				}
+
 				// Options
 				else if ((shapeControllerNr >= SH_OPTION) && (shapeControllerNr < SH_OPTION + MAXOPTIONS))
 				{
@@ -1100,7 +1105,8 @@ void BShapr::play (uint32_t start, uint32_t end)
 					}
 
 					// Get shaper value for the actual position
-					float iFactor = shapes[sh].getMapValue (pos);
+					float iFactor = shapes[sh].getSmoothMapValue (pos);
+
 					float drywet = controllers[SHAPERS + sh * SH_SIZE + SH_DRY_WET];
 					float wet1 = 0;
 					float wet2 = 0;

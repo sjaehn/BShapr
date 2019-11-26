@@ -25,13 +25,40 @@
 
 class HorizonWidget : public BWidgets::Widget
 {
+protected:
+	double smoothingWidth;
+	double fadeoutWidth;
 public:
-	HorizonWidget () : HorizonWidget (0, 0, 0, 0, "horizon") {}
-	HorizonWidget (const double x, const double y, const double width, const double height, const std::string& name) :
-		Widget (x, y, width, height, name)
+	HorizonWidget () : HorizonWidget (0, 0, 0, 0, 0, "horizon") {}
+	HorizonWidget (const double x, const double y, const double smoothingWidth, const double fadeoutWidth, const double height, const std::string& name) :
+		Widget (x, y, 2 * smoothingWidth + fadeoutWidth, height, name),
+		smoothingWidth (smoothingWidth),
+		fadeoutWidth (fadeoutWidth)
 	{
 		focusable = false;
 	}
+
+	void setSmoothingWidth (const double smoothingWidth)
+	{
+		if (this->smoothingWidth != smoothingWidth)
+		{
+			this->smoothingWidth = smoothingWidth;
+			setWidth (2 * smoothingWidth + fadeoutWidth);
+		}
+	}
+
+	void setFadeoutWidth (const double fadeoutWidth)
+	{
+		if (this->fadeoutWidth != fadeoutWidth)
+		{
+			this->fadeoutWidth = fadeoutWidth;
+			setWidth (2 * smoothingWidth + fadeoutWidth);
+		}
+	}
+
+	void moveLineTo (const double x, const double y) {moveTo (x - smoothingWidth, y);}
+
+	double getLineX () const {return x_ + smoothingWidth;}
 
 protected:
 	virtual void draw (const double x, const double y, const double width, const double height) override
@@ -48,29 +75,47 @@ protected:
 			cairo_rectangle (cr, x, y, width, height);
 			cairo_clip (cr);
 
-			double x0 = getXOffset ();
-			double y0 = getYOffset ();
-			double w = getEffectiveWidth ();
-			double h = getEffectiveHeight ();
-
 			// Draw fade out
-			cairo_pattern_t* pat = cairo_pattern_create_linear (0, 0, w, 0);
-			if (cairo_pattern_status (pat) == CAIRO_STATUS_SUCCESS)
+			if (fadeoutWidth > 0)
 			{
-				cairo_pattern_add_color_stop_rgba (pat, 0.0, CAIRO_RGBA (BColors::black));
-				cairo_pattern_add_color_stop_rgba (pat, 1.0, 0.0, 0.0, 0.0, 0.0);
-				cairo_set_line_width (cr, 0.0);
-				cairo_set_source (cr, pat);
-				cairo_rectangle (cr, x0, y0, w, h);
-				cairo_fill (cr);
-				cairo_pattern_destroy (pat);
+				cairo_pattern_t* pat1 = cairo_pattern_create_linear (0, 0, width_, 0);
+				if (cairo_pattern_status (pat1) == CAIRO_STATUS_SUCCESS)
+				{
+					cairo_pattern_add_color_stop_rgba (pat1, 0.0, 0.0, 0.0, 0.0, 0.0);
+					cairo_pattern_add_color_stop_rgba (pat1, smoothingWidth / width_, 0.0, 0.0, 0.0, 0.0);
+					cairo_pattern_add_color_stop_rgba (pat1, smoothingWidth / width_ + 0.001, CAIRO_RGBA (BColors::black));
+					cairo_pattern_add_color_stop_rgba (pat1, 1.0 - (fadeoutWidth / width_), CAIRO_RGBA (BColors::black));
+					cairo_pattern_add_color_stop_rgba (pat1, 1.0, 0.0, 0.0, 0.0, 0.0);
+					cairo_set_line_width (cr, 0.0);
+					cairo_set_source (cr, pat1);
+					cairo_rectangle (cr, 0, 0, width_, height_);
+					cairo_fill (cr);
+					cairo_pattern_destroy (pat1);
+				}
+			}
+
+			// Draw smoothing
+			if (smoothingWidth > 0)
+			{
+				cairo_pattern_t* pat2 = cairo_pattern_create_linear (0, 0, 2 * smoothingWidth, 0);
+				if (cairo_pattern_status (pat2) == CAIRO_STATUS_SUCCESS)
+				{
+					cairo_pattern_add_color_stop_rgba (pat2, 0.0, 1.0, 1.0, 1.0, 0.0);
+					cairo_pattern_add_color_stop_rgba (pat2, 0.5, 1.0, 1.0, 1.0, 0.5);
+					cairo_pattern_add_color_stop_rgba (pat2, 1.0, 1.0, 1.0, 1.0, 0.0);
+					cairo_set_line_width (cr, 0.0);
+					cairo_set_source (cr, pat2);
+					cairo_rectangle (cr, 0, 0, 2 * smoothingWidth, height_);
+					cairo_fill (cr);
+					cairo_pattern_destroy (pat2);
+				}
 			}
 
 			// Draw horizon line
 			cairo_set_source_rgba (cr, CAIRO_RGBA (BColors::white));
-			cairo_set_line_width (cr, 2);
-			cairo_move_to (cr, 1.0, 0.0);
-			cairo_line_to (cr, 1.0, h);
+			cairo_set_line_width (cr, 2.0);
+			cairo_move_to (cr, smoothingWidth, 0.0);
+			cairo_line_to (cr, smoothingWidth, height_);
 			cairo_stroke (cr);
 
 			cairo_destroy (cr);

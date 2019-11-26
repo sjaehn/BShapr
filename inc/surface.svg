@@ -28,8 +28,8 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="1"
-     inkscape:cx="867.91018"
-     inkscape:cy="204.56494"
+     inkscape:cx="892.22143"
+     inkscape:cy="321.16505"
      inkscape:document-units="px"
      inkscape:current-layer="layer2"
      showgrid="true"
@@ -2675,7 +2675,7 @@
     </g>
     <g
        id="g2337"
-       transform="translate(-15.875)">
+       transform="translate(-37.041666)">
       <g
          transform="translate(-63.367649,87.180192)"
          style="display:inline"
@@ -2813,7 +2813,7 @@
     <g
        id="g2360-9"
        style="display:inline"
-       transform="matrix(0.75,0,0,0.75,42.664073,40.348956)">
+       transform="matrix(0.75,0,0,0.75,21.497407,40.348956)">
       <rect
          style="display:inline;opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.52916664;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
          id="rect1234-1-7"
@@ -2844,7 +2844,7 @@
          style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.43378761;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
     </g>
     <g
-       transform="matrix(0.75,0,0,0.75,26.789066,40.348957)"
+       transform="matrix(0.75,0,0,0.75,5.6223996,40.348957)"
        id="g1180">
       <g
          id="g2360"
@@ -2885,7 +2885,7 @@
     <g
        id="g2360-9-8"
        style="display:inline"
-       transform="matrix(0.75,0,0,0.75,58.539061,40.348954)">
+       transform="matrix(0.75,0,0,0.75,37.372395,40.348954)">
       <rect
          style="display:inline;opacity:1;fill:#ffffff;fill-opacity:1;stroke:#000000;stroke-width:0.52916664;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
          id="rect1234-1-7-4"
@@ -2902,7 +2902,7 @@
          y="158.75" />
     </g>
     <g
-       transform="matrix(0.75,0,0,0.75,39.687595,39.356774)"
+       transform="matrix(0.75,0,0,0.75,18.520929,39.356774)"
        id="g2441">
       <path
          style="fill:none;stroke:#ffffff;stroke-width:0.79374999;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
@@ -2917,20 +2917,20 @@
     </g>
     <path
        sodipodi:open="true"
-       d="m 243.02954,-163.36317 a 2.6458349,2.6458302 0 0 1 3.64448,0.098 2.6458349,2.6458302 0 0 1 0.0867,3.64477 2.6458349,2.6458302 0 0 1 -3.6357,0.27118"
+       d="m 221.86287,-163.36317 a 2.6458349,2.6458302 0 0 1 3.64448,0.098 2.6458349,2.6458302 0 0 1 0.0867,3.64477 2.6458349,2.6458302 0 0 1 -3.6357,0.27118"
        sodipodi:end="2.2564112"
        sodipodi:start="3.9791975"
        sodipodi:ry="2.6458302"
        sodipodi:rx="2.6458349"
        sodipodi:cy="-161.3972"
-       sodipodi:cx="244.80025"
+       sodipodi:cx="223.63358"
        sodipodi:type="arc"
        id="path1175"
        style="opacity:1;fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:0.52916664;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#TriangleOutMSFQ)"
        transform="scale(1,-1)" />
     <path
        style="display:inline;opacity:1;fill:none;fill-opacity:1;stroke:#ffffff;stroke-width:0.52916664;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;marker-end:url(#TriangleOutMS-3mb)"
-       d="m 262.5162,163.36317 a 2.6458349,2.6458304 0 0 1 -3.64448,-0.098 2.6458349,2.6458304 0 0 1 -0.0867,-3.64477 2.6458349,2.6458304 0 0 1 3.6357,-0.27118"
+       d="m 241.34953,163.36317 a 2.6458349,2.6458304 0 0 1 -3.64448,-0.098 2.6458349,2.6458304 0 0 1 -0.0867,-3.64477 2.6458349,2.6458304 0 0 1 3.6357,-0.27118"
        id="path1175-7"
        inkscape:connector-curvature="0" />
     <g
@@ -2967,7 +2967,8 @@
          style="fill:none;stroke:#ffffff;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1" />
     </g>
     <g
-       id="g8851">
+       id="g8851"
+       transform="translate(-21.166666)">
       <circle
          r="3.96875"
          cy="161.39583"

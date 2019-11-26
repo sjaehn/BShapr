@@ -109,6 +109,7 @@ private:
 	void initMonitors ();
 	std::pair<int, int> translateNotification (BShaprNotifications* notifications, uint32_t notificationsCount);
 	void updateMonitors (int start, int end);
+	void updateHorizon ();
 
 	// Controllers
 	std::array<BWidgets::ValueWidget*, NR_CONTROLLERS> controllerWidgets;
@@ -126,6 +127,8 @@ private:
 		BWidgets::Widget tabMsgBoxBg;
 		BWidgets::MessageBox tabMsgBox;
 		BWidgets::ImageIcon tabIcon;
+		BWidgets::Label smoothingLabel;
+		BWidgets::DialValue smoothingDial;
 		BWidgets::PopupListBox targetListBox;
 		BWidgets::Label drywetLabel;
 		BWidgets::DialValue drywetDial;
@@ -194,6 +197,8 @@ private:
 						   BStyles::TEXT_ALIGN_CENTER, BStyles::TEXT_VALIGN_MIDDLE);
  	BStyles::Font smFont = BStyles::Font ("Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL, 10.0,
  					      BStyles::TEXT_ALIGN_CENTER, BStyles::TEXT_VALIGN_MIDDLE);
+	BStyles::Font ssmFont = BStyles::Font ("Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL, 8.0,
+					      BStyles::TEXT_ALIGN_CENTER, BStyles::TEXT_VALIGN_MIDDLE);
 	BStyles::Font lfLabelFont = BStyles::Font ("Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL, 12.0,
 						   BStyles::TEXT_ALIGN_LEFT, BStyles::TEXT_VALIGN_MIDDLE);
 	BStyles::StyleSet defaultStyles = {"default", {{"background", STYLEPTR (&BStyles::noFill)},
@@ -242,6 +247,9 @@ private:
 		{"smlabel",	 	{{"uses", STYLEPTR (&defaultStyles)},
 					 {"textcolors", STYLEPTR (&txColors)},
 					 {"font", STYLEPTR (&smFont)}}},
+		 {"ssmlabel",	 	{{"uses", STYLEPTR (&defaultStyles)},
+ 					 {"textcolors", STYLEPTR (&txColors)},
+ 					 {"font", STYLEPTR (&ssmFont)}}},
 		{"select",	 	{{"uses", STYLEPTR (&defaultStyles)}}},
 		{"select/label",	{{"uses", STYLEPTR (&defaultStyles)},
 					 {"textcolors", STYLEPTR (&BColors::whites)},

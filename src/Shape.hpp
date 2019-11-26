@@ -43,7 +43,7 @@ public:
 	bool operator== (const Shape<sz>& rhs);
 	bool operator!= (const Shape<sz>& rhs);
 
-	void clearShape ();
+	virtual void clearShape ();
 	virtual void setDefaultShape ();
 	virtual void setDefaultShape (const Node& endNode);
 	bool isDefault ();
@@ -65,7 +65,7 @@ public:
 protected:
 	virtual void drawLineOnMap (Point p1, Point p2);
 	Point getPointPerc (Point p1, Point p2, double perc);
-	void renderBezier (Node& n1, Node& n2);
+	virtual void renderBezier (Node& n1, Node& n2);
 
 	StaticArrayList<Node, sz> nodes;
 	double map[MAPRES];

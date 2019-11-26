@@ -130,11 +130,7 @@ a base.
 
 ## What's new
 
-* Grid / snap to grid
-* Selection tool
-* Cut, copy, paste and delete
-* Reset, undo and redo
-* Move shapes
+* Smoothing option
 
 ## TODO
 
@@ -143,7 +139,6 @@ a base.
 * Fix click on MIDI on problem
 * Cut, copy, paste *relative* shape nodes
 * Translate shape nodes if effect changed
-* Load / save shapes
 
 ## See also
 
