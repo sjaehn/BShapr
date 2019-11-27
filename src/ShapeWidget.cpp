@@ -799,7 +799,7 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 				double xDash = minorXSteps / nrXDashes;
 				double nrYDashes = (ygrid / (ymax - ymin) < 0.2 ? 4 : 8);
 				double yDash = ygrid / nrYDashes;
-				double dashes[2] = {1.0, w * xDash - 1.0};
+				double dashes[2] = {GRIDSIZE, w * xDash - GRIDSIZE};
 				cairo_set_dash (cr, dashes, 2, 0.0);
 				for (double yp = ceil (ymin / yDash) * yDash; yp <= ymax; yp += yDash)
 				{
@@ -808,7 +808,7 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 					cairo_line_to (cr, x0 + w, y0 + h - y);
 				}
 				cairo_set_source_rgba (cr, CAIRO_RGBA (gridColor));
-				cairo_set_line_width (cr, 1.0);
+				cairo_set_line_width (cr, GRIDSIZE);
 				cairo_stroke (cr);
 				cairo_restore (cr);
 			}
