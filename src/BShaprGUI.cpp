@@ -53,8 +53,6 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].tabContainer = BWidgets::Widget (20 + i * 148, 90, 147, 40, "tab");
 		shapeGui[i].tabIcon = BWidgets::ImageIcon (0, 12.5, 120, 15, "widget", pluginPath + "inc/Shape" + std::to_string (i + 1) + ".png");
 		for (int j = 0; j< NRSYMBOLS; ++j) shapeGui[i].tabSymbol[j] = SymbolWidget (120 + (j % 2) * 14 , 8 + int (j / 2) * 14, 10, 10, "symbol", SWSymbol(j));
-		shapeGui[i].tabMsgBox = BWidgets::MessageBox (500, 240, 200, 120, "msgbox", "Delete shape " + std::to_string (i + 1), "Do you really want to delete this shape and all its content and settings ?", {"No", "Yes"});
-		shapeGui[i].tabMsgBoxBg = BWidgets::Widget (0, 0, 1200, 710, "widget");
 		shapeGui[i].shapeContainer = BWidgets::Widget (20, 130, 1160, 510, "widget");
 
 		// Method menu
@@ -138,8 +136,6 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].shapeContainer.rename ("widget");
 		shapeGui[i].tabContainer.rename ("tab");
 		shapeGui[i].tabIcon.rename ("widget");
-		shapeGui[i].tabMsgBox.rename ("msgbox");
-		shapeGui[i].tabMsgBoxBg.rename ("widget");
 		shapeGui[i].smoothingLabel.rename ("ssmlabel");
 		shapeGui[i].smoothingDial.rename ("dial");
 		shapeGui[i].targetListBox.rename ("menu2");
@@ -188,7 +184,6 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].tabContainer.setCallbackFunction (BEvents::EventType::BUTTON_PRESS_EVENT, BShaprGUI::tabClickedCallback);
 		shapeGui[i].tabIcon.setCallbackFunction (BEvents::EventType::BUTTON_PRESS_EVENT, BShaprGUI::tabClickedCallback);
 		for (int j = 0; j< NRSYMBOLS; ++j) shapeGui[i].tabSymbol[j].setCallbackFunction (BEvents::EventType::BUTTON_PRESS_EVENT, BShaprGUI::tabClickedCallback);
-		shapeGui[i].tabMsgBox.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::tabClosedCallback);
 		shapeGui[i].smoothingDial.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 		shapeGui[i].targetListBox.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 		shapeGui[i].drywetDial.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
@@ -228,7 +223,6 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	shapeGui[0].tabContainer.rename ("activetab");
 	for (unsigned int i = 0; i < MAXSHAPES; ++i)
 	{
-		shapeGui[i].tabMsgBoxBg.hide ();
 		for (int j = 0; j< NRSYMBOLS; ++j)
 		{
 			if (j != CLOSESYMBOL) shapeGui[i].tabSymbol[j].hide ();
@@ -265,7 +259,6 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].tabContainer.add (shapeGui[i].tabIcon);
 		for (int j = 0; j< NRSYMBOLS; ++j) shapeGui[i].tabContainer.add (shapeGui[i].tabSymbol[j]);
 		mContainer.add (shapeGui[i].tabContainer);
-		shapeGui[i].tabMsgBoxBg.add (shapeGui[i].tabMsgBox);
 		shapeGui[i].shapeContainer.add (shapeGui[i].smoothingLabel);
 		shapeGui[i].shapeContainer.add (shapeGui[i].smoothingDial);
 		shapeGui[i].shapeContainer.add (shapeGui[i].targetListBox);
@@ -290,7 +283,6 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	mContainer.add (messageLabel);
 	mContainer.add (baseValueSelect);
 	mContainer.add (baseListBox);
-	for (unsigned int i = 0; i < MAXSHAPES; ++i) mContainer.add (shapeGui[i].tabMsgBoxBg);
 	add (mContainer);
 
 	// Post addition configurations
@@ -328,6 +320,9 @@ BShaprGUI::~BShaprGUI()
 		{
 			if (shapeGui[i].optionWidgets[j]) delete shapeGui[i].optionWidgets[j];
 		}
+
+		if (shapeGui[i].tabMsgBox) delete shapeGui[i].tabMsgBox;
+		if (shapeGui[i].tabMsgBoxBg) delete shapeGui[i].tabMsgBoxBg;
 	}
 	sendGuiOff ();
 }
@@ -562,7 +557,7 @@ void BShaprGUI::updateTabs ()
 	}
 }
 
-void BShaprGUI::resizeGUI()
+void BShaprGUI::resizeGUI(const double sz)
 {
 	hide ();
 
@@ -599,8 +594,19 @@ void BShaprGUI::resizeGUI()
 		RESIZE (shapeGui[i].tabContainer, 20 + i * 148, 90, 147, 40, sz);
 		RESIZE (shapeGui[i].tabIcon, 0, 12.5, 120, 15, sz);
 		for (int j = 0; j< NRSYMBOLS; ++j) RESIZE (shapeGui[i].tabSymbol[j], 120 + (j % 2) * 14 , 8 + int (j / 2) * 14, 10, 10, sz);
-		RESIZE (shapeGui[i].tabMsgBox, 500, 240, 200, 120, sz);
-		RESIZE (shapeGui[i].tabMsgBoxBg, 0, 0, 1200, 710, sz);
+		if (shapeGui[i].tabMsgBox)
+		{
+			RESIZE
+			(
+				*shapeGui[i].tabMsgBox,
+				shapeGui[i].tabMsgBox->getX () / this->sz,
+				shapeGui[i].tabMsgBox->getY () / this->sz,
+				shapeGui[i].tabMsgBox->getWidth () / this->sz,
+				shapeGui[i].tabMsgBox->getHeight () / this->sz,
+				sz
+			);
+		}
+		if (shapeGui[i].tabMsgBoxBg) RESIZE (*shapeGui[i].tabMsgBoxBg, 0, 0, 1200, 710, sz);
 		RESIZE (shapeGui[i].shapeContainer, 20, 130, 1160, 590, sz);
 		RESIZE (shapeGui[i].smoothingLabel, 960, 410, 40, 10, sz);
 		RESIZE (shapeGui[i].smoothingDial, 960, 370, 40, 44, sz);
@@ -652,6 +658,8 @@ void BShaprGUI::resizeGUI()
 		}
 	}
 
+	this-> sz = sz;
+
 	// Update monitor, const std::string& name
 	initMonitors ();
 	updateMonitors (0, MONITORBUFFERSIZE - 1);
@@ -682,8 +690,8 @@ void BShaprGUI::applyChildThemes ()
 		shapeGui[i].tabContainer.applyTheme (theme);
 		shapeGui[i].tabIcon.applyTheme (theme);
 		for (int j = 0; j< NRSYMBOLS; ++j) shapeGui[i].tabSymbol[j].applyTheme (theme);
-		shapeGui[i].tabMsgBox.applyTheme (theme);
-		shapeGui[i].tabMsgBoxBg.applyTheme (theme);
+		if (shapeGui[i].tabMsgBox) shapeGui[i].tabMsgBox->applyTheme (theme);
+		if (shapeGui[i].tabMsgBoxBg) shapeGui[i].tabMsgBoxBg->applyTheme (theme);
 		shapeGui[i].smoothingLabel.applyTheme (theme);
 		shapeGui[i].smoothingDial.applyTheme (theme);
 		shapeGui[i].targetListBox.applyTheme (theme);
@@ -713,8 +721,37 @@ void BShaprGUI::onConfigureRequest (BEvents::ExposeEvent* event)
 {
 	Window::onConfigureRequest (event);
 
-	sz = (width_ / 1200 > height_ / 710 ? height_ / 710 : width_ / 1200);
-	resizeGUI ();
+	resizeGUI (width_ / 1200 > height_ / 710 ? height_ / 710 : width_ / 1200);
+}
+
+void BShaprGUI::onCloseRequest (BEvents::WidgetEvent* event)
+{
+	if (event)
+	{
+		Widget* requestWidget = event->getRequestWidget ();
+		if (requestWidget)
+		{
+			for (int i = 0; i < MAXSHAPES; ++i)
+			{
+				if (requestWidget == ((BWidgets::Widget*)shapeGui[i].tabMsgBox))
+				{
+					double value = shapeGui[i].tabMsgBox->getValue ();
+
+					// Yes
+					if (value == 2) deleteShape (i);
+
+					delete shapeGui[i].tabMsgBox;
+					shapeGui[i].tabMsgBox = nullptr;
+					delete shapeGui[i].tabMsgBoxBg;
+					shapeGui[i].tabMsgBoxBg = nullptr;
+
+					return;
+				}
+			}
+
+			Window::onCloseRequest (event);
+		}
+	}
 }
 
 void BShaprGUI::onKeyPressed (BEvents::KeyEvent* event)
@@ -1264,9 +1301,24 @@ void BShaprGUI::tabClickedCallback (BEvents::Event* event)
 
 				else if (widget == &ui->shapeGui[i].tabSymbol[CLOSESYMBOL])
 				{
-					ui->shapeGui[i].tabMsgBox.setValue (0);
-					ui->shapeGui[i].tabMsgBox.show ();
-					ui->shapeGui[i].tabMsgBoxBg.show ();
+					if (ui->shapeGui[i].tabMsgBox) delete ui->shapeGui[i].tabMsgBox;
+					ui->shapeGui[i].tabMsgBox = nullptr;
+					if (ui->shapeGui[i].tabMsgBoxBg) delete ui->shapeGui[i].tabMsgBoxBg;
+					ui->shapeGui[i].tabMsgBoxBg = nullptr;
+
+					ui->shapeGui[i].tabMsgBox = new BWidgets::MessageBox (500 * ui->sz, 240 * ui->sz, 200 * ui->sz, 120 * ui->sz, "msgbox", "Delete shape " + std::to_string (i + 1), "Do you really want to delete this shape and all its content and settings ?", {"No", "Yes"});
+					if (ui->shapeGui[i].tabMsgBox)
+					{
+						ui->shapeGui[i].tabMsgBox->applyTheme (ui->theme);
+
+						ui->shapeGui[i].tabMsgBoxBg = new BWidgets::Widget (0, 0, 1200 * ui->sz, 710 * ui->sz, "widget");
+						if (ui->shapeGui[i].tabMsgBoxBg)
+						{
+							ui->shapeGui[i].tabMsgBoxBg->applyTheme (ui->theme);
+							ui->shapeGui[i].tabMsgBoxBg->add (*ui->shapeGui[i].tabMsgBox);
+							ui->mContainer.add (*ui->shapeGui[i].tabMsgBoxBg);
+						}
+					}
 					break;
 				}
 
@@ -1286,35 +1338,6 @@ void BShaprGUI::tabClickedCallback (BEvents::Event* event)
 				{
 					ui->swapShapes (i, i + 1);
 					break;
-				}
-			}
-		}
-	}
-}
-
-void BShaprGUI::tabClosedCallback (BEvents::Event* event)
-{
-	if ((event) && (event->getWidget ()))
-	{
-		BWidgets::ValueWidget* widget = (BWidgets::ValueWidget*) event->getWidget ();
-		if (widget->getMainWindow ())
-		{
-			BShaprGUI* ui = (BShaprGUI*) widget->getMainWindow ();
-			for (int i = 0; i < MAXSHAPES; ++i)
-			{
-				if (widget == &ui->shapeGui[i].tabMsgBox)
-				{
-					double value = ((BEvents::ValueChangedEvent*) event)->getValue ();
-
-					// Any selection
-					if (value != 0) ui->shapeGui[i].tabMsgBoxBg.hide ();
-
-					// Yes
-					if (value == 2)
-					{
-						ui->deleteShape (i);
-						break;
-					}
 				}
 			}
 		}

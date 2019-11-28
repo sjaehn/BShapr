@@ -78,6 +78,7 @@ public:
 	void sendGuiOff ();
 	void sendShape (size_t shapeNr);
 	virtual void onConfigureRequest (BEvents::ExposeEvent* event) override;
+	virtual void onCloseRequest (BEvents::WidgetEvent* event) override;
 	virtual void onKeyPressed (BEvents::KeyEvent* event) override;
 	virtual void onKeyReleased (BEvents::KeyEvent* event) override;
 	void applyChildThemes ();
@@ -92,7 +93,6 @@ public:
 	static void editReleasedCallback (BEvents::Event* event);
 	static void gridChangedCallback (BEvents::Event* event);
 	static void tabClickedCallback (BEvents::Event* event);
-	static void tabClosedCallback (BEvents::Event* event);
 	static void wheelScrolledCallback (BEvents::Event* event);
 	static void pianoCallback (BEvents::Event* event);
 
@@ -103,7 +103,7 @@ private:
 	void insertShape (const int shapeNr);
 	void swapShapes (const int source, const int dest);
 	void switchShape (const int shapeNr);
-	void resizeGUI ();
+	void resizeGUI (const double sz);
 	void updateTabs ();
 	void calculateXSteps ();
 	void initMonitors ();
@@ -124,8 +124,8 @@ private:
 		BWidgets::Widget shapeContainer;
 		BWidgets::Widget tabContainer;
 		std::array<SymbolWidget, 4> tabSymbol;
-		BWidgets::Widget tabMsgBoxBg;
-		BWidgets::MessageBox tabMsgBox;
+		BWidgets::Widget* tabMsgBoxBg;
+		BWidgets::MessageBox* tabMsgBox;
 		BWidgets::ImageIcon tabIcon;
 		BWidgets::Label smoothingLabel;
 		BWidgets::DialValue smoothingDial;
