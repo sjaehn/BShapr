@@ -86,6 +86,8 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].targetListBox = BWidgets::PopupListBox (20, 443, 174, 54, 0, -380, 184, 380, "menu2", il, 0);
 
 		shapeGui[i].shapeWidget = ShapeWidget (4, 4, 1152, 352, "shape");
+		shapeGui[i].tabMsgBox = nullptr;
+		shapeGui[i].tabMsgBoxBg = nullptr;
 		shapeGui[i].focusText = BWidgets::Text (0, 0, 400, 80, "label", focusString);
 		shapeGui[i].smoothingLabel = BWidgets::Label (960, 410, 40, 10, "ssmlabel", "Smooth");
 		shapeGui[i].smoothingDial = BWidgets::DialValue (960, 370, 40, 44, "dial", 0.01, 0.0, 0.1, 0, "%1.2f");
@@ -306,7 +308,6 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 
 	// Initialize forge
 	lv2_atom_forge_init (&forge, map);
-
 }
 
 BShaprGUI::~BShaprGUI()
