@@ -107,6 +107,7 @@ private:
 	void notifyStatusToGui ();
 	double getPositionFromBeats (double beats);
 	double getPositionFromFrames (uint64_t frames);
+	double getPositionFromSeconds (double seconds);
 
 	double rate;
 	float bpm;

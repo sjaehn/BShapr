@@ -115,6 +115,7 @@ private:
 	std::array<BWidgets::ValueWidget*, NR_CONTROLLERS> controllerWidgets;
 	std::array<float, NR_CONTROLLERS> controllers;
 
+	float bpm;
 	float beatsPerBar;
 	int beatUnit;
 

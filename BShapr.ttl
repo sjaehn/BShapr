@@ -196,9 +196,9 @@
 		lv2:index 17 ;
 		lv2:symbol "sh1_smoothing" ;
 		lv2:name "Shaper 1: smoothing" ;
-		lv2:default 0.01 ;
+		lv2:default 20.0 ;
 		lv2:minimum 0.0 ;
-		lv2:maximum 0.1 ;
+		lv2:maximum 100.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
 		lv2:index 18 ;
@@ -311,9 +311,9 @@
 		lv2:index 28 ;
 		lv2:symbol "sh2_smoothing" ;
 		lv2:name "Shaper 2: smoothing" ;
-		lv2:default 0.01 ;
+		lv2:default 20.0 ;
 		lv2:minimum 0.0 ;
-		lv2:maximum 0.1 ;
+		lv2:maximum 100.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
 		lv2:index 29 ;
@@ -427,9 +427,9 @@
 		lv2:index 39 ;
 		lv2:symbol "sh3_smoothing" ;
 		lv2:name "Shaper 3: smoothing" ;
-		lv2:default 0.01 ;
+		lv2:default 20.0 ;
 		lv2:minimum 0.0 ;
-		lv2:maximum 0.1 ;
+		lv2:maximum 100.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
 		lv2:index 40 ;
@@ -543,9 +543,9 @@
 		lv2:index 50 ;
 		lv2:symbol "sh4_smoothing" ;
 		lv2:name "Shaper 4: smoothing" ;
-		lv2:default 0.01 ;
+		lv2:default 20.0 ;
 		lv2:minimum 0.0 ;
-		lv2:maximum 0.1 ;
+		lv2:maximum 100.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
 		lv2:index 51 ;

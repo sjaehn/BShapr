@@ -23,7 +23,7 @@
 BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features, PuglNativeWindow parentWindow) :
 	Window (1200, 710, "B.Shapr", parentWindow, true),
 	controller (NULL), write_function (NULL),
-	beatsPerBar (4.0), beatUnit (4),
+	bpm (120), beatsPerBar (4.0), beatUnit (4),
 
 	mContainer (0, 0, 1200, 710, "widget"),
 	messageLabel (600, 45, 600, 20, "label", ""),
@@ -90,7 +90,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].tabMsgBoxBg = nullptr;
 		shapeGui[i].focusText = BWidgets::Text (0, 0, 400, 80, "label", focusString);
 		shapeGui[i].smoothingLabel = BWidgets::Label (960, 410, 40, 10, "ssmlabel", "Smooth");
-		shapeGui[i].smoothingDial = BWidgets::DialValue (960, 370, 40, 44, "dial", 0.01, 0.0, 0.1, 0, "%1.2f");
+		shapeGui[i].smoothingDial = BWidgets::DialValue (960, 370, 40, 44, "dial", 20.0, 0.0, 100.0, 0, "%3.1f ms");
 		shapeGui[i].toolSelect = SelectWidget (133, 368, 284, 44, "tool", 44, 44, 5, 2);
 		for (int j = 0; j < 4; ++j) shapeGui[i].editWidgets[j] = BWidgets::Widget (463 + j * 60, 368, 44, 44, "widget");
 		for (int j = 4; j < 7; ++j) shapeGui[i].editWidgets[j] = BWidgets::Widget (503 + j * 60, 368, 44, 44, "widget");
@@ -389,8 +389,14 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 			// Status notification
 			else if (obj->body.otype == urids.notify_statusEvent)
 			{
-				const LV2_Atom *oBpb = NULL, *oBu = NULL;
-				lv2_atom_object_get(obj, urids.time_beatsPerBar, &oBpb, urids.time_beatUnit, &oBu, 0);
+				const LV2_Atom *oBpb = NULL, *oBu = NULL, *oBpm = NULL;
+				lv2_atom_object_get
+				(
+					obj,
+					urids.time_beatsPerBar, &oBpb,
+					urids.time_beatUnit, &oBu,
+					urids.time_beatsPerMinute, &oBpm,
+					0);
 				if (oBpb && (oBpb->type == urids.atom_Float))
 				{
 					float value = ((LV2_Atom_Float*)oBpb)->body;
@@ -398,6 +404,7 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 					{
 						beatsPerBar = value;
 						calculateXSteps ();
+						updateHorizon ();
 					}
 				}
 
@@ -408,6 +415,16 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 					{
 						beatUnit = value;
 						calculateXSteps ();
+					}
+				}
+
+				if (oBpm && (oBpm->type == urids.atom_Float))
+				{
+					float value = ((LV2_Atom_Float*)oBpm)->body;
+					if (value != 0.0f)
+					{
+						bpm = value;
+						updateHorizon ();
 					}
 				}
 			}
@@ -474,6 +491,7 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 				shapeGui[nsh].tabContainer.rename ("activetab");
 				shapeGui[nsh].tabContainer.applyTheme (theme);
 				shapeGui[nsh].shapeContainer.show();
+				updateHorizon ();
 			}
 
 			// Keys
@@ -1143,6 +1161,7 @@ void BShaprGUI::switchShape (const int shapeNr)
 	shapeGui[shapeNr].tabContainer.rename ("activetab");
 	shapeGui[shapeNr].tabContainer.applyTheme (theme);
 	shapeGui[shapeNr].shapeContainer.show();
+	updateHorizon ();
 }
 
 void BShaprGUI::valueChangedCallback (BEvents::Event* event)
@@ -1187,6 +1206,7 @@ void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 				{
 					ui->controllers[widgetNr] = value;
 					ui->calculateXSteps ();
+					ui->updateHorizon ();
 				}
 
 				else if (widgetNr >= SHAPERS)
@@ -1275,6 +1295,11 @@ void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 							}
 
 						}
+					}
+
+					else if (shapeWidgetNr == SH_SMOOTHING)
+					{
+						if (shapeNr == ui->controllers[ACTIVE_SHAPE] - 1) ui->updateHorizon ();
 					}
 				}
 				ui->controllers[widgetNr] = value;
@@ -1628,7 +1653,20 @@ void BShaprGUI::updateHorizon ()
 {
 	double width = monitorContainer.getEffectiveWidth ();
 	int shapeNr = LIMIT (controllers[ACTIVE_SHAPE], 1, MAXSHAPES) - 1;
-	double smWidth = shapeGui[shapeNr].smoothingDial.getValue () * width;
+	double smTime = shapeGui[shapeNr].smoothingDial.getValue () / 1000;
+
+	double smWidth;
+	switch (int (controllers[BASE]))
+	{
+		case SECONDS :	smWidth = width * smTime / controllers[BASE_VALUE];
+				break;
+		case BEATS:	smWidth = width * smTime * (bpm / 60.0) / controllers[BASE_VALUE];
+				break;
+		case BARS:	smWidth = width * smTime * (bpm / 60.0 / beatsPerBar) / controllers[BASE_VALUE];
+				break;
+		default:	break;
+	}
+
 	monitorHorizon1.setSmoothingWidth (smWidth);
 	monitorHorizon1.moveLineTo (horizonPos * width, 0);
 	monitorHorizon2.setSmoothingWidth (smWidth);

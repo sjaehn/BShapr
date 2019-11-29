@@ -235,6 +235,17 @@ double BShapr::getPositionFromFrames (uint64_t frames)
 	}
 }
 
+double BShapr::getPositionFromSeconds (double seconds)
+{
+	switch (int (controllers[BASE]))
+	{
+		case SECONDS :	return seconds / controllers[BASE_VALUE];
+		case BEATS:	return seconds * (bpm / 60.0) / controllers[BASE_VALUE];
+		case BARS:	return seconds * (bpm / 60.0 / beatsPerBar) / controllers[BASE_VALUE];
+		default:	return 0;
+	}
+}
+
 void BShapr::run (uint32_t n_samples)
 {
 	// Check ports
@@ -314,7 +325,7 @@ void BShapr::run (uint32_t n_samples)
 
 				else if (shapeControllerNr == SH_SMOOTHING)
 				{
-					shapes[shapeNr].setSmoothing (newValue);
+					shapes[shapeNr].setSmoothing (getPositionFromSeconds (newValue / 1000));
 				}
 
 				// Options
@@ -326,6 +337,16 @@ void BShapr::run (uint32_t n_samples)
 			}
 
 			controllers[i] = newValue;
+
+			// Re-smoothing required ?
+			if ((i == BASE) || (i == BASE_VALUE))
+			{
+				for (int j = 0; j < MAXSHAPES; ++j)
+				{
+					double smoothing = getPositionFromSeconds (controllers[SHAPERS + j * SH_SIZE + SH_SMOOTHING] / 1000);
+					shapes[j].setSmoothing (smoothing);
+				}
+			}
 		}
 	}
 
@@ -655,6 +676,8 @@ void BShapr::notifyStatusToGui()
 	lv2_atom_forge_float(&forge, beatsPerBar);
 	lv2_atom_forge_key(&forge, urids.time_beatUnit);
 	lv2_atom_forge_int(&forge, beatUnit);
+	lv2_atom_forge_key(&forge, urids.time_beatsPerMinute);
+	lv2_atom_forge_float(&forge, bpm);
 	lv2_atom_forge_pop(&forge, &frame);
 
 	scheduleNotifyStatus = false;
