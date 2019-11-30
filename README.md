@@ -91,14 +91,34 @@ audio in > shape1 > shape3 ─┐
 ### Shape editor
 
 Mark and select a node type on the bottom of the editor. Click on the desired position of the shape to set
-this node (or to delete it if the deletion tool is marked). Mark a node by clicking on it. You can drag a node
-or its handles.
+this node. Mark a node by clicking on it again (or use the selection tool, see below). You can drag a node
+(or multiple nodes, if selected) or its handles.
 
 However, dragging the background results only in (vertical) dragging the whole **display** of the envelope. Similarly,
 scrolling zooms the display in or out.
 
 In the background of the shape editor a stereo monitor visualizes the input and the output levels. You can change
 the zoom by pressing SHIFT key AND scrolling the mouse wheel.
+
+### Toolbar
+
+The toolobar is located below the shape editor. It is divided into five sections.
+
+In section 1 you will find **node tools** to select nodes or to set different types of nodes. Selection of existing nodes
+can be done by clicking on a node or by selection of an area. Node types provided are point node, auto smooth
+Bezier node, symmetic Bezier node, and asymmetic Bezier node.
+
+Section 2 consists of **edit tools** to apply on selected nodes. This are cut, copy, paste, and delete.
+
+In Section 3 are **shape tools** to reset the shape, and to undo or redo the last edit(s).
+
+Section 4 only consists of the **smooth dial**. This dial sets the smoothing time (in milliseconds). If smoothing is
+set (> 0 ms), the shape signal will be linearly smoothed over the given time before applying to the audio signal. The
+smoothing time is also shown in the monitor by the thickness of the white horizon line. A long
+smoothing time may effectively prevent clicks but also may compensate fast changes. A smoothing value of 20 ms is a
+good starting point.
+
+Section 5 are the **grid tools**. You can show the grid and/or snap to the grid.
 
 ### Effects
 
@@ -135,8 +155,8 @@ a base.
 ## TODO
 
 * Additional effects (any ideas welcome)
-* Rational Bezier curves
-* Fix click on MIDI on problem
+* Report latency (pitch shifter)
+* Fix click on MIDI ON problem
 * Cut, copy, paste *relative* shape nodes
 * Translate shape nodes if effect changed
 

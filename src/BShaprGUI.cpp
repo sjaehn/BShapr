@@ -90,7 +90,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].tabMsgBoxBg = nullptr;
 		shapeGui[i].focusText = BWidgets::Text (0, 0, 400, 80, "label", focusString);
 		shapeGui[i].smoothingLabel = BWidgets::Label (960, 410, 40, 10, "ssmlabel", "Smooth");
-		shapeGui[i].smoothingDial = BWidgets::DialValue (960, 370, 40, 44, "dial", 20.0, 0.0, 100.0, 0, "%3.1f ms");
+		shapeGui[i].smoothingDial = BWidgets::DialValue (960, 366, 40, 48, "dial", 20.0, 0.0, 100.0, 0, "%3.1f ms");
 		shapeGui[i].toolSelect = SelectWidget (133, 368, 284, 44, "tool", 44, 44, 5, 2);
 		for (int j = 0; j < 4; ++j) shapeGui[i].editWidgets[j] = BWidgets::Widget (463 + j * 60, 368, 44, 44, "widget");
 		for (int j = 4; j < 7; ++j) shapeGui[i].editWidgets[j] = BWidgets::Widget (503 + j * 60, 368, 44, 44, "widget");
@@ -628,7 +628,7 @@ void BShaprGUI::resizeGUI(const double sz)
 		if (shapeGui[i].tabMsgBoxBg) RESIZE (*shapeGui[i].tabMsgBoxBg, 0, 0, 1200, 710, sz);
 		RESIZE (shapeGui[i].shapeContainer, 20, 130, 1160, 590, sz);
 		RESIZE (shapeGui[i].smoothingLabel, 960, 410, 40, 10, sz);
-		RESIZE (shapeGui[i].smoothingDial, 960, 370, 40, 44, sz);
+		RESIZE (shapeGui[i].smoothingDial, 960, 366, 40, 48, sz);
 		RESIZE (shapeGui[i].targetListBox, 20, 443, 174, 54, sz);
 		shapeGui[i].targetListBox.resizeListBox (154 * sz, 380 * sz);
 		shapeGui[i].targetListBox.moveListBox (0, -380 * sz);
