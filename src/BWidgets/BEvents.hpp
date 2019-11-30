@@ -419,7 +419,7 @@ public:
 	 * initially pressed
 	 * @param yOrigin Y coordinate relative to the widgets origin
 	 */
-	void setYOrigin (const double xOrigin)
+	void setYOrigin (const double yOrigin)
 	{this->yOrigin = yOrigin;}
 
 	/**
