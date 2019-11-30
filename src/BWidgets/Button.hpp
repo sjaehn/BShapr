@@ -62,7 +62,7 @@ public:
 	 * Pattern cloning. Creates a new instance of the widget and copies all
 	 * its properties.
 	 */
-	virtual Widget* clone () const;
+	virtual Widget* clone () const override;
 
 	/**
 	 * Scans theme for widget properties and applies these properties.

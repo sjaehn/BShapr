@@ -72,7 +72,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 				}
 			}
 
-			shapeGui[i].methodIcons.push_back (BWidgets::ImageIcon (0, 0, 154, 54, "icon", {iconPath, iconPath}));
+			shapeGui[i].methodIcons.push_back (BWidgets::ImageIcon (0, 0, 154, 54, "icon", std::vector<std::string>{iconPath, iconPath}));
 
 			BWidgets::ImageIcon* icon = &*std::prev (shapeGui[i].methodIcons.end ());
 			cairo_t* cr = cairo_create (icon->getIconSurface (BColors::NORMAL));
