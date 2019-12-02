@@ -70,14 +70,6 @@ public:
 	virtual Widget* clone () const override;
 
 	/**
-	 * Changes the value of the widget and keeps it within the defined range.
-	 * Passes the value to its predefined child widgets.
-	 * Emits a value changed event and (if visible) an expose event.
-	 * @param val Value
-	 */
-	virtual void setValue (const double val) override;
-
-	/**
 	 * Calls a redraw of the widget and calls postRedisplay () if the the
 	 * Widget is visible.
 	 * This method should be called if the widgets properties are indirectly
@@ -139,8 +131,6 @@ protected:
 	DrawingSurface dot;
 	BColors::ColorSet fgColors;
 	BColors::ColorSet bgColors;
-
-	Label focusLabel;
 };
 
 }

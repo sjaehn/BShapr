@@ -36,8 +36,7 @@ Dial::Dial (const double x, const double y, const double width, const double hei
 		dot (0, 0, (width < height ? BWIDGETS_DEFAULT_DIAL_DOT_SIZE * width : BWIDGETS_DEFAULT_DIAL_DOT_SIZE * height),
 			 (width < height ? BWIDGETS_DEFAULT_DIAL_DOT_SIZE * width : BWIDGETS_DEFAULT_DIAL_DOT_SIZE * height),
 			 name),
-		fgColors (BWIDGETS_DEFAULT_FGCOLORS), bgColors (BWIDGETS_DEFAULT_BGCOLORS),
-		focusLabel (0, 0, 80, 20, name + BWIDGETS_DEFAULT_FOCUS_NAME + BWIDGETS_DEFAULT_FOCUS_LABEL_NAME, "")
+		fgColors (BWIDGETS_DEFAULT_FGCOLORS), bgColors (BWIDGETS_DEFAULT_BGCOLORS)
 {
 
 	setClickable (true);
@@ -51,37 +50,16 @@ Dial::Dial (const double x, const double y, const double width, const double hei
 	dot.setScrollable (false);
 	add (knob);
 	add (dot);
-
-	std::string valstr = BValues::toBString (value);
-	focusLabel.setText(valstr);
-	focusLabel.resize (focusLabel.getTextWidth (valstr) + 10, 20);
-	focusWidget = new FocusWidget (this, name + BWIDGETS_DEFAULT_FOCUS_NAME);
-	if (focusWidget)
-	{
-		focusWidget->add (focusLabel);
-		focusWidget->resize ();
-	}
 }
 
 Dial::Dial (const Dial& that) :
 		RangeWidget (that),
 		dialCenterX (that.dialCenterX), dialCenterY (that.dialCenterY), dialRadius (that.dialRadius),
 		knob (that.knob), dot (that.dot),
-		fgColors (that.fgColors), bgColors (that.bgColors),
-		focusLabel (0, 0, 80, 20, that.name_ + BWIDGETS_DEFAULT_FOCUS_NAME + BWIDGETS_DEFAULT_FOCUS_LABEL_NAME, "")
+		fgColors (that.fgColors), bgColors (that.bgColors)
 {
 	add (knob);
 	add (dot);
-
-	std::string valstr = BValues::toBString (value);
-	focusLabel.setText(valstr);
-	focusLabel.resize (focusLabel.getTextWidth (valstr) + 10, 20);
-	focusWidget = new FocusWidget (this, that.name_ + BWIDGETS_DEFAULT_FOCUS_NAME);
-	if (focusWidget)
-	{
-		focusWidget->add (focusLabel);
-		focusWidget->resize ();
-	}
 }
 
 Dial:: ~Dial ()
@@ -102,15 +80,6 @@ Dial& Dial::operator= (const Dial& that)
 	dialCenterY = that.dialCenterY;
 	dialRadius = that.dialRadius;
 
-	if (focusWidget) delete focusWidget;
-	focusLabel = that.focusLabel;
-	focusWidget = new FocusWidget (this, that.name_ + BWIDGETS_DEFAULT_FOCUS_NAME);
-	if (focusWidget)
-	{
-		focusWidget->add (focusLabel);
-		focusWidget->resize ();
-	}
-
 	RangeWidget::operator= (that);
 
 	add (knob);
@@ -120,15 +89,6 @@ Dial& Dial::operator= (const Dial& that)
 }
 
 Widget* Dial::clone () const {return new Dial (*this);}
-
-void Dial::setValue (const double val)
-{
-	RangeWidget::setValue (val);
-	std::string valstr = BValues::toBString (value);
-	focusLabel.setText(valstr);
-	focusLabel.resize (focusLabel.getTextWidth (valstr) + 10, 20);
-	if (focusWidget) focusWidget->resize();
-}
 
 void Dial::update ()
 {
@@ -159,9 +119,6 @@ void Dial::applyTheme (BStyles::Theme& theme) {applyTheme (theme, name_);}
 
 void Dial::applyTheme (BStyles::Theme& theme, const std::string& name)
 {
-	if (focusWidget) focusWidget->applyTheme (theme, name + BWIDGETS_DEFAULT_FOCUS_NAME);
-	focusLabel.applyTheme (theme, name + BWIDGETS_DEFAULT_FOCUS_NAME + BWIDGETS_DEFAULT_FOCUS_LABEL_NAME);
-
 	Widget::applyTheme (theme, name);
 	knob.applyTheme (theme, name);
 
