@@ -44,12 +44,13 @@ AudioBuffer::AudioBuffer (const uint32_t size) : frames (nullptr), wPtr1 (0), wP
 
 AudioBuffer::~AudioBuffer ()
 {
-	delete (frames);
+	if (frames) delete[] (frames);
 }
 
 void AudioBuffer::resize (const uint32_t size)
 {
-	if (frames) delete (frames);
+	if (frames) delete[] (frames);
+	frames = nullptr;
 	try {frames = new float[size];}
 	catch (std::bad_alloc& ba)
 	{
@@ -62,9 +63,12 @@ void AudioBuffer::resize (const uint32_t size)
 
 void AudioBuffer::reset ()
 {
+	if (frames)
+	{
 		memset (frames, 0, size * sizeof (float));
 		memset (frames, 0, size * sizeof (float));
 		wPtr1 = wPtr2 = rPtr1 = rPtr2 = 0;
+	}
 }
 
 Message::Message () : messageBits (0), scheduled (true) {}
