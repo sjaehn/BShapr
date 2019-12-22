@@ -24,6 +24,8 @@
 #include "definitions.hpp"
 #include "StaticArrayList.hpp"
 #include "BWidgets/ValueWidget.hpp"
+#include "BWidgets/Focusable.hpp"
+#include "BWidgets/Text.hpp"
 #include "Shape.hpp"
 #include "Selection.hpp"
 #include "Snapshots.hpp"
@@ -38,11 +40,13 @@ enum ToolType
 	CORNER_NODE_TOOL		= 5
 };
 
-class ShapeWidget : public Shape<MAXNODES>, public BWidgets::ValueWidget
+class ShapeWidget : public Shape<MAXNODES>, public BWidgets::ValueWidget, public Focusable
 {
 public:
 	ShapeWidget ();
 	ShapeWidget (const double x, const double y, const double width, const double height, const std::string& name);
+	ShapeWidget (const ShapeWidget& that);
+	virtual BWidgets::Widget* clone () const override;
 	void setTool (const ToolType tool);
 	void setValueEnabled (const bool status);
 	void setScaleParameters (double anchorYPos, double anchorValue, double ratio);
@@ -72,6 +76,8 @@ public:
 	virtual void onPointerDragged (BEvents::PointerEvent* event) override;
 	virtual void onWheelScrolled (BEvents::WheelEvent* event) override;
 	virtual void onValueChanged (BEvents::ValueChangedEvent* event) override;
+	virtual void onFocusIn (BEvents::FocusEvent* event) override;
+	virtual void onFocusOut (BEvents::FocusEvent* event) override;
 	virtual void applyTheme (BStyles::Theme& theme) override;
 	virtual void applyTheme (BStyles::Theme& theme, const std::string& name) override;
 
@@ -107,6 +113,10 @@ protected:
 	BColors::ColorSet bgColors;
 	BStyles::Font lbfont;
 
+public:
+	BWidgets::Text focusText;
+
+protected:
 	double snapX (const double x);
 	double snapY (const double y);
 

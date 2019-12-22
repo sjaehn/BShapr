@@ -27,6 +27,8 @@ ShapeWidget::ShapeWidget () : ShapeWidget (0, 0, 0, 0, "") {}
 
 ShapeWidget::ShapeWidget (const double x, const double y, const double width, const double height, const std::string& name) :
 		Shape (), ValueWidget (x, y, width, height, name, 0),
+		Focusable (std::chrono::milliseconds (2000),
+			std::chrono::milliseconds (10000)),
 		clickMode (NEW_NODE), selection (), tool (NO_TOOL), grabbedNode (-1), grabbedHandle (-1),
 		valueEnabled (false),
 		scaleAnchorYPos (0), scaleAnchorValue (0), scaleRatio (1),
@@ -34,11 +36,35 @@ ShapeWidget::ShapeWidget (const double x, const double y, const double width, co
 		loLimit (-1000000), hiLimit (1000000), hardLoLimit (false), hardHiLimit (false),
 		gridVisible (true), gridSnap (true),
 		prefix (""), unit (""),
-		fgColors (BColors::reds), bgColors (BColors::darks), lbfont (BWIDGETS_DEFAULT_FONT)
+		fgColors (BColors::reds), bgColors (BColors::darks), lbfont (BWIDGETS_DEFAULT_FONT),
+		focusText (0, 0, 400, 80, name + "/focus", "<CLICK>: Set, select, or remove node.\n<DRAG>: Drag selected node or handle or drag grid pattern.\n<SCROLL>: Resize grid pattern.\n<SHIFT><SCROLL>: Resize input / output signal monitor.")
 {
 	setDraggable (true);
 	setScrollable (true);
+
+	focusText.setOversize (true);
+	focusText.hide ();
+	add (focusText);
 }
+
+ShapeWidget::ShapeWidget (const ShapeWidget& that) :
+		Shape (that), ValueWidget (that), Focusable (that),
+		clickMode (that.clickMode), selection (that.selection), tool (that.tool), grabbedNode (that.grabbedNode), grabbedHandle (that.grabbedHandle),
+		valueEnabled (that.valueEnabled),
+		scaleAnchorYPos (that.scaleAnchorYPos), scaleAnchorValue (that.scaleAnchorValue), scaleRatio (that.scaleRatio),
+		minorXSteps (that.minorXSteps), majorXSteps (that.majorXSteps),
+		loLimit (that.loLimit), hiLimit (that.hiLimit), hardLoLimit (that.hardLoLimit), hardHiLimit (that.hardHiLimit),
+		gridVisible (that.gridVisible), gridSnap (that.gridSnap),
+		prefix (that.prefix), unit (that.unit),
+		fgColors (that.fgColors), bgColors (that.bgColors), lbfont (that.lbfont),
+		focusText (that.focusText)
+{
+	focusText.setOversize (true);
+	focusText.hide ();
+	add (focusText);
+}
+
+BWidgets::Widget* ShapeWidget::clone () const {return new ShapeWidget (*this);}
 
 void ShapeWidget::setTool (const ToolType tool) {this->tool = tool;}
 
@@ -623,10 +649,27 @@ void ShapeWidget::onValueChanged (BEvents::ValueChangedEvent* event)
 	}
 }
 
+void ShapeWidget::onFocusIn (BEvents::FocusEvent* event)
+{
+	if (event && event->getWidget())
+	{
+		BUtilities::Point pos = event->getPosition();
+		focusText.moveTo (pos.x - 0.5 * focusText.getWidth(), pos.y - focusText.getHeight());
+		focusText.show();
+	}
+	Widget::onFocusIn (event);
+}
+void ShapeWidget::onFocusOut (BEvents::FocusEvent* event)
+{
+	if (event && event->getWidget()) focusText.hide();
+	Widget::onFocusOut (event);
+}
+
 void ShapeWidget::applyTheme (BStyles::Theme& theme) {applyTheme (theme, name_);}
 
 void ShapeWidget::applyTheme (BStyles::Theme& theme, const std::string& name)
 {
+	focusText.applyTheme (theme, name + "/focus");
 	Widget::applyTheme (theme, name);
 
 	// Foreground colors (curve)

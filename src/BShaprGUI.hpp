@@ -173,8 +173,6 @@ private:
 	BShaprURIDs urids;
 	LV2_URID_Map* map;
 
-	std::string focusString = "<CLICK>: Set, select, or remove node.\n<DRAG>: Drag selected node or handle or drag grid pattern.\n<SCROLL>: Resize grid pattern.\n<SHIFT><SCROLL>: Resize input / output signal monitor.";
-
 	// Definition of styles
 	BColors::ColorSet fgColors = {{{0.75, 0.0, 0.75, 1.0}, {1.0, 0.0, 1.0, 1.0}, {0.25, 0.0, 0.25, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
 	BColors::ColorSet txColors = {{{1.0, 1.0, 1.0, 1.0}, {1.0, 1.0, 1.0, 1.0}, {0.2, 0.2, 0.2, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
@@ -235,6 +233,8 @@ private:
 					 {"symbolcolors", STYLEPTR (&fgColors)},
 					 {"font", STYLEPTR (&lfLabelFont)},
 					 {"bgcolors", STYLEPTR (&ltbgColors)}}},
+		{"shape/focus", 	{{"uses", STYLEPTR (&labelStyles)},
+					 {"background", STYLEPTR (&screenBg)}}},
 		{"dial", 		{{"uses", STYLEPTR (&defaultStyles)},
 					 {"fgcolors", STYLEPTR (&fgColors)},
 					 {"bgcolors", STYLEPTR (&bgColors)},
