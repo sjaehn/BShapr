@@ -25,20 +25,20 @@ UpClick::UpClick () : UpClick (0.0, 0.0, BWIDGETS_DEFAULT_BUTTON_WIDTH, BWIDGETS
 UpClick::UpClick (const double x, const double y, const double width, const double height, const std::string& name, double defaultValue) :
 			Button (x, y, width, height, name, defaultValue) {}
 
-void UpClick::draw (const double x, const double y, const double width, const double height)
+void UpClick::draw (const BUtilities::RectArea& area)
 {
-	if ((!widgetSurface) || (cairo_surface_status (widgetSurface) != CAIRO_STATUS_SUCCESS)) return;
+	if ((!widgetSurface_) || (cairo_surface_status (widgetSurface_) != CAIRO_STATUS_SUCCESS)) return;
 
-	if ((width_ >= 6) && (height_ >= 6))
+	if ((area.getWidth() >= 6) && (area.getHeight() >= 6))
 	{
 		// Draw super class widget elements first
-		Widget::draw (x, y, width, height);
+		Widget::draw (area);
 
-		cairo_t* cr = cairo_create (widgetSurface);
+		cairo_t* cr = cairo_create (widgetSurface_);
 		if (cairo_status (cr) == CAIRO_STATUS_SUCCESS)
 		{
 			// Limit cairo-drawing area
-			cairo_rectangle (cr, x, y, width, height);
+			cairo_rectangle (cr, area.getX(), area.getY(), area.getWidth(), area.getHeight());
 			cairo_clip (cr);
 
 			double x0 = getXOffset ();

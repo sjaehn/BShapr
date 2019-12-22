@@ -33,7 +33,7 @@
 #include <lv2/lv2plug.in/ns/ext/state/state.h>
 #include "Globals.hpp"
 #include "Urids.hpp"
-#include "Point.hpp"
+#include "BUtilities/Point.hpp"
 #include "Node.hpp"
 #include "SmoothShape.hpp"
 #include "BShaprNotifications.hpp"

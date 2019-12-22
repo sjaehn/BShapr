@@ -36,7 +36,7 @@ public:
 	virtual void onButtonPressed (BEvents::PointerEvent* event) override;
 
 protected:
-	virtual void draw (const double x, const double y, const double width, const double height) override;
+	virtual void draw (const BUtilities::RectArea& area) override;
 
 	BColors::ColorSet bgColors;
 	int nrTools;

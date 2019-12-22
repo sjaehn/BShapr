@@ -97,14 +97,14 @@ template<size_t sz> void SmoothShape<sz>::smooth (const int x1, const int x2)
 		double mean = 0;
 		for (int i = i1 - smoothSz; i <= i2 + smoothSz; ++i)
 		{
-			double iVal = this->map [(i + MAPRES) % MAPRES];
+			double iVal = Shape<sz>::map [(i + MAPRES) % MAPRES];
 			mean = (mean * double (count) + iVal) / (double (count + 1));
 			++count;
 
 			if (i >= i1 + smoothSz)
 			{
 				smoothMap[i - smoothSz] = mean;
-				double rmVal = this->map [(i - 2 * smoothSz + 2 * MAPRES) % MAPRES];
+				double rmVal = Shape<sz>::map [(i - 2 * smoothSz + 2 * MAPRES) % MAPRES];
 				mean = (mean * double (count) - rmVal) / (double (count - 1));
 				--count;
 			}

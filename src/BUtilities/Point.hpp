@@ -1,4 +1,4 @@
-/* B.Shapr
+/* Point.hpp
  * Beat / envelope shaper LV2 plugin
  *
  * Copyright (C) 2019 by Sven Jähnichen
@@ -18,10 +18,11 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef POINT_HPP_
-#define POINT_HPP_
+#ifndef BUTILITIES_POINT_HPP_
+#define BUTILITIES_POINT_HPP_
 
-// #include <iostream>
+namespace BUtilities
+{
 
 struct Point
 {
@@ -50,11 +51,7 @@ struct Point
 	friend Point operator- (Point lhs, const Point& rhs) {return (lhs -= rhs);}
 
 };
-/*
-std::ostream &operator<<(std::ostream &output, const Point point)
-{
-	output << "{" << point.x << ", " << point.y << "}";
-	return output;
+
 }
-*/
-#endif /* POINT_HPP_ */
+
+#endif /* BUTILITIES_POINT_HPP_ */

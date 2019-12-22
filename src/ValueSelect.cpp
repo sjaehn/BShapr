@@ -19,6 +19,7 @@
  */
 
 #include "ValueSelect.hpp"
+#include "BUtilities/to_string.hpp"
 
 ValueSelect::ValueSelect () : ValueSelect (0, 0, 0, 0, "select", 0, 0, 1, 0) {}
 
@@ -57,29 +58,29 @@ void ValueSelect::applyTheme (BStyles::Theme& theme, const std::string& name)
 
 void ValueSelect::update ()
 {
-	upClick.resize (height_, height_);
+	upClick.resize (getHeight(), getHeight());
 
-	display.moveTo (height_, 0);
-	display.resize (width_ - 2 * height_, height_);
-	display.setText (BValues::toBString ("%2.2f", value));
+	display.moveTo (getHeight(), 0);
+	display.resize (getWidth() - 2 * getHeight(), getHeight());
+	display.setText (BUtilities::to_string (value, "%2.2f"));
 
-	downClick.moveTo (width_ - height_, 0);
-	downClick.resize (height_, height_);
+	downClick.moveTo (getWidth() - getHeight(), 0);
+	downClick.resize (getHeight(), getHeight());
 }
 
 void ValueSelect::onPointerDragged (BEvents::PointerEvent* event)
 {
-	if (event->getButton () == BEvents::LEFT_BUTTON) setValue (getValue () - event->getDeltaY () * getStep ());
+	if (event->getButton () == BDevices::LEFT_BUTTON) setValue (getValue () - event->getDelta().y * getStep ());
 }
 
 void ValueSelect::onWheelScrolled (BEvents::WheelEvent* event)
 {
-	setValue (getValue () + event->getDeltaY () * getStep ());
+	setValue (getValue () + event->getDelta().y * getStep ());
 }
 
 void ValueSelect::buttonPressedCallback (BEvents::Event* event)
 {
-	if ((event) && (((BEvents::PointerEvent*)event)->getButton () == BEvents::LEFT_BUTTON))
+	if ((event) && (((BEvents::PointerEvent*)event)->getButton () == BDevices::LEFT_BUTTON))
 	{
 		Widget* w = event->getWidget();
 

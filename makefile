@@ -89,17 +89,16 @@ GUI_INCL = \
 	src/BWidgets/ImageIcon.cpp \
 	src/BWidgets/Icon.cpp \
 	src/BWidgets/Label.cpp \
-	src/BWidgets/FocusWidget.cpp \
 	src/BWidgets/Window.cpp \
 	src/BWidgets/Widget.cpp \
 	src/BWidgets/BStyles.cpp \
 	src/BWidgets/BColors.cpp \
 	src/BWidgets/BItems.cpp \
-	src/BWidgets/BValues.cpp \
 	src/screen.c \
 	src/BWidgets/cairoplus.c \
 	src/BWidgets/pugl/pugl_x11_cairo.c \
-	src/BWidgets/pugl/pugl_x11.c
+	src/BWidgets/pugl/pugl_x11.c \
+	src/BUtilities/to_string.cpp
 
 ifeq ($(shell $(PKG_CONFIG) --exists lv2 || echo no), no)
   $(error LV2 not found. Please install LV2 first.)
@@ -123,13 +122,13 @@ all: $(BUNDLE)
 $(DSP_OBJ): $(DSP_SRC)
 	@echo -n Build $(BUNDLE) DSP...
 	@mkdir -p $(BUNDLE)
-	@$(CXX) $< -o $(BUNDLE)/$@ $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(DSPFLAGS)
+	@$(CXX) $< -o $(BUNDLE)/$@ -g $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(DSPFLAGS)
 	@echo \ done.
 
 $(GUI_OBJ): $(GUI_SRC)
 	@echo -n Build $(BUNDLE) GUI...
 	@mkdir -p $(BUNDLE)
-	@$(CXX) $< $(GUI_INCL) -o $(BUNDLE)/$@ $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(GUIFLAGS)
+	@$(CXX) $< $(GUI_INCL) -o $(BUNDLE)/$@ -g $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(GUIFLAGS)
 	@echo \ done.
 
 install:

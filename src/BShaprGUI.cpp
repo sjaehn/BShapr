@@ -40,6 +40,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	input2Monitor (0, 176, 1152, 176, "monitor.in"),
 	output2Monitor (0, 176, 1152, 176, "monitor.out"),
 
+	shapeBuffer {0.0},
 	horizonPos (0), monitorScale (0.25), minorXSteps (1.0), majorXSteps (1.0),
 	clipboard (),
 	pluginPath (bundlePath ? std::string (bundlePath) : std::string ("")),
@@ -88,7 +89,6 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].shapeWidget = ShapeWidget (4, 4, 1152, 352, "shape");
 		shapeGui[i].tabMsgBox = nullptr;
 		shapeGui[i].tabMsgBoxBg = nullptr;
-		shapeGui[i].focusText = BWidgets::Text (0, 0, 400, 80, "label", focusString);
 		shapeGui[i].smoothingLabel = BWidgets::Label (960, 410, 40, 10, "ssmlabel", "Smooth");
 		shapeGui[i].smoothingDial = BWidgets::DialValue (960, 366, 40, 48, "dial", 20.0, 0.0, 100.0, 0, "%3.1f ms");
 		shapeGui[i].toolSelect = SelectWidget (133, 368, 284, 44, "tool", 44, 44, 5, 2);
@@ -134,20 +134,6 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 			shapeGui[i].optionLabels[j] = BWidgets::Label (220 + j * 70, 494, 60, 16, "smlabel", "");
 			shapeGui[i].optionLabels[j].rename ("smlabel");
 		}
-
-		shapeGui[i].shapeContainer.rename ("widget");
-		shapeGui[i].tabContainer.rename ("tab");
-		shapeGui[i].tabIcon.rename ("widget");
-		shapeGui[i].smoothingLabel.rename ("ssmlabel");
-		shapeGui[i].smoothingDial.rename ("dial");
-		shapeGui[i].targetListBox.rename ("menu2");
-		shapeGui[i].shapeWidget.rename ("shape");
-		shapeGui[i].focusText.rename ("label");
-		shapeGui[i].toolSelect.rename ("tool");
-		for (int j = 0; j < 7; ++j) shapeGui[i].editWidgets[j].rename ("widget");
-		shapeGui[i].gridSelect.rename ("tool");
-		shapeGui[i].drywetLabel.rename ("smlabel");
-		shapeGui[i].drywetDial.rename ("dial");
 	}
 
 	// Init main monitor
@@ -200,12 +186,6 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 			if (shapeGui[i].optionWidgets[j]) shapeGui[i].optionWidgets[j]->setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 		}
 
-		shapeGui[i].shapeWidget.setFocusable (true);
-		BWidgets::FocusWidget* focus = new BWidgets::FocusWidget (this, "screen");
-		if (!focus) throw std::bad_alloc ();
-		shapeGui[i].shapeWidget.setFocusWidget (focus);
-		focus->add (shapeGui[i].focusText);
-		focus->resize ();
 		shapeGui[i].shapeWidget.setMergeable (BEvents::POINTER_DRAG_EVENT, false);
 	}
 
@@ -246,7 +226,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		if (i >= 1) shapeGui[i].shapeContainer.hide ();
 	}
 	applyChildThemes ();
-	setKeyGrab (this);
+	getKeyGrabStack()->add (this);
 
 	// Pack widgets
 	monitorContainer.add (input1Monitor);
@@ -263,13 +243,13 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		mContainer.add (shapeGui[i].tabContainer);
 		shapeGui[i].shapeContainer.add (shapeGui[i].smoothingLabel);
 		shapeGui[i].shapeContainer.add (shapeGui[i].smoothingDial);
-		shapeGui[i].shapeContainer.add (shapeGui[i].targetListBox);
 		shapeGui[i].shapeContainer.add (shapeGui[i].drywetLabel);
 		shapeGui[i].shapeContainer.add (shapeGui[i].drywetDial);
 		shapeGui[i].shapeContainer.add (shapeGui[i].shapeWidget);
 		shapeGui[i].shapeContainer.add (shapeGui[i].toolSelect);
 		for (int j = 0; j < 7; ++j) shapeGui[i].shapeContainer.add (shapeGui[i].editWidgets[j]);
 		shapeGui[i].shapeContainer.add (shapeGui[i].gridSelect);
+		shapeGui[i].shapeContainer.add (shapeGui[i].targetListBox);
 
 		for (int j = 0; j < MAXOPTIONS; ++j)
 		{
@@ -314,9 +294,6 @@ BShaprGUI::~BShaprGUI()
 {
 	for (int i = 0; i < MAXSHAPES; ++i)
 	{
-		BWidgets::FocusWidget* focus = shapeGui[i].shapeWidget.getFocusWidget();
-		if (focus) delete focus;
-
 		for (int j = 0; j < MAXOPTIONS; ++j)
 		{
 			if (shapeGui[i].optionWidgets[j]) delete shapeGui[i].optionWidgets[j];
@@ -594,8 +571,8 @@ void BShaprGUI::resizeGUI(const double sz)
 	RESIZE (midiLabel, 950, 565, 40, 10, sz);
 	RESIZE (baseValueSelect, 480, 660, 100, 20, sz);
 	RESIZE (baseListBox, 620, 660, 100, 20, sz);
-	baseListBox.resizeListBox (100 * sz, 80 * sz);
-	baseListBox.moveListBox (0, -80 * sz);
+	baseListBox.resizeListBox (BUtilities::Point (100 * sz, 80 * sz));
+	baseListBox.moveListBox (BUtilities::Point (0, -80 * sz));
 	RESIZE (monitorContainer, 24, 134, 1152, 352, sz);
 
 	// monitorHorizon1/2
@@ -618,8 +595,8 @@ void BShaprGUI::resizeGUI(const double sz)
 			RESIZE
 			(
 				*shapeGui[i].tabMsgBox,
-				shapeGui[i].tabMsgBox->getX () / this->sz,
-				shapeGui[i].tabMsgBox->getY () / this->sz,
+				shapeGui[i].tabMsgBox->getPosition().x / this->sz,
+				shapeGui[i].tabMsgBox->getPosition().y / this->sz,
 				shapeGui[i].tabMsgBox->getWidth () / this->sz,
 				shapeGui[i].tabMsgBox->getHeight () / this->sz,
 				sz
@@ -630,14 +607,12 @@ void BShaprGUI::resizeGUI(const double sz)
 		RESIZE (shapeGui[i].smoothingLabel, 960, 410, 40, 10, sz);
 		RESIZE (shapeGui[i].smoothingDial, 960, 366, 40, 48, sz);
 		RESIZE (shapeGui[i].targetListBox, 20, 443, 174, 54, sz);
-		shapeGui[i].targetListBox.resizeListBox (154 * sz, 380 * sz);
-		shapeGui[i].targetListBox.moveListBox (0, -380 * sz);
-		shapeGui[i].targetListBox.resizeListBoxItems (154 * sz, 54 * sz);
+		shapeGui[i].targetListBox.resizeListBox (BUtilities::Point (154 * sz, 380 * sz));
+		shapeGui[i].targetListBox.moveListBox (BUtilities::Point (0, -380 * sz));
+		shapeGui[i].targetListBox.resizeListBoxItems (BUtilities::Point (154 * sz, 54 * sz));
 		RESIZE (shapeGui[i].drywetLabel, 500, 494, 50, 16, sz);
 		RESIZE (shapeGui[i].drywetDial, 500, 434, 50, 60, sz);
 		RESIZE (shapeGui[i].shapeWidget, 4, 4, 1152, 352, sz);
-		RESIZE (shapeGui[i].focusText, 0, 0, 400, 80, sz);
-		shapeGui[i].shapeWidget.getFocusWidget()->resize();
 		RESIZE (shapeGui[i].toolSelect, 133, 368, 284, 44, sz);
 		shapeGui[i].toolSelect.resizeSelection (44 * sz, 44 * sz);
 		for (int j = 0; j < 4; ++j) RESIZE (shapeGui[i].editWidgets[j], 463 + j * 60, 368, 44, 44, sz);
@@ -662,9 +637,9 @@ void BShaprGUI::resizeGUI(const double sz)
 
 						case POPUP_WIDGET:
 							RESIZE ((*shapeGui[i].optionWidgets[optionNr]), 230 + j * 70, 460, 120, 20, sz);
-							((BWidgets::PopupListBox*) shapeGui[i].optionWidgets[optionNr])->resizeListBox (120 * sz, 120 * sz);
-							((BWidgets::PopupListBox*) shapeGui[i].optionWidgets[optionNr])->moveListBox (0, -120 * sz);
-							((BWidgets::PopupListBox*) shapeGui[i].optionWidgets[optionNr])->resizeListBoxItems (120 * sz, 20 * sz);
+							((BWidgets::PopupListBox*) shapeGui[i].optionWidgets[optionNr])->resizeListBox (BUtilities::Point (120 * sz, 120 * sz));
+							((BWidgets::PopupListBox*) shapeGui[i].optionWidgets[optionNr])->moveListBox (BUtilities::Point (0, -120 * sz));
+							((BWidgets::PopupListBox*) shapeGui[i].optionWidgets[optionNr])->resizeListBoxItems (BUtilities::Point (120 * sz, 20 * sz));
 							break;
 
 						default:
@@ -717,8 +692,6 @@ void BShaprGUI::applyChildThemes ()
 		shapeGui[i].drywetLabel.applyTheme (theme);
 		shapeGui[i].drywetDial.applyTheme (theme);
 		shapeGui[i].shapeWidget.applyTheme (theme);
-		shapeGui[i].shapeWidget.getFocusWidget()->applyTheme (theme);
-		shapeGui[i].focusText.applyTheme (theme);
 		shapeGui[i].toolSelect.applyTheme (theme);
 		for (int j = 0; j < 7; ++j) shapeGui[i].editWidgets[j].applyTheme (theme);
 		shapeGui[i].gridSelect.applyTheme (theme);
@@ -740,7 +713,7 @@ void BShaprGUI::onConfigureRequest (BEvents::ExposeEvent* event)
 {
 	Window::onConfigureRequest (event);
 
-	resizeGUI (width_ / 1200 > height_ / 710 ? height_ / 710 : width_ / 1200);
+	resizeGUI (getWidth() / 1200 > getHeight() / 710 ? getHeight() / 710 : getWidth() / 1200);
 }
 
 void BShaprGUI::onCloseRequest (BEvents::WidgetEvent* event)
@@ -775,7 +748,7 @@ void BShaprGUI::onCloseRequest (BEvents::WidgetEvent* event)
 
 void BShaprGUI::onKeyPressed (BEvents::KeyEvent* event)
 {
-	if ((event) && (event->getKey() == BEvents::KEY_SHIFT))
+	if ((event) && (event->getKey() == BDevices::KEY_SHIFT))
 	{
 		for (int i = 0; i < MAXSHAPES; ++i)
 		{
@@ -786,7 +759,7 @@ void BShaprGUI::onKeyPressed (BEvents::KeyEvent* event)
 
 void BShaprGUI::onKeyReleased (BEvents::KeyEvent* event)
 {
-	if ((event) && (event->getKey() == BEvents::KEY_SHIFT))
+	if ((event) && (event->getKey() == BDevices::KEY_SHIFT))
 	{
 		for (int i = 0; i < MAXSHAPES; ++i)
 		{
@@ -1275,8 +1248,8 @@ void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 										if (ui->shapeGui[shapeNr].optionWidgets[optionNr])
 										{
 											RESIZE ((*ui->shapeGui[shapeNr].optionWidgets[optionNr]), 230 + i * 70, 460, 120, 20, ui->sz);
-											((BWidgets::PopupListBox*) ui->shapeGui[shapeNr].optionWidgets[optionNr])->resizeListBox (120 * ui->sz, 120 * ui->sz);
-											((BWidgets::PopupListBox*) ui->shapeGui[shapeNr].optionWidgets[optionNr])->moveListBox (0, -120 * ui->sz);
+											((BWidgets::PopupListBox*) ui->shapeGui[shapeNr].optionWidgets[optionNr])->resizeListBox (BUtilities::Point (120 * ui->sz, 120 * ui->sz));
+											((BWidgets::PopupListBox*) ui->shapeGui[shapeNr].optionWidgets[optionNr])->moveListBox (BUtilities::Point (0, -120 * ui->sz));
 										}
 									}
 
@@ -1543,7 +1516,7 @@ void BShaprGUI::wheelScrolledCallback (BEvents::Event* event)
 		{
 			BShaprGUI* ui = (BShaprGUI*) widget->getMainWindow ();
 
-			ui->monitorScale = ui->monitorScale * (1 + 0.01 * we->getDeltaY ());
+			ui->monitorScale = ui->monitorScale * (1 + 0.01 * we->getDelta().y);
 			if (ui->monitorScale < 0.01) ui->monitorScale = 0.01;
 			ui->input1Monitor.setZoom (ui->monitorScale);
 			ui->output1Monitor.setZoom (ui->monitorScale);

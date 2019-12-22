@@ -24,25 +24,25 @@
 #include <array>
 #include <iostream>
 #include "definitions.hpp"
-#include "Point.hpp"
+#include "BUtilities/Point.hpp"
 
 class Selection : private std::array<bool, MAXNODES>
 {
 protected:
-	Point p1, ext;
+	BUtilities::Point p1, ext;
 
 public:
 	using std::array<bool, MAXNODES>::operator[];
 	using std::array<bool, MAXNODES>::fill;
 	using std::array<bool, MAXNODES>::at;
 
-	void setOrigin (const Point point) {p1 = point;}
+	void setOrigin (const BUtilities::Point point) {p1 = point;}
 
-	Point getOrigin () const {return p1;}
+	BUtilities::Point getOrigin () const {return p1;}
 
-	void setExtend (const Point extend) {ext = extend;}
+	void setExtend (const BUtilities::Point extend) {ext = extend;}
 
-	Point getExtend () const {return ext;}
+	BUtilities::Point getExtend () const {return ext;}
 
 	void clear ()
 	{

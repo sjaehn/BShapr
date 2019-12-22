@@ -44,7 +44,7 @@ public:
 protected:
         void makePattern ();
         void drawData (const unsigned int start, const unsigned int end);
-        virtual void draw (const double x, const double y, const double width, const double height) override;
+        virtual void draw (const BUtilities::RectArea& area) override;
 
         std::array<Range, MONITORBUFFERSIZE> data;
         BColors::ColorSet fgColors;

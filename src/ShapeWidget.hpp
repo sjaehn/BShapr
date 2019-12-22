@@ -112,8 +112,8 @@ protected:
 
 	Snapshots<Shape<MAXNODES>, MAXUNDO> undoSnapshots;
 
-	virtual void drawLineOnMap (Point p1, Point p2) override;
-	virtual void draw (const double x, const double y, const double width, const double height) override;
+	virtual void drawLineOnMap (BUtilities::Point p1, BUtilities::Point p2) override;
+	virtual void draw (const BUtilities::RectArea& area) override;
 };
 
 #endif /* SHAPEWIDGET_HPP_ */

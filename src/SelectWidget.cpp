@@ -53,14 +53,14 @@ void SelectWidget::applyTheme (BStyles::Theme& theme, const std::string& name)
 
 void SelectWidget::onButtonPressed (BEvents::PointerEvent* event)
 {
-	if (event->getButton () == BEvents::LEFT_BUTTON)
+	if (event->getButton () == BDevices::LEFT_BUTTON)
 	{
 		double w = selectionWidth;
-		double sp = (nrTools >= 2 ? ((width_ - w * nrTools) / (nrTools - 1)) : 0);
+		double sp = (nrTools >= 2 ? ((getWidth() - w * nrTools) / (nrTools - 1)) : 0);
 		if (w + sp > 0)
 		{
-			int t = event->getX() / (w + sp);
-			if (event->getX() <= t * (w + sp) + w)
+			int t = event->getPosition().x / (w + sp);
+			if (event->getPosition().x <= t * (w + sp) + w)
 			{
 				if (t + 1 == getValue ()) setValue (0);
 				else setValue (t + 1);
@@ -69,22 +69,22 @@ void SelectWidget::onButtonPressed (BEvents::PointerEvent* event)
 	}
 }
 
-void SelectWidget::draw (const double x, const double y, const double width, const double height)
+void SelectWidget::draw (const BUtilities::RectArea& area)
 {
-	if ((!widgetSurface) || (cairo_surface_status (widgetSurface) != CAIRO_STATUS_SUCCESS)) return;
+	if ((!widgetSurface_) || (cairo_surface_status (widgetSurface_) != CAIRO_STATUS_SUCCESS)) return;
 
-	if ((width_ >= 1) && (height_ >= 1))
+	if ((getWidth() >= 1) && (getHeight() >= 1))
 	{
 		// Draw super class widget elements first
-		Widget::draw (x, y, width, height);
+		Widget::draw (area);
 
-		cairo_t* cr = cairo_create (widgetSurface);
+		cairo_t* cr = cairo_create (widgetSurface_);
 		if (cairo_status (cr) == CAIRO_STATUS_SUCCESS)
 		{
 			if ((value != 0) && (nrTools >= 1))
 			{
 				double w = selectionWidth;
-				double sp = (nrTools >= 2 ? (width_ - w * nrTools) / (nrTools - 1): 0);
+				double sp = (nrTools >= 2 ? (getWidth() - w * nrTools) / (nrTools - 1): 0);
 				BColors::Color bColor = *bgColors.getColor (BColors::NORMAL);
 				cairo_rectangle (cr, 0.5 + (value - 1) * (w + sp), 0.5, w - 1, selectionHeight - 1);
 				cairo_set_line_width (cr, 1);

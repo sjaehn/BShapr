@@ -1,5 +1,5 @@
 /* Text.cpp
- * Copyright (C) 2018  Sven Jähnichen
+ * Copyright (C) 2018, 2019  Sven Jähnichen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -102,11 +102,14 @@ std::vector<std::string> Text::getTextBlock ()
 	std::vector<std::string> textblock;
 	double w = getEffectiveWidth ();
 	double h = getEffectiveHeight ();
-	cairo_t* cr = cairo_create (widgetSurface);
-	cairo_text_decorations decorations = {textFont.getFontFamily ().c_str (),
-										  textFont.getFontSize (),
-										  textFont.getFontSlant (),
-										  textFont.getFontWeight ()};
+	cairo_t* cr = cairo_create (widgetSurface_);
+	cairo_text_decorations decorations =
+	{
+		textFont.getFontFamily ().c_str (),
+		textFont.getFontSize (),
+		textFont.getFontSlant (),
+		textFont.getFontWeight ()
+	};
 
 	char* textCString = (char*) malloc (strlen (textString.c_str ()) + 1);
 	if (textCString)
@@ -132,7 +135,7 @@ std::vector<std::string> Text::getTextBlock ()
 double Text::getTextBlockHeight (std::vector<std::string> textBlock)
 {
 	double blockheight = 0.0;
-	cairo_t* cr = cairo_create (widgetSurface);
+	cairo_t* cr = cairo_create (widgetSurface_);
 
 	for (std::string textline : textBlock)
 	{
@@ -144,19 +147,19 @@ double Text::getTextBlockHeight (std::vector<std::string> textBlock)
 	return blockheight;
 }
 
-void Text::draw (const double x, const double y, const double width, const double height)
+void Text::draw (const BUtilities::RectArea& area)
 {
-	if ((!widgetSurface) || (cairo_surface_status (widgetSurface) != CAIRO_STATUS_SUCCESS)) return;
+	if ((!widgetSurface_) || (cairo_surface_status (widgetSurface_) != CAIRO_STATUS_SUCCESS)) return;
 
 	// Draw super class widget elements first
-	Widget::draw (x, y, width, height);
+	Widget::draw (area);
 
-	cairo_t* cr = cairo_create (widgetSurface);
+	cairo_t* cr = cairo_create (widgetSurface_);
 
 	if (cairo_status (cr) == CAIRO_STATUS_SUCCESS)
 	{
 		// Limit cairo-drawing area
-		cairo_rectangle (cr, x, y, width, height);
+		cairo_rectangle (cr, area.getX (), area.getY (), area.getWidth (), area.getHeight ());
 		cairo_clip (cr);
 
 		double xoff = getXOffset ();
@@ -173,12 +176,12 @@ void Text::draw (const double x, const double y, const double width, const doubl
 		switch (textFont.getTextVAlign ())
 		{
 		case BStyles::TEXT_VALIGN_TOP:		y0 = 0;
-											break;
+							break;
 		case BStyles::TEXT_VALIGN_MIDDLE:	y0 = h / 2 - blockheight / 2;
-											break;
+							break;
 		case BStyles::TEXT_VALIGN_BOTTOM:	y0 = h - blockheight;
-											break;
-		default:							y0 = 0;
+							break;
+		default:				y0 = 0;
 		}
 
 
@@ -197,12 +200,12 @@ void Text::draw (const double x, const double y, const double width, const doubl
 			switch (textFont.getTextAlign ())
 			{
 			case BStyles::TEXT_ALIGN_LEFT:		x0 = - ext.x_bearing;
-												break;
+								break;
 			case BStyles::TEXT_ALIGN_CENTER:	x0 = w / 2 - ext.width / 2 - ext.x_bearing;
-												break;
+								break;
 			case BStyles::TEXT_ALIGN_RIGHT:		x0 = w - ext.width - ext.x_bearing;
-												break;
-			default:							x0 = 0;
+								break;
+			default:				x0 = 0;
 			}
 
 			cairo_move_to (cr, xoff + x0, yoff + y0 + ycount - ext.y_bearing);

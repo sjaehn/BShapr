@@ -32,10 +32,8 @@
 #include <lv2/lv2plug.in/ns/ext/atom/atom.h>
 #include <lv2/lv2plug.in/ns/ext/atom/forge.h>
 #include <lv2/lv2plug.in/ns/ext/time/time.h>
-#include "BWidgets/BValues.hpp"
 #include "BWidgets/Widget.hpp"
 #include "BWidgets/Window.hpp"
-#include "BWidgets/FocusWidget.hpp"
 #include "BWidgets/RangeWidget.hpp"
 #include "BWidgets/ImageIcon.hpp"
 #include "BWidgets/Label.hpp"
@@ -134,7 +132,6 @@ private:
 		BWidgets::Label drywetLabel;
 		BWidgets::DialValue drywetDial;
 		ShapeWidget shapeWidget;
-		BWidgets::Text focusText;
 		std::list<BWidgets::ImageIcon> methodIcons;
 		std::array<BWidgets::ValueWidget*, MAXOPTIONS> optionWidgets;
 		std::array<BWidgets::Label, MAXOPTIONS> optionLabels;

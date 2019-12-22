@@ -21,6 +21,7 @@
 #include "ShapeWidget.hpp"
 #include <cmath>
 #include <string>
+#include "BUtilities/to_string.hpp"
 
 ShapeWidget::ShapeWidget () : ShapeWidget (0, 0, 0, 0, "") {}
 
@@ -288,7 +289,7 @@ void ShapeWidget::onButtonPressed (BEvents::PointerEvent* event)
 	if ((w == 0) || (h == 0) || (ymax == ymin)) return;
 
 	// Left button: select / deselect nodes or handles
-	if (event->getButton() == BEvents::InputDevice::LEFT_BUTTON)
+	if (event->getButton() == BDevices::LEFT_BUTTON)
 	{
 		// Node already activated => Select handles
 		if ((grabbedNode >= 0) && (grabbedNode < MAXNODES))
@@ -299,10 +300,10 @@ void ShapeWidget::onButtonPressed (BEvents::PointerEvent* event)
 			if ((nodes[grabbedNode].nodeType != NodeType::END_NODE) &&		// No END_NODEs
 				(nodes[grabbedNode].nodeType != NodeType::POINT_NODE) &&	// No POINT_NODEs
 				(nodes[grabbedNode].nodeType != NodeType::AUTO_SMOOTH_NODE) &&	// No AUTO_SMOOTH_NODEs
-				(event->getX() >= px - 3) &&					// Within the handle2 position
-				(event->getX() <= px + 3) &&
-				(event->getY() >= py - 3) &&
-				(event->getY() <= py + 3))
+				(event->getPosition().x >= px - 3) &&					// Within the handle2 position
+				(event->getPosition().x <= px + 3) &&
+				(event->getPosition().y >= py - 3) &&
+				(event->getPosition().y <= py + 3))
 			{
 				clickMode = DRAG_HANDLE;
 				grabbedHandle = 2;
@@ -317,10 +318,10 @@ void ShapeWidget::onButtonPressed (BEvents::PointerEvent* event)
 			if ((nodes[grabbedNode].nodeType != NodeType::END_NODE) &&		// No END_NODEs
 				(nodes[grabbedNode].nodeType != NodeType::POINT_NODE) &&	// No POINT_NODEs
 				(nodes[grabbedNode].nodeType != NodeType::AUTO_SMOOTH_NODE) &&	// No AUTO_SMOOTH_NODEs
-				(event->getX() >= px - 3) &&					// Within the handle1 position
-				(event->getX() <= px + 3) &&
-				(event->getY() >= py - 3) &&
-				(event->getY() <= py + 3))
+				(event->getPosition().x >= px - 3) &&					// Within the handle1 position
+				(event->getPosition().x <= px + 3) &&
+				(event->getPosition().y >= py - 3) &&
+				(event->getPosition().y <= py + 3))
 			{
 				clickMode = DRAG_HANDLE;
 				grabbedHandle = 1;
@@ -335,10 +336,10 @@ void ShapeWidget::onButtonPressed (BEvents::PointerEvent* event)
 		{
 			px = x0 + w * nodes[i].point.x;
 			py = y0 + h - h * (nodes[i].point.y - ymin) / (ymax - ymin);
-			if ((event->getX() >= px - 6) &&	// Within the point position
-				(event->getX() <= px + 6) &&
-				(event->getY() >= py - 6) &&
-				(event->getY() <= py + 6))
+			if ((event->getPosition().x >= px - 6) &&	// Within the point position
+				(event->getPosition().x <= px + 6) &&
+				(event->getPosition().y >= py - 6) &&
+				(event->getPosition().y <= py + 6))
 			{
 				clickMode = DRAG_NODE;
 				grabbedNode = i;
@@ -363,8 +364,8 @@ void ShapeWidget::onButtonPressed (BEvents::PointerEvent* event)
 			clickMode = DRAG_SELECTION;
 			grabbedNode = -1;
 			selection.clear ();
-			py = ((y0 + h - event->getY ()) / h) * scaleRatio + ymin;
-			px = (event->getX () - x0) / w;
+			py = ((y0 + h - event->getPosition().y) / h) * scaleRatio + ymin;
+			px = (event->getPosition().x - x0) / w;
 			selection.setOrigin ({px, py});
 			update ();
 			return;
@@ -380,7 +381,7 @@ void ShapeWidget::onButtonPressed (BEvents::PointerEvent* event)
 
 void ShapeWidget::onButtonReleased (BEvents::PointerEvent* event)
 {
-	if (event->getButton() == BEvents::InputDevice::LEFT_BUTTON)
+	if (event->getButton() == BDevices::LEFT_BUTTON)
 	{
 		double x0 = getXOffset ();
 		double y0 = getYOffset ();
@@ -390,8 +391,8 @@ void ShapeWidget::onButtonReleased (BEvents::PointerEvent* event)
 
 		if ((w == 0) || (h == 0)) return;
 
-		double px = (event->getX () - x0) / w;
-		double py = ((y0 + h - event->getY ()) / h) * scaleRatio + ymin;
+		double px = (event->getPosition().x - x0) / w;
+		double py = ((y0 + h - event->getPosition().y) / h) * scaleRatio + ymin;
 
 		// Snap to grid
 		if (gridSnap)
@@ -409,28 +410,28 @@ void ShapeWidget::onButtonReleased (BEvents::PointerEvent* event)
 			{
 				case ToolType::POINT_NODE_TOOL:
 				{
-					Node node = Node(NodeType::POINT_NODE, Point (px, py), Point (0, 0), Point (0, 0));
+					Node node = Node(NodeType::POINT_NODE, BUtilities::Point (px, py), BUtilities::Point (0, 0), BUtilities::Point (0, 0));
 					insertNode (node);
 				}
 				break;
 
 				case ToolType::AUTO_SMOOTH_NODE_TOOL:
 				{
-					Node node = Node(NodeType::AUTO_SMOOTH_NODE, Point (px, py), Point (0, 0), Point (0, 0));
+					Node node = Node(NodeType::AUTO_SMOOTH_NODE, BUtilities::Point (px, py), BUtilities::Point (0, 0), BUtilities::Point (0, 0));
 					insertNode (node);
 				}
 				break;
 
 				case ToolType::SYMMETRIC_SMOOTH_NODE_TOOL:
 				{
-					Node node = Node(NodeType::SYMMETRIC_SMOOTH_NODE, Point (px, py), Point (-0.02, 0), Point (0.02, 0));
+					Node node = Node(NodeType::SYMMETRIC_SMOOTH_NODE, BUtilities::Point (px, py), BUtilities::Point (-0.02, 0), BUtilities::Point (0.02, 0));
 					insertNode (node);
 				}
 				break;
 
 				case ToolType::CORNER_NODE_TOOL:
 				{
-					Node node = Node(NodeType::CORNER_NODE, Point (px, py), Point (-0.02, 0), Point (0.02, 0));
+					Node node = Node(NodeType::CORNER_NODE, BUtilities::Point (px, py), BUtilities::Point (-0.02, 0), BUtilities::Point (0.02, 0));
 					insertNode (node);
 				}
 				break;
@@ -453,7 +454,7 @@ void ShapeWidget::onButtonReleased (BEvents::PointerEvent* event)
 
 void ShapeWidget::onPointerDragged (BEvents::PointerEvent* event)
 {
-	if (event->getButton() == BEvents::InputDevice::LEFT_BUTTON)
+	if (event->getButton() == BDevices::LEFT_BUTTON)
 	{
 		double x0 = getXOffset ();
 		double y0 = getYOffset ();
@@ -463,8 +464,8 @@ void ShapeWidget::onPointerDragged (BEvents::PointerEvent* event)
 
 		if ((w == 0) || (h == 0)) return;
 
-		double py = ((y0 + h - event->getY ()) / h) * scaleRatio + ymin;
-		double px = (event->getX () - x0) / w;
+		double py = ((y0 + h - event->getPosition().y) / h) * scaleRatio + ymin;
+		double px = (event->getPosition().x - x0) / w;
 
 		// Node or handle dragged
 		if ((grabbedNode >= 0) && (grabbedNode < ((int)nodes.size)))
@@ -486,7 +487,7 @@ void ShapeWidget::onPointerDragged (BEvents::PointerEvent* event)
 					node.handle2.x = px - nodes[grabbedNode].point.x;
 					node.handle2.y = py - nodes[grabbedNode].point.y;
 
-					if (node.nodeType == SYMMETRIC_SMOOTH_NODE) node.handle1 = Point (0, 0) - node.handle2;
+					if (node.nodeType == SYMMETRIC_SMOOTH_NODE) node.handle1 = BUtilities::Point (0, 0) - node.handle2;
 
 					changeNode (grabbedNode, node);
 				}
@@ -571,10 +572,10 @@ void ShapeWidget::onPointerDragged (BEvents::PointerEvent* event)
 		// Drag selection box in edit mode
 		else if (clickMode == DRAG_SELECTION)
 		{
-			Point p1 = selection.getOrigin ();
+			BUtilities::Point p1 = selection.getOrigin ();
 			selection.setExtend ({px - p1.x, py - p1.y});
 
-			Point p2 = p1 + selection.getExtend ();
+			BUtilities::Point p2 = p1 + selection.getExtend ();
 			if (p2.x < p1.x) std::swap (p1.x, p2.x);
 			if (p2.y < p1.y) std::swap (p1.y, p2.y);
 
@@ -582,7 +583,7 @@ void ShapeWidget::onPointerDragged (BEvents::PointerEvent* event)
 			selection.fill (false);
 			for (int i = 0; i < int (nodes.size); ++i)
 			{
-				Point p = nodes[i].point;
+				BUtilities::Point p = nodes[i].point;
 
 				if ((p.x >= p1.x) && (p.x <= p2.x) && (p.y >= p1.y) && (p.y <= p2.y))
 				{
@@ -598,7 +599,7 @@ void ShapeWidget::onPointerDragged (BEvents::PointerEvent* event)
 		else
 		{
 			clickMode = DRAG_SCREEN;
-			scaleAnchorYPos += (-event->getDeltaY()) / h;
+			scaleAnchorYPos += (-event->getDelta().y) / h;
 			update ();
 		}
 	}
@@ -607,7 +608,7 @@ void ShapeWidget::onPointerDragged (BEvents::PointerEvent* event)
 void ShapeWidget::onWheelScrolled (BEvents::WheelEvent* event)
 {
 	double ygrid = pow (10, floor (log10 (scaleRatio)));
-	scaleRatio += 0.1 * ygrid * event->getDeltaY ();
+	scaleRatio += 0.1 * ygrid * event->getDelta().y;
 	if (scaleRatio < 0.01) scaleRatio = 0.01;
 	update ();
 }
@@ -617,7 +618,7 @@ void ShapeWidget::onValueChanged (BEvents::ValueChangedEvent* event)
 	if (event->getValue() == 1)
 	{
 		update ();
-		cbfunction[BEvents::EventType::VALUE_CHANGED_EVENT] (event);
+		cbfunction_[BEvents::EventType::VALUE_CHANGED_EVENT] (event);
 		setValue (0);
 	}
 }
@@ -669,17 +670,17 @@ double ShapeWidget::snapY (const double y)
 	return round (y / yDash) * yDash;
 }
 
-void ShapeWidget::drawLineOnMap (Point p1, Point p2)
+void ShapeWidget::drawLineOnMap (BUtilities::Point p1, BUtilities::Point p2)
 {
 	Shape::drawLineOnMap (p1, p2);
 	if (valueEnabled) setValue (1);	// Value changed
 }
 
-void ShapeWidget::draw (const double x, const double y, const double width, const double height)
+void ShapeWidget::draw (const BUtilities::RectArea& area)
 {
-	if ((!widgetSurface) || (cairo_surface_status (widgetSurface) != CAIRO_STATUS_SUCCESS)) return;
+	if ((!widgetSurface_) || (cairo_surface_status (widgetSurface_) != CAIRO_STATUS_SUCCESS)) return;
 
-	ValueWidget::draw (x, y, width, height);
+	ValueWidget::draw (area);
 
 	double x0 = getXOffset ();
 	double y0 = getYOffset ();
@@ -695,12 +696,12 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 
 	if (ymin == ymax) return;
 
-	cairo_t* cr = cairo_create (widgetSurface);
+	cairo_t* cr = cairo_create (widgetSurface_);
 
 	if (cairo_status (cr) == CAIRO_STATUS_SUCCESS)
 	{
 		// Limit cairo-drawing area
-		cairo_rectangle (cr, x, y, width, height);
+		cairo_rectangle (cr, area.getX(), area.getY(), area.getWidth(), area.getHeight());
 		cairo_clip (cr);
 
 		double ygrid = pow (10, floor (log10 (scaleRatio / 1.5)));
@@ -716,7 +717,7 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 			cairo_move_to (cr, x0, y0 + h - h * (yp - ymin) / (ymax - ymin));
 			cairo_line_to (cr, x0 + 0.02 * w, y0 + h - h * (yp - ymin) / (ymax - ymin));
 
-			std::string label = prefix + BValues::toBString (nrformat, yp) + ((unit != "") ? (" " + unit) : "");
+			std::string label = prefix + BUtilities::to_string (yp, nrformat) + ((unit != "") ? (" " + unit) : "");
 			cairo_text_extents (cr, label.c_str(), &ext);
 			cairo_move_to (cr, x0 + 0.025 * w - ext.x_bearing, y0 + h - h * (yp - ymin) / (ymax - ymin) - ext.height / 2 - ext.y_bearing);
 			cairo_set_source_rgba (cr, CAIRO_RGBA (gridColor));
@@ -895,10 +896,10 @@ void ShapeWidget::draw (const double x, const double y, const double width, cons
 		}
 
 		// Draw selection box
-		if (selection.getExtend () != Point (0, 0))
+		if (selection.getExtend () != BUtilities::Point (0, 0))
 		{
-			Point p1 = selection.getOrigin ();
-			Point ext = selection.getExtend ();
+			BUtilities::Point p1 = selection.getOrigin ();
+			BUtilities::Point ext = selection.getExtend ();
 			cairo_rectangle (cr, x0 + p1.x * w, y0 + h - h * (p1.y - ymin) / (ymax - ymin), ext.x * w, - h * ext.y / (ymax - ymin));
 			cairo_set_source_rgba (cr, CAIRO_RGBA (lineColor));
 			cairo_set_line_width (cr, 1);

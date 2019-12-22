@@ -29,7 +29,7 @@ public:
 	UpClick ();
 	UpClick (const double x, const double y, const double width, const double height, const std::string& name, double defaultValue = 0);
 
-	virtual void draw (const double x, const double y, const double width, const double height) override;
+	virtual void draw (const BUtilities::RectArea& area) override;
 };
 
 #endif /* UPCLICK_HPP_ */

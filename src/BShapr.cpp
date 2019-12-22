@@ -118,6 +118,8 @@ BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 	rate(samplerate), bpm(120.0f), speed(1), bar (0), barBeat (0), beatsPerBar (4), beatUnit (4),
 	position(0), offset(0), refFrame(0),
 	audioInput1(NULL), audioInput2(NULL), audioOutput1(NULL), audioOutput2(NULL),
+	new_controllers {NULL}, controllers {0},
+	shapes {SmoothShape<MAXNODES> ()},
 	urids (), controlPort(NULL), notifyPort(NULL), forge (), notify_frame (),
 	key (0xFF),
 	ui_on(false), message (), monitorPos(-1), notificationsCount(0), stepCount (0),
@@ -215,33 +217,39 @@ bool BShapr::isAudioOutputConnected (int shapeNr)
 
 double BShapr::getPositionFromBeats (double beats)
 {
+	if (controllers[BASE_VALUE] == 0.0) return 0.0;
+
 	switch (int (controllers[BASE]))
 	{
-		case SECONDS: 	return beats / (controllers[BASE_VALUE] * (bpm / 60));
+		case SECONDS: 	return (bpm ? beats / (controllers[BASE_VALUE] * (bpm / 60.0)) : 0.0);
 		case BEATS:	return beats / controllers[BASE_VALUE];
-		case BARS:	return beats / (controllers[BASE_VALUE] * beatsPerBar);
-		default:	return 0;
+		case BARS:	return (beatsPerBar ? beats / (controllers[BASE_VALUE] * beatsPerBar) : 0.0);
+		default:	return 0.0;
 	}
 }
 
 double BShapr::getPositionFromFrames (uint64_t frames)
 {
+	if ((controllers[BASE_VALUE] == 0.0) || (rate == 0)) return 0.0;
+
 	switch (int (controllers[BASE]))
 	{
 		case SECONDS: 	return frames * (1.0 / rate) / controllers[BASE_VALUE] ;
-		case BEATS:	return frames * (speed / (rate / (bpm / 60))) / controllers[BASE_VALUE];
-		case BARS:	return frames * (speed / (rate / (bpm / 60))) / (controllers[BASE_VALUE] * beatsPerBar);
-		default:	return 0;
+		case BEATS:	return (bpm ? frames * (speed / (rate / (bpm / 60))) / controllers[BASE_VALUE] : 0.0);
+		case BARS:	return (bpm && beatsPerBar ? frames * (speed / (rate / (bpm / 60))) / (controllers[BASE_VALUE] * beatsPerBar) : 0.0);
+		default:	return 0.0;
 	}
 }
 
 double BShapr::getPositionFromSeconds (double seconds)
 {
+	if (controllers[BASE_VALUE] == 0.0) return 0.0;
+
 	switch (int (controllers[BASE]))
 	{
 		case SECONDS :	return seconds / controllers[BASE_VALUE];
 		case BEATS:	return seconds * (bpm / 60.0) / controllers[BASE_VALUE];
-		case BARS:	return seconds * (bpm / 60.0 / beatsPerBar) / controllers[BASE_VALUE];
+		case BARS:	return (beatsPerBar ? seconds * (bpm / 60.0 / beatsPerBar) / controllers[BASE_VALUE] : 0.0);
 		default:	return 0;
 	}
 }

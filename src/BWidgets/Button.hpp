@@ -1,5 +1,5 @@
 /* Button.hpp
- * Copyright (C) 2018  Sven Jähnichen
+ * Copyright (C) 2018, 2019  Sven Jähnichen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -88,7 +88,7 @@ public:
 	virtual void onButtonReleased (BEvents::PointerEvent* event) override;
 
 protected:
-	virtual void draw (const double x, const double y, const double width, const double height) override;
+	virtual void draw (const BUtilities::RectArea& area) override;
 
 	BColors::ColorSet bgColors;
 };

@@ -21,7 +21,7 @@
 #ifndef NODE_HPP_
 #define NODE_HPP_
 
-#include "Point.hpp"
+#include "BUtilities/Point.hpp"
 // #include <iostream>
 
 enum NodeType
@@ -37,12 +37,13 @@ enum NodeType
 struct Node
 {
 	NodeType nodeType;
-	Point point;
-	Point handle1;
-	Point handle2;
+	BUtilities::Point point;
+	BUtilities::Point handle1;
+	BUtilities::Point handle2;
 
 	Node () : Node (END_NODE, {0, 0}, {0, 0}, {0,0}) {}
-	Node (NodeType nodeType, Point point, Point handle1, Point handle2) : nodeType (nodeType), point (point), handle1 (handle1), handle2 (handle2) {}
+	Node (NodeType nodeType, BUtilities::Point point, BUtilities::Point handle1, BUtilities::Point handle2) :
+		nodeType (nodeType), point (point), handle1 (handle1), handle2 (handle2) {}
 	Node (float* data) : nodeType ((NodeType) data[0]), point ({data[1], data[2]}), handle1 ({data[3], data[4]}), handle2 ({data[5], data[6]}) {}
 
 	friend bool operator== (const Node& lhs, const Node& rhs)

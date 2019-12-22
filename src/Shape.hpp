@@ -26,7 +26,7 @@
 #include <cstdint>
 #include <cmath>
 // #include <iostream>
-#include "Point.hpp"
+#include "BUtilities/Point.hpp"
 #include "Node.hpp"
 #include "StaticArrayList.hpp"
 
@@ -63,8 +63,8 @@ public:
 	double* getMap ();
 
 protected:
-	virtual void drawLineOnMap (Point p1, Point p2);
-	Point getPointPerc (Point p1, Point p2, double perc);
+	virtual void drawLineOnMap (BUtilities::Point p1, BUtilities::Point p2);
+	BUtilities::Point getPointPerc (BUtilities::Point p1, BUtilities::Point p2, double perc);
 	virtual void renderBezier (Node& n1, Node& n2);
 
 	StaticArrayList<Node, sz> nodes;
@@ -73,15 +73,10 @@ protected:
 
 };
 
-template<size_t sz> Shape<sz>::Shape () : nodes (), defaultEndNode ()
-{
-	for (size_t i = 0; i < MAPRES; ++i) map[i] = 0;
-}
+template<size_t sz> Shape<sz>::Shape () : nodes (), map {0.0}, defaultEndNode () {}
 
-template<size_t sz> Shape<sz>::Shape (StaticArrayList<Node, sz> nodes) : nodes (nodes), defaultEndNode ()
-{
-	for (size_t i = 0; i < MAPRES; ++i) map[i] = 0;
-}
+template<size_t sz> Shape<sz>::Shape (StaticArrayList<Node, sz> nodes) : nodes (nodes), map {0.0}, defaultEndNode ()
+{}
 
 template<size_t sz> Shape<sz>::~Shape () {}
 
@@ -254,8 +249,8 @@ template<size_t sz> bool Shape<sz>::validateNode (size_t nr)
 		if (nodes[0].point.x != 0) nodes[0].point.x = 0;
 
 		// Check: No handles
-		nodes[0].handle1 = Point (0, 0);
-		nodes[0].handle2 = Point (0, 0);
+		nodes[0].handle1 = BUtilities::Point (0, 0);
+		nodes[0].handle2 = BUtilities::Point (0, 0);
 	}
 
 	// End node
@@ -268,8 +263,8 @@ template<size_t sz> bool Shape<sz>::validateNode (size_t nr)
 		}
 
 		// Check: No handles
-		nodes[nr].handle1 = Point (0, 0);
-		nodes[nr].handle2 = Point (0, 0);
+		nodes[nr].handle1 = BUtilities::Point (0, 0);
+		nodes[nr].handle2 = BUtilities::Point (0, 0);
 	}
 
 	// Middle nodes
@@ -285,8 +280,8 @@ template<size_t sz> bool Shape<sz>::validateNode (size_t nr)
 		// Check: POINT_NODE without handles
 		if (nodes[nr].nodeType == NodeType::POINT_NODE)
 		{
-			nodes[nr].handle1 = Point (0, 0);
-			nodes[nr].handle2 = Point (0, 0);
+			nodes[nr].handle1 = BUtilities::Point (0, 0);
+			nodes[nr].handle2 = BUtilities::Point (0, 0);
 		}
 
 		// Check: Handles order
@@ -323,7 +318,7 @@ template<size_t sz> bool Shape<sz>::validateNode (size_t nr)
 			}
 
 			// Make handele2 symmetric to handle1
-			nodes[nr].handle2 = Point (0, 0) - nodes[nr].handle1;
+			nodes[nr].handle2 = BUtilities::Point (0, 0) - nodes[nr].handle1;
 
 			//Check if handle2 overlaps neighbor point
 			if (nodes[nr].point.x + nodes[nr].handle2.x > nodes[nr+1].point.x)
@@ -331,7 +326,7 @@ template<size_t sz> bool Shape<sz>::validateNode (size_t nr)
 				double f = (nodes[nr+1].point.x - nodes[nr].point.x) / nodes[nr].handle2.x;
 				nodes[nr].handle2.x *= f;
 				nodes[nr].handle2.y *= f;
-				nodes[nr].handle1 = Point (0, 0) - nodes[nr].handle2;
+				nodes[nr].handle1 = BUtilities::Point (0, 0) - nodes[nr].handle2;
 			}
 		}
 
@@ -408,7 +403,7 @@ template<size_t sz> bool Shape<sz>::validateShape ()
 }
 
 
-template<size_t sz> void Shape<sz>::drawLineOnMap (Point p1, Point p2)
+template<size_t sz> void Shape<sz>::drawLineOnMap (BUtilities::Point p1, BUtilities::Point p2)
 {
 	if (p1.x < p2.x)
 	{
@@ -426,9 +421,9 @@ template<size_t sz> void Shape<sz>::drawLineOnMap (Point p1, Point p2)
 	}
 }
 
-template<size_t sz> Point Shape<sz>::getPointPerc (Point p1, Point p2 , double perc)
+template<size_t sz> BUtilities::Point Shape<sz>::getPointPerc (BUtilities::Point p1, BUtilities::Point p2 , double perc)
 {
-	Point p;
+	BUtilities::Point p;
 	p.x = p1.x + (p2.x - p1.x) * perc;
 	p.y = p1.y + (p2.y - p1.y) * perc;
 	return p;
@@ -437,21 +432,21 @@ template<size_t sz> Point Shape<sz>::getPointPerc (Point p1, Point p2 , double p
 template<size_t sz> void Shape<sz>::renderBezier (Node& n1, Node& n2)
 {
 	// Interpolate Bezier curve
-	Point p1 = n1.point;
-	Point p2 = n1.point + n1.handle2;
-	Point p4 = n2.point;
-	Point p3 = n2.point + n2.handle1;
-	Point py = p1;
+	BUtilities::Point p1 = n1.point;
+	BUtilities::Point p2 = n1.point + n1.handle2;
+	BUtilities::Point p4 = n2.point;
+	BUtilities::Point p3 = n2.point + n2.handle1;
+	BUtilities::Point py = p1;
 	double step = 1 / (fabs (n2.point.x - n1.point.x) * MAPRES + 1);
 
 	for (double t = 0; t < 1; t += step)
 	{
-	    Point pa = getPointPerc (p1, p2, t);
-	    Point pb = getPointPerc (p2, p3, t);
-	    Point pc = getPointPerc (p3, p4, t);
-	    Point pm = getPointPerc (pa, pb, t);
-	    Point pn = getPointPerc (pb, pc, t);
-	    Point pz = getPointPerc (pm, pn, t);
+	    BUtilities::Point pa = getPointPerc (p1, p2, t);
+	    BUtilities::Point pb = getPointPerc (p2, p3, t);
+	    BUtilities::Point pc = getPointPerc (p3, p4, t);
+	    BUtilities::Point pm = getPointPerc (pa, pb, t);
+	    BUtilities::Point pn = getPointPerc (pb, pc, t);
+	    BUtilities::Point pz = getPointPerc (pm, pn, t);
 
 	    drawLineOnMap (py, pz);
 	    py = pz;

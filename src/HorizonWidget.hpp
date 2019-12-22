@@ -35,7 +35,7 @@ public:
 		smoothingWidth (smoothingWidth),
 		fadeoutWidth (fadeoutWidth)
 	{
-		focusable = false;
+		setFocusable (false);
 	}
 
 	void setSmoothingWidth (const double smoothingWidth)
@@ -58,37 +58,37 @@ public:
 
 	void moveLineTo (const double x, const double y) {moveTo (x - smoothingWidth, y);}
 
-	double getLineX () const {return x_ + smoothingWidth;}
+	double getLineX () const {return area_.getX() + smoothingWidth;}
 
 protected:
-	virtual void draw (const double x, const double y, const double width, const double height) override
+	virtual void draw (const BUtilities::RectArea& area) override
 	{
-		if ((!widgetSurface) || (cairo_surface_status (widgetSurface) != CAIRO_STATUS_SUCCESS)) return;
+		if ((!widgetSurface_) || (cairo_surface_status (widgetSurface_) != CAIRO_STATUS_SUCCESS)) return;
 
-		Widget::draw (x, y, width, height);
+		Widget::draw (area);
 
-		cairo_t* cr = cairo_create (widgetSurface);
+		cairo_t* cr = cairo_create (widgetSurface_);
 
 		if (cairo_status (cr) == CAIRO_STATUS_SUCCESS)
 		{
 			// Limit cairo-drawing area
-			cairo_rectangle (cr, x, y, width, height);
+			cairo_rectangle (cr, area.getX(), area.getY(), area.getWidth(), area.getHeight());
 			cairo_clip (cr);
 
 			// Draw fade out
 			if (fadeoutWidth > 0)
 			{
-				cairo_pattern_t* pat1 = cairo_pattern_create_linear (0, 0, width_, 0);
+				cairo_pattern_t* pat1 = cairo_pattern_create_linear (0, 0, getWidth(), 0);
 				if (cairo_pattern_status (pat1) == CAIRO_STATUS_SUCCESS)
 				{
 					cairo_pattern_add_color_stop_rgba (pat1, 0.0, 0.0, 0.0, 0.0, 0.0);
-					cairo_pattern_add_color_stop_rgba (pat1, smoothingWidth / width_, 0.0, 0.0, 0.0, 0.0);
-					cairo_pattern_add_color_stop_rgba (pat1, smoothingWidth / width_ + 0.001, CAIRO_RGBA (BColors::black));
-					cairo_pattern_add_color_stop_rgba (pat1, 1.0 - (fadeoutWidth / width_), CAIRO_RGBA (BColors::black));
+					cairo_pattern_add_color_stop_rgba (pat1, smoothingWidth / getWidth(), 0.0, 0.0, 0.0, 0.0);
+					cairo_pattern_add_color_stop_rgba (pat1, smoothingWidth / getWidth() + 0.001, CAIRO_RGBA (BColors::black));
+					cairo_pattern_add_color_stop_rgba (pat1, 1.0 - (fadeoutWidth / getWidth()), CAIRO_RGBA (BColors::black));
 					cairo_pattern_add_color_stop_rgba (pat1, 1.0, 0.0, 0.0, 0.0, 0.0);
 					cairo_set_line_width (cr, 0.0);
 					cairo_set_source (cr, pat1);
-					cairo_rectangle (cr, 0, 0, width_, height_);
+					cairo_rectangle (cr, 0, 0, getWidth(), getHeight());
 					cairo_fill (cr);
 					cairo_pattern_destroy (pat1);
 				}
@@ -105,7 +105,7 @@ protected:
 					cairo_pattern_add_color_stop_rgba (pat2, 1.0, 1.0, 1.0, 1.0, 0.0);
 					cairo_set_line_width (cr, 0.0);
 					cairo_set_source (cr, pat2);
-					cairo_rectangle (cr, 0, 0, 2 * smoothingWidth, height_);
+					cairo_rectangle (cr, 0, 0, 2 * smoothingWidth, getHeight());
 					cairo_fill (cr);
 					cairo_pattern_destroy (pat2);
 				}
@@ -115,7 +115,7 @@ protected:
 			cairo_set_source_rgba (cr, CAIRO_RGBA (BColors::white));
 			cairo_set_line_width (cr, 2.0);
 			cairo_move_to (cr, smoothingWidth, 0.0);
-			cairo_line_to (cr, smoothingWidth, height_);
+			cairo_line_to (cr, smoothingWidth, getHeight());
 			cairo_stroke (cr);
 
 			cairo_destroy (cr);

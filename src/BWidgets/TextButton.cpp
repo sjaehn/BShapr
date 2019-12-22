@@ -1,5 +1,5 @@
 /* TextButton.cpp
- * Copyright (C) 2018  Sven Jähnichen
+ * Copyright (C) 2018, 2019  Sven Jähnichen
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,10 +68,11 @@ void TextButton::setHeight (const double height)
 	buttonLabel.setHeight (height);
 }
 
-void TextButton::resize (const double width, const double height)
+void TextButton::resize (const double width, const double height) {resize (BUtilities::Point (width, height));}
+void TextButton::resize (const BUtilities::Point extends)
 {
-	Button::resize (width, height);
-	buttonLabel.resize (width, height);
+	Button::resize (extends.x, extends.y);
+	buttonLabel.resize (extends.x, extends.y);
 }
 
 void TextButton::setValue (const double val)

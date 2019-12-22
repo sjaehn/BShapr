@@ -61,18 +61,18 @@ public:
         virtual void applyTheme (BStyles::Theme& theme) override {applyTheme (theme, name_);}
 
 protected:
-	virtual void draw (const double x, const double y, const double width, const double height) override
+	virtual void draw (const BUtilities::RectArea& area) override
 	{
-		if ((!widgetSurface) || (cairo_surface_status (widgetSurface) != CAIRO_STATUS_SUCCESS)) return;
+		if ((!widgetSurface_) || (cairo_surface_status (widgetSurface_) != CAIRO_STATUS_SUCCESS)) return;
 
-		Widget::draw (x, y, width, height);
+		Widget::draw (area);
 
-		cairo_t* cr = cairo_create (widgetSurface);
+		cairo_t* cr = cairo_create (widgetSurface_);
 
 		if (cairo_status (cr) == CAIRO_STATUS_SUCCESS)
 		{
 			// Limit cairo-drawing area
-			cairo_rectangle (cr, x, y, width, height);
+			cairo_rectangle (cr, area.getX(), area.getY(), area.getWidth(), area.getHeight());
 			cairo_clip (cr);
 
                         double x0 = getXOffset ();
