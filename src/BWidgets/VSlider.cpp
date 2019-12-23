@@ -43,7 +43,7 @@ VSlider::VSlider (const double  x, const double y, const double width, const dou
 	std::string valstr = BUtilities::to_string (getValue());
 	focusLabel.setText (valstr);
 	focusLabel.setOversize (true);
-	focusLabel.resize (focusLabel.getTextWidth (valstr) + 10, 20);
+	focusLabel.resize ();
 	focusLabel.hide ();
 	add (focusLabel);
 }
@@ -84,7 +84,7 @@ void VSlider::setValue (const double val)
 	RangeWidget::setValue (val);
 	std::string valstr = BUtilities::to_string (value);
 	focusLabel.setText(valstr);
-	focusLabel.resize (focusLabel.getTextWidth (valstr) + 10, 20);
+	focusLabel.resize ();
 }
 
 void VSlider::update ()
@@ -94,6 +94,9 @@ void VSlider::update ()
 	// Update Knob
 	knob.moveTo (knobPosition.x -  knobRadius, knobPosition.y - knobRadius);
 	knob.resize (2 * knobRadius, 2 * knobRadius);
+
+	// Update focusLabel
+	focusLabel.resize ();
 }
 
 void VSlider::applyTheme (BStyles::Theme& theme) {applyTheme (theme, name_);}

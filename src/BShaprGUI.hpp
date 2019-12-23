@@ -186,6 +186,7 @@ private:
 	BColors::ColorSet ink2 = {{{1.0, 0.0, 0.75, 1.0}, {1.0, 0.5, 0.9, 1.0}, {0.25, 0.0, 0.1, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
 	BStyles::Border labelBorder = BStyles::Border (BStyles::noLine, 0.0, 4.0);
 	BStyles::Border menuBorder = BStyles::Border (BStyles::Line (BColors::Color (0.2, 0.2, 0.2, 1.0), 1.0));
+	BStyles::Border screenBorder = BStyles::Border (BStyles::Line (BColors::Color (0.0, 0.0, 0.0, 0.5), 2.0));
 	BStyles::Border itemBorder = BStyles::Border (BStyles::noLine, 0.0, 2.0);
 	BStyles::Fill tabBg = BStyles::Fill (BColors::Color (0.5, 0, 0.5, 0.5));
 	BStyles::Fill activeTabBg = BStyles::Fill (BColors::Color (0.5, 0, 0.5, 0.875));
@@ -234,19 +235,24 @@ private:
 					 {"font", STYLEPTR (&lfLabelFont)},
 					 {"bgcolors", STYLEPTR (&ltbgColors)}}},
 		{"shape/focus", 	{{"uses", STYLEPTR (&labelStyles)},
-					 {"background", STYLEPTR (&screenBg)}}},
+					 {"background", STYLEPTR (&screenBg)},
+				 	 {"border", STYLEPTR (&screenBorder)}}},
 		{"dial", 		{{"uses", STYLEPTR (&defaultStyles)},
 					 {"fgcolors", STYLEPTR (&fgColors)},
 					 {"bgcolors", STYLEPTR (&bgColors)},
 					 {"textcolors", STYLEPTR (&fgColors)},
 					 {"font", STYLEPTR (&defaultFont)}}},
+		{"dial/focus", 		{{"background", STYLEPTR (&screenBg)},
+				 	 {"border", STYLEPTR (&screenBorder)},
+ 					 {"textcolors", STYLEPTR (&txColors)},
+ 					 {"font", STYLEPTR (&smFont)}}},
 		{"symbol", 		{{"uses", STYLEPTR (&defaultStyles)},
 					 {"fgcolors", STYLEPTR (&blkColors)}}},
 		{"label", 		{{"uses", STYLEPTR (&labelStyles)}}},
 		{"smlabel",	 	{{"uses", STYLEPTR (&defaultStyles)},
 					 {"textcolors", STYLEPTR (&txColors)},
 					 {"font", STYLEPTR (&smFont)}}},
-		 {"ssmlabel",	 	{{"uses", STYLEPTR (&defaultStyles)},
+		{"ssmlabel",	 	{{"uses", STYLEPTR (&defaultStyles)},
  					 {"textcolors", STYLEPTR (&txColors)},
  					 {"font", STYLEPTR (&ssmFont)}}},
 		{"select",	 	{{"uses", STYLEPTR (&defaultStyles)}}},

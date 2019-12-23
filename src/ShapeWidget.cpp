@@ -65,17 +65,9 @@ ShapeWidget::ShapeWidget (const ShapeWidget& that) :
 
 BWidgets::Widget* ShapeWidget::clone () const {return new ShapeWidget (*this);}
 
-void ShapeWidget::resize ()
+void ShapeWidget::update ()
 {
-	Widget::resize ();
-	focusText.resize ();
-}
-
-void ShapeWidget::resize (const double width, const double height) {resize (BUtilities::Point (width, height));}
-
-void ShapeWidget::resize (const BUtilities::Point extends)
-{
-	Widget::resize (extends);
+	Widget::update ();
 	focusText.resize ();
 }
 

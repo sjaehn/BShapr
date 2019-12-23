@@ -57,7 +57,7 @@ Dial::Dial (const double x, const double y, const double width, const double hei
 	std::string valstr = BUtilities::to_string (getValue());
 	focusLabel.setText (valstr);
 	focusLabel.setOversize (true);
-	focusLabel.resize (focusLabel.getTextWidth (valstr) + 10, 20);
+	focusLabel.resize ();
 	focusLabel.hide ();
 	add (focusLabel);
 }
@@ -107,7 +107,7 @@ void Dial::setValue (const double val)
 	RangeWidget::setValue (val);
 	std::string valstr = BUtilities::to_string (value);
 	focusLabel.setText(valstr);
-	focusLabel.resize (focusLabel.getTextWidth (valstr) + 10, 20);
+	focusLabel.resize ();
 }
 
 void Dial::update ()
@@ -132,6 +132,9 @@ void Dial::update ()
 	dot.resize (2 * BWIDGETS_DEFAULT_DIAL_DOT_SIZE * dialRadius, 2 * BWIDGETS_DEFAULT_DIAL_DOT_SIZE * dialRadius);
 	drawDot ();
 	dot.update ();
+
+	// Update focusLabel
+	focusLabel.resize ();
 
 	if (isVisible ()) postRedisplay ();
 }

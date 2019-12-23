@@ -47,9 +47,7 @@ public:
 	ShapeWidget (const double x, const double y, const double width, const double height, const std::string& name);
 	ShapeWidget (const ShapeWidget& that);
 	virtual BWidgets::Widget* clone () const override;
-	virtual void resize () override;
-	virtual void resize (const double width, const double height) override;
-	virtual void resize (const BUtilities::Point extends) override;
+	virtual void update () override;
 	void setTool (const ToolType tool);
 	void setValueEnabled (const bool status);
 	void setScaleParameters (double anchorYPos, double anchorValue, double ratio);

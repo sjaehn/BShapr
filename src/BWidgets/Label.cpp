@@ -125,7 +125,7 @@ void Label::resize ()
 	// Get label text size
 	cairo_t* cr = cairo_create (widgetSurface_);
 	cairo_text_extents_t ext = labelFont.getTextExtents(cr, labelText.c_str ());
-	BUtilities::Point contExt = BUtilities::Point (ext.width + 2 * getXOffset (), ext.height + 2 * getYOffset ());
+	BUtilities::Point contExt = BUtilities::Point (ext.width + 2 * getXOffset () + 2, ext.height + 2 * getYOffset () + 2);
 	cairo_destroy (cr);
 
 	// Or use embedded widgets size, if bigger

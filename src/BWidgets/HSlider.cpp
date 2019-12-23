@@ -43,7 +43,7 @@ HSlider::HSlider (const double  x, const double y, const double width, const dou
 	std::string valstr = BUtilities::to_string (getValue());
 	focusLabel.setText (valstr);
 	focusLabel.setOversize (true);
-	focusLabel.resize (focusLabel.getTextWidth (valstr) + 10, 20);
+	focusLabel.resize ();
 	focusLabel.hide ();
 	add (focusLabel);
 }
@@ -84,7 +84,7 @@ void HSlider::setValue (const double val)
 	RangeWidget::setValue (val);
 	std::string valstr = BUtilities::to_string (value);
 	focusLabel.setText(valstr);
-	focusLabel.resize (focusLabel.getTextWidth (valstr) + 10, 20);
+	focusLabel.resize ();
 }
 
 void HSlider::update ()
@@ -95,6 +95,9 @@ void HSlider::update ()
 	knob.moveTo (knobPosition.x - knobRadius, knobPosition.y - knobRadius);
 	knob.setWidth (2 * knobRadius);
 	knob.setHeight (2 * knobRadius);
+
+	// Update focusLabel
+	focusLabel.resize ();
 }
 
 void HSlider::applyTheme (BStyles::Theme& theme) {applyTheme (theme, name_);}
