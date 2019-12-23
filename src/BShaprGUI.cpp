@@ -613,7 +613,6 @@ void BShaprGUI::resizeGUI(const double sz)
 		RESIZE (shapeGui[i].drywetLabel, 500, 494, 50, 16, sz);
 		RESIZE (shapeGui[i].drywetDial, 500, 434, 50, 60, sz);
 		RESIZE (shapeGui[i].shapeWidget, 4, 4, 1152, 352, sz);
-		shapeGui[i].shapeWidget.focusText.resize (400* sz, 80 * sz);
 		RESIZE (shapeGui[i].toolSelect, 133, 368, 284, 44, sz);
 		shapeGui[i].toolSelect.resizeSelection (44 * sz, 44 * sz);
 		for (int j = 0; j < 4; ++j) RESIZE (shapeGui[i].editWidgets[j], 463 + j * 60, 368, 44, 44, sz);

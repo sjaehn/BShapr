@@ -47,6 +47,7 @@ Text& Text::operator= (const Text& that)
 	textString = that.textString;
 	yResizable = that.yResizable;
 	Widget::operator= (that);
+	if (yResizable) resize (getExtends());
 	return *this;
 }
 
@@ -57,6 +58,7 @@ void Text::setText (const std::string& text)
 	if (text != textString)
 	{
 		textString = text;
+		if (yResizable) resize (getExtends());
 		update ();
 	}
 }
@@ -72,6 +74,7 @@ BColors::ColorSet* Text::getTextColors () {return &textColors;}
 void Text::setFont (const BStyles::Font& font)
 {
 	textFont = font;
+	if (yResizable) resize (getExtends());
 	update ();
 }
 BStyles::Font* Text::getFont () {return &textFont;}
@@ -79,6 +82,26 @@ BStyles::Font* Text::getFont () {return &textFont;}
 void Text::setYResizable (const bool resizable) {yResizable = resizable;}
 
 bool Text::isYResizable () const {return yResizable;}
+
+void Text::setWidth (const double width)
+{
+	Widget::setWidth (width);
+	if (yResizable) resize (getExtends());
+}
+
+void Text::resize () {resize (getExtends());}
+
+void Text::resize (const double width, const double height) {resize (BUtilities::Point (width, height));}
+
+void Text::resize (const BUtilities::Point extends)
+{
+	if (yResizable)
+	{
+		double ySize = getTextBlockHeight (getTextBlock()) + 2 * getYOffset();
+		Widget::resize (BUtilities::Point (extends.x, ySize));
+	}
+	else Widget::resize (extends);
+}
 
 void Text::applyTheme (BStyles::Theme& theme) {applyTheme (theme, name_);}
 
@@ -92,9 +115,9 @@ void Text::applyTheme (BStyles::Theme& theme, const std::string& name)
 
 	// Font
 	void* fontPtr = theme.getStyle(name, BWIDGETS_KEYWORD_FONT);
-	if (fontPtr) textFont = *((BStyles::Font*) fontPtr);
+	if (fontPtr) setFont (*((BStyles::Font*) fontPtr));
 
-	if (colorsPtr || fontPtr) update ();
+	else if (colorsPtr) update ();
 }
 
 std::vector<std::string> Text::getTextBlock ()
@@ -119,6 +142,7 @@ std::vector<std::string> Text::getTextBlock ()
 		for (double y = 0; (yResizable || (y <= h)) && (strlen (textCString) > 0); )
 		{
 			char* outputtext = cairo_create_text_fitted (cr, w, decorations, textCString);
+			if (outputtext[0] == '\0') break;
 			cairo_text_extents_t ext = textFont.getTextExtents(cr, outputtext);
 			textblock.push_back (std::string (outputtext));
 			y += (ext.height * textFont.getLineSpacing ());

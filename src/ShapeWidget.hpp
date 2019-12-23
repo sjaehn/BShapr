@@ -40,13 +40,16 @@ enum ToolType
 	CORNER_NODE_TOOL		= 5
 };
 
-class ShapeWidget : public Shape<MAXNODES>, public BWidgets::ValueWidget, public Focusable
+class ShapeWidget : public Shape<MAXNODES>, public BWidgets::ValueWidget, public BWidgets::Focusable
 {
 public:
 	ShapeWidget ();
 	ShapeWidget (const double x, const double y, const double width, const double height, const std::string& name);
 	ShapeWidget (const ShapeWidget& that);
 	virtual BWidgets::Widget* clone () const override;
+	virtual void resize () override;
+	virtual void resize (const double width, const double height) override;
+	virtual void resize (const BUtilities::Point extends) override;
 	void setTool (const ToolType tool);
 	void setValueEnabled (const bool status);
 	void setScaleParameters (double anchorYPos, double anchorValue, double ratio);
@@ -113,10 +116,8 @@ protected:
 	BColors::ColorSet bgColors;
 	BStyles::Font lbfont;
 
-public:
 	BWidgets::Text focusText;
 
-protected:
 	double snapX (const double x);
 	double snapY (const double y);
 

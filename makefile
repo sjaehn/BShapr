@@ -122,13 +122,13 @@ all: $(BUNDLE)
 $(DSP_OBJ): $(DSP_SRC)
 	@echo -n Build $(BUNDLE) DSP...
 	@mkdir -p $(BUNDLE)
-	@$(CXX) $< -o $(BUNDLE)/$@ -g $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(DSPFLAGS)
+	@$(CXX) $< -o $(BUNDLE)/$@ $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(DSPFLAGS)
 	@echo \ done.
 
 $(GUI_OBJ): $(GUI_SRC)
 	@echo -n Build $(BUNDLE) GUI...
 	@mkdir -p $(BUNDLE)
-	@$(CXX) $< $(GUI_INCL) -o $(BUNDLE)/$@ -g $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(GUIFLAGS)
+	@$(CXX) $< $(GUI_INCL) -o $(BUNDLE)/$@ $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(GUIFLAGS)
 	@echo \ done.
 
 install:

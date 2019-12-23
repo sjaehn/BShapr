@@ -112,6 +112,25 @@ public:
 	bool isYResizable () const;
 
 	/**
+	 * Resizes the widget, redraw and emits a BEvents::ExposeEvent if the
+	 * widget is visible.
+	 * @param width New widgets width
+	 */
+	virtual void setWidth (const double width);
+
+	/**
+	 * Resizes the widget, redraw and emits a BEvents::ExposeEvent if the
+	 * widget is visible. If no parameters are given, the widget will be
+	 * resized to the size of the containing child widgets.
+	 * @param width		New widgets width
+	 * @param height	New widgets height
+	 * @param extends	New widget extends
+	 */
+	virtual void resize () override;
+	virtual void resize (const double width, const double height) override;
+	virtual void resize (const BUtilities::Point extends) override;
+
+	/**
 	 * Scans theme for widget properties and applies these properties.
 	 * @param theme Theme to be scanned.
 	 * 				Styles used are:

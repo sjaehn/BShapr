@@ -43,6 +43,7 @@ ShapeWidget::ShapeWidget (const double x, const double y, const double width, co
 	setScrollable (true);
 
 	focusText.setOversize (true);
+	focusText.setYResizable (true);
 	focusText.hide ();
 	add (focusText);
 }
@@ -59,12 +60,24 @@ ShapeWidget::ShapeWidget (const ShapeWidget& that) :
 		fgColors (that.fgColors), bgColors (that.bgColors), lbfont (that.lbfont),
 		focusText (that.focusText)
 {
-	focusText.setOversize (true);
-	focusText.hide ();
 	add (focusText);
 }
 
 BWidgets::Widget* ShapeWidget::clone () const {return new ShapeWidget (*this);}
+
+void ShapeWidget::resize ()
+{
+	Widget::resize ();
+	focusText.resize ();
+}
+
+void ShapeWidget::resize (const double width, const double height) {resize (BUtilities::Point (width, height));}
+
+void ShapeWidget::resize (const BUtilities::Point extends)
+{
+	Widget::resize (extends);
+	focusText.resize ();
+}
 
 void ShapeWidget::setTool (const ToolType tool) {this->tool = tool;}
 

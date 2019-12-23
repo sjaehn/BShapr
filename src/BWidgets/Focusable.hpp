@@ -24,6 +24,9 @@
 
 #include <chrono>
 
+namespace BWidgets
+{
+
 class Focusable
 {
 protected:
@@ -44,5 +47,7 @@ public:
 
         bool isFocusActive (const std::chrono::milliseconds diffMs) const {return ((diffMs >= focusInMs) && (diffMs < focusOutMs));}
 };
+
+}
 
 #endif /*BWIDGETS_FOCUSABLE_HPP_*/
