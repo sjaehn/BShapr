@@ -226,7 +226,6 @@ void HScale::draw (const BUtilities::RectArea& area)
 				cairo_stroke (cr);
 				cairo_pattern_destroy (pat);
 			}
-
 		}
 		cairo_destroy (cr);
 	}

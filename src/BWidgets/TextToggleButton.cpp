@@ -68,11 +68,18 @@ void TextToggleButton::setHeight (const double height)
 	buttonLabel.setHeight (height);
 }
 
-void TextToggleButton::resize (const double width, const double height) {resize (BUtilities::Point (width, height));}
+void TextToggleButton::resize ()
+{
+	Widget::resize ();
+	buttonLabel.resize (getExtends());
+}
+
+void TextToggleButton::resize (const double width, const double height) {TextToggleButton::resize (BUtilities::Point (width, height));}
+
 void TextToggleButton::resize (const BUtilities::Point extends)
 {
-	Button::resize (extends.x, extends.y);
-	buttonLabel.resize (extends.x, extends.y);
+	Widget::resize (BUtilities::Point (extends.x, extends.y));
+	buttonLabel.resize (BUtilities::Point (extends.x, extends.y));
 }
 
 void TextToggleButton::setValue (const double val)

@@ -126,13 +126,11 @@ std::vector<std::string> Text::getTextBlock ()
 	double w = getEffectiveWidth ();
 	double h = getEffectiveHeight ();
 	cairo_t* cr = cairo_create (widgetSurface_);
-	cairo_text_decorations decorations =
-	{
-		textFont.getFontFamily ().c_str (),
-		textFont.getFontSize (),
-		textFont.getFontSlant (),
-		textFont.getFontWeight ()
-	};
+	cairo_text_decorations decorations;
+	strncpy (decorations.family, textFont.getFontFamily ().c_str (), 63);
+	decorations.size = textFont.getFontSize ();
+	decorations.slant = textFont.getFontSlant ();
+	decorations.weight = textFont.getFontWeight ();
 
 	char* textCString = (char*) malloc (strlen (textString.c_str ()) + 1);
 	if (textCString)

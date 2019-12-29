@@ -84,7 +84,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 			il.push_back (BItems::Item (index, icon));
 		}
 
-		shapeGui[i].targetListBox = BWidgets::PopupListBox (20, 443, 174, 54, 0, -380, 184, 380, "menu2", il, 0);
+		shapeGui[i].targetListBox = BWidgets::PopupListBox (20, 443, 174, 54, 0, -380, 154, 380, "menu2", il, 0);
 
 		shapeGui[i].shapeWidget = ShapeWidget (4, 4, 1152, 352, "shape");
 		shapeGui[i].tabMsgBox = nullptr;
@@ -607,9 +607,9 @@ void BShaprGUI::resizeGUI(const double sz)
 		RESIZE (shapeGui[i].smoothingLabel, 960, 410, 40, 10, sz);
 		RESIZE (shapeGui[i].smoothingDial, 960, 366, 40, 48, sz);
 		RESIZE (shapeGui[i].targetListBox, 20, 443, 174, 54, sz);
-		shapeGui[i].targetListBox.resizeListBox (BUtilities::Point (154 * sz, 380 * sz));
+		shapeGui[i].targetListBox.resizeListBox (BUtilities::Point (174 * sz - 20, 380 * sz));
 		shapeGui[i].targetListBox.moveListBox (BUtilities::Point (0, -380 * sz));
-		shapeGui[i].targetListBox.resizeListBoxItems (BUtilities::Point (154 * sz, 54 * sz));
+		shapeGui[i].targetListBox.resizeListBoxItems (BUtilities::Point (174 * sz - 20, 54 * sz));
 		RESIZE (shapeGui[i].drywetLabel, 500, 494, 50, 16, sz);
 		RESIZE (shapeGui[i].drywetDial, 500, 434, 50, 60, sz);
 		RESIZE (shapeGui[i].shapeWidget, 4, 4, 1152, 352, sz);

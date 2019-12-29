@@ -1,6 +1,13 @@
 SHELL = /bin/sh
 
 PKG_CONFIG ?= pkg-config
+GUI_LIBS += x11 cairo
+LV2_LIBS += lv2
+ifneq ($(shell $(PKG_CONFIG) --exists fontconfig || echo no), no)
+  GUI_LIBS += fontconfig
+  GUIPPFLAGS += -DPKG_HAVE_FONTCONFIG
+endif
+
 CXX ?= g++
 INSTALL ?= install
 INSTALL_PROGRAM ?= $(INSTALL)
@@ -16,10 +23,10 @@ LDFLAGS += -shared -Wl,-z,relro,-z,now
 STRIPFLAGS += -s --strip-program=$(STRIP)
 
 DSPFLAGS =
-GUIFLAGS = -DPUGL_HAVE_CAIRO
+GUIPPFLAGS += -DPUGL_HAVE_CAIRO
 
-DSPFLAGS += `$(PKG_CONFIG) --cflags --libs lv2`
-GUIFLAGS += `$(PKG_CONFIG) --cflags --libs lv2 x11 cairo`
+DSPFLAGS += `$(PKG_CONFIG) --cflags --libs $(LV2_LIBS)`
+GUIFLAGS += `$(PKG_CONFIG) --cflags --libs $(LV2_LIBS) $(GUI_LIBS)`
 
 BUNDLE = BShapr.lv2
 DSP = BShapr
@@ -128,7 +135,7 @@ $(DSP_OBJ): $(DSP_SRC)
 $(GUI_OBJ): $(GUI_SRC)
 	@echo -n Build $(BUNDLE) GUI...
 	@mkdir -p $(BUNDLE)
-	@$(CXX) $< $(GUI_INCL) -o $(BUNDLE)/$@ $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(GUIFLAGS)
+	@$(CXX) $< $(GUI_INCL) -o $(BUNDLE)/$@ $(CPPFLAGS) $(GUIPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(GUIFLAGS)
 	@echo \ done.
 
 install:

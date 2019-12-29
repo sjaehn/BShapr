@@ -76,6 +76,8 @@ public:
 	Event (BWidgets::Widget* widget, const EventType type) :
 		eventWidget (widget), eventType (type) {}
 
+	virtual ~Event () {}
+
 	/**
 	 * Gets a pointer to the widget which caused the event.
 	 * @return Pointer to the widget

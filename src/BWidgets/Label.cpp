@@ -135,10 +135,10 @@ void Label::resize ()
 		if (w->getPosition ().y + w->getHeight () > contExt.y) contExt.y = w->getPosition ().y + w->getHeight();
 	}
 
-	resize (contExt);
+	Label::resize (contExt);
 }
 
-void Label::resize (const double width, const double height) {resize (BUtilities::Point (width, height));}
+void Label::resize (const double width, const double height) {Label::resize (BUtilities::Point (width, height));}
 void Label::resize (const BUtilities::Point extends) {Widget::resize (extends);}
 
 void Label::applyTheme (BStyles::Theme& theme) {applyTheme (theme, name_);}

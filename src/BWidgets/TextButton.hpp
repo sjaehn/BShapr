@@ -83,6 +83,7 @@ public:
 	 * @param height	New widgets height
 	 * @param extends	New widget extends
 	 */
+	virtual void resize () override;
 	virtual void resize (const double width, const double height) override;
 	virtual void resize (const BUtilities::Point extends) override;
 

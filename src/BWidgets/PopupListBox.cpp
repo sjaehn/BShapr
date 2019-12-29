@@ -199,6 +199,22 @@ void PopupListBox::onButtonPressed (BEvents::PointerEvent* event)
 	if (listBox.isVisible ()) listBox.hide ();
 	else
 	{
+		// Close all other same level popup widgets listboxes first
+		Widget* p = getParent();
+		if (p)
+		{
+			for (Widget* c : p->getChildren())
+			{
+				if (c != this)
+				{
+					PopupListBox* other = dynamic_cast<PopupListBox*> (c);
+					if (other && other->getListBox()) other->getListBox()->hide();
+				}
+			}
+		}
+
+		// Raise to top & show listbox
+		raiseToTop ();
 		update ();
 		listBox.show ();
 		listBox.raiseToTop ();

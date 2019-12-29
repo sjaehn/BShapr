@@ -366,6 +366,7 @@ void Dial::draw (const BUtilities::RectArea& area)
 
 
 			// Edges of the arc
+
 			pat = cairo_pattern_create_linear (dialCenter.x + dialRadius, dialCenter.y + dialRadius,
 	   	   	   	   	   	   	   	   	   	   	   dialCenter.x - dialRadius, dialCenter.y - dialRadius);
 			if (pat && (cairo_pattern_status (pat) == CAIRO_STATUS_SUCCESS))
@@ -395,6 +396,7 @@ void Dial::draw (const BUtilities::RectArea& area)
 				cairo_stroke (cr);
 				cairo_pattern_destroy (pat);
 			}
+
 		}
 
 		cairo_destroy (cr);

@@ -83,7 +83,9 @@ void DrawingSurface::setHeight (const double height)
 	update ();
 }
 
-void DrawingSurface::resize (const double width, const double height) {resize (BUtilities::Point (width, height));}
+void DrawingSurface::resize () {} // Do not auto resize
+
+void DrawingSurface::resize (const double width, const double height) {DrawingSurface::resize (BUtilities::Point (width, height));}
 
 void DrawingSurface::resize (const BUtilities::Point extends)
 {

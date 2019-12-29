@@ -16,6 +16,10 @@
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+#ifdef PKG_HAVE_FONTCONFIG
+#include <fontconfig/fontconfig.h>
+#endif /*PKG_HAVE_FONTCONFIG*/
+
 #include "Window.hpp"
 #include "Focusable.hpp"
 
@@ -54,16 +58,24 @@ Window::Window (const double width, const double height, const std::string& titl
 
 Window::~Window ()
 {
-	purgeEventQueue ();
-	keyGrabStack_.clear ();
+	hide();
 	while (!children_.empty ())
 	{
 		Widget* w = children_.front ();
 		if (w) release (w);
 	}
+	purgeEventQueue ();
+	keyGrabStack_.clear ();
+	buttonGrabStack_.clear ();
 	puglDestroy(view_);
 	main_ = nullptr;	// Important switch for the super destructor. It took
 				// days of debugging ...
+
+	// Cleanup debug information for memory checkers
+	//cairo_debug_reset_static_data();
+#ifdef PKG_HAVE_FONTCONFIG
+	//FcFini();
+#endif /*PKG_HAVE_FONTCONFIG*/
 }
 
 PuglView* Window::getPuglView () {return view_;}
@@ -142,6 +154,7 @@ void Window::addEventToQueue (BEvents::Event* event)
 				area.extend (nextEvent->getArea ());
 				firstEvent->setArea (area);
 
+				delete event;
 				return;
 			}
 		}
@@ -159,6 +172,7 @@ void Window::addEventToQueue (BEvents::Event* event)
 				firstEvent->setPosition (nextEvent->getPosition ());
 				firstEvent->setDelta (firstEvent->getDelta () + nextEvent->getDelta ());
 
+				delete event;
 				return;
 			}
 		}
@@ -179,6 +193,7 @@ void Window::addEventToQueue (BEvents::Event* event)
 				firstEvent->setPosition (nextEvent->getPosition ());
 				firstEvent->setDelta (firstEvent->getDelta () + nextEvent->getDelta ());
 
+				delete event;
 				return;
 			}
 		}
@@ -198,6 +213,7 @@ void Window::addEventToQueue (BEvents::Event* event)
 			{
 				firstEvent->setDelta (firstEvent->getDelta () + nextEvent->getDelta ());
 
+				delete event;
 				return;
 			}
 		}
@@ -665,7 +681,7 @@ void Window::purgeEventQueue (Widget* widget)
 		(
 			(event) &&
 			(
-				// Invalid events
+				// Nullptr = joker
 				(widget == nullptr) ||
 				// Hit
 				(widget == event->getWidget ()) ||

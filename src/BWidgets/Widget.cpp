@@ -328,10 +328,10 @@ void Widget::resize ()
 		if (w->getPosition ().x + w->getWidth() > width) width = w->getPosition ().x + w->getWidth();
 		if (w->getPosition ().y + w->getHeight() > height) height = w->getPosition ().y + w->getHeight();
 	}
-	resize (BUtilities::Point (width, height));
+	Widget::resize (BUtilities::Point (width, height));
 }
 
-void Widget::resize (const double width, const double height) {resize (BUtilities::Point (width, height));}
+void Widget::resize (const double width, const double height) {Widget::resize (BUtilities::Point (width, height));}
 
 void Widget::resize (const BUtilities::Point extends)
 {
@@ -646,17 +646,20 @@ void Widget::redisplay (cairo_surface_t* surface, const BUtilities::RectArea& ou
 	BUtilities::RectArea a = (oversized_ ? outerArea : area);
 	BUtilities::RectArea thisArea = area_; thisArea.moveTo (getAbsolutePosition());
 	a.intersect (thisArea);
-	if (main_ && visible_ && (a != BUtilities::RectArea ()))
+	if (main_ && visible_)
 	{
-		// Update draw
-		if (scheduleDraw_) draw (BUtilities::RectArea (0, 0, getWidth (), getHeight ()));
+		if (a != BUtilities::RectArea ())
+		{
+			// Update draw
+			if (scheduleDraw_) draw (BUtilities::RectArea (0, 0, getWidth (), getHeight ()));
 
-		// Copy widgets surface onto main surface
-		cairo_t* cr = cairo_create (surface);
-		cairo_set_source_surface (cr, widgetSurface_, thisArea.getX(), thisArea.getY());
-		cairo_rectangle (cr, a.getX (), a.getY (), a.getWidth (), a.getHeight ());
-		cairo_fill (cr);
-		cairo_destroy (cr);
+			// Copy widgets surface onto main surface
+			cairo_t* cr = cairo_create (surface);
+			cairo_set_source_surface (cr, widgetSurface_, thisArea.getX(), thisArea.getY());
+			cairo_rectangle (cr, a.getX (), a.getY (), a.getWidth (), a.getHeight ());
+			cairo_fill (cr);
+			cairo_destroy (cr);
+		}
 
 		for (Widget* w : children_)
 		{
