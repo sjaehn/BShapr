@@ -66,7 +66,7 @@ Widget::~Widget()
 		release (w);
 
 		// Hard kick out if release failed
-		if (w == children_.back ()) children_.pop_back ();
+		if (!children_.empty () && (w == children_.back ())) children_.pop_back ();
 	}
 
 	cairo_surface_destroy (widgetSurface_);
