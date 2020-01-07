@@ -22,11 +22,10 @@
 	a ui:X11UI;
 	ui:binary <BShaprGUI.so> ;
 	lv2:extensionData ui:idleInterface ;
-	lv2:requiredFeature ui:idleInterface ;
-	ui:requiredFeature ui:makeResident .
+	lv2:requiredFeature ui:idleInterface .
 
 <https://www.jahnichen.de/plugins/lv2/BShapr>
-	a lv2:Plugin, lv2:EnvelopePlugin ;
+	a lv2:Plugin, lv2:EnvelopePlugin, doap:Project ;
 	doap:name "B.Shapr" ;
 	rdfs:comment "Beat and LFO shaping plugin." ;
   	doap:maintainer <http://www.jahnichen.de/sjaehn#me> ;
