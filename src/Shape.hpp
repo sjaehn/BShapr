@@ -45,7 +45,6 @@ public:
 
 	virtual void clearShape ();
 	virtual void setDefaultShape ();
-	virtual void setDefaultShape (const Node& endNode);
 	bool isDefault ();
 	size_t size ();
 	Node getNode (size_t nr);
@@ -69,13 +68,12 @@ protected:
 
 	StaticArrayList<Node, sz> nodes;
 	double map[MAPRES];
-	Node defaultEndNode;
 
 };
 
-template<size_t sz> Shape<sz>::Shape () : nodes (), map {0.0}, defaultEndNode () {}
+template<size_t sz> Shape<sz>::Shape () : nodes (), map {0.0} {}
 
-template<size_t sz> Shape<sz>::Shape (StaticArrayList<Node, sz> nodes) : nodes (nodes), map {0.0}, defaultEndNode ()
+template<size_t sz> Shape<sz>::Shape (StaticArrayList<Node, sz> nodes) : nodes (nodes), map {0.0}
 {}
 
 template<size_t sz> Shape<sz>::~Shape () {}
@@ -98,24 +96,14 @@ template<size_t sz> void Shape<sz>::clearShape ()
 template<size_t sz> void Shape<sz>::setDefaultShape ()
 {
 	clearShape ();
-	defaultEndNode = {NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}};
-	nodes.push_back (defaultEndNode);
+	nodes.push_back ({NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}});
 	nodes.push_back ({NodeType::END_NODE, {1, 0}, {0, 0}, {0, 0}});
-	renderBezier (nodes[0], nodes[1]);
-}
-
-template<size_t sz> void Shape<sz>::setDefaultShape (const Node& endNode)
-{
-	clearShape ();
-	defaultEndNode = {NodeType::END_NODE, {0, endNode.point.y}, {0, 0}, {0, 0}};
-	nodes.push_back (defaultEndNode);
-	nodes.push_back ({NodeType::END_NODE, {1, endNode.point.y}, {0, 0}, {0, 0}});
 	renderBezier (nodes[0], nodes[1]);
 }
 
 template<size_t sz>bool Shape<sz>::isDefault ()
 {
-	return ((nodes.size == 2) && (nodes[0] == defaultEndNode));
+	return ((nodes.size == 2) && (nodes[0] == Node {NodeType::END_NODE, {0, 0}, {0, 0}, {0, 0}}));
 }
 
 template<size_t sz>size_t Shape<sz>::size () {return nodes.size;}

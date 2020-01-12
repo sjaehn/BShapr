@@ -65,13 +65,12 @@ public:
 	void pasteSelection (const std::vector<Node>& newNodes);
 	void deleteSelection ();
 	void unselect ();
-	void reset (const Node& endNode);
+	void reset ();
 	void undo ();
 	void redo ();
 	void pushToSnapshots ();
 	void resetSnapshots ();
 	virtual void setDefaultShape () override;
-	virtual void setDefaultShape (const Node& endNode) override;
 	virtual void onButtonPressed (BEvents::PointerEvent* event) override;
 	virtual void onButtonReleased (BEvents::PointerEvent* event) override;
 	virtual void onPointerDragged (BEvents::PointerEvent* event) override;

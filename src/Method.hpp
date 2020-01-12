@@ -34,7 +34,6 @@ struct Method
 	int optionIndexes[MAXOPTIONWIDGETS];
 
 	// Shape / ShapeWidget parameters
-	Node defaultEndNode;
 	Limit limit;
 	double anchorYPos;
 	double anchorValue;

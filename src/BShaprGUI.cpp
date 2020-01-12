@@ -270,7 +270,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	// Post addition configurations
 	for (int i = 0; i < MAXSHAPES; ++i)
 	{
-		shapeGui[i].shapeWidget.setDefaultShape (methods[0].defaultEndNode);
+		shapeGui[i].shapeWidget.setDefaultShape();
 		shapeGui[i].shapeWidget.setValueEnabled (true);
 	}
 
@@ -884,7 +884,7 @@ void BShaprGUI::deleteShape (const int shapeNr)
 			}
 
 			// Reset shape 0
-			shapeGui[0].shapeWidget.setDefaultShape (methods[0].defaultEndNode);
+			shapeGui[0].shapeWidget.setDefaultShape ();
 
 			// Hide all tabContainers >= 1
 			for (int i = 0; i < MAXSHAPES; ++i)
@@ -1007,7 +1007,7 @@ void BShaprGUI::insertShape (const int shapeNr)
 		}
 
 		// Reset shape
-		shapeGui[lastShape + 1].shapeWidget.setDefaultShape (methods[0].defaultEndNode);
+		shapeGui[lastShape + 1].shapeWidget.setDefaultShape ();
 
 		// Link lastShape
 		setController (srcNr + SH_OUTPUT, INTERNAL);
@@ -1060,7 +1060,7 @@ void BShaprGUI::insertShape (const int shapeNr)
 		setController (destNr + SH_OUTPUT_AMP, 1.0f);
 
 		// Reset shape shapeNr + 1
-		shapeGui[shapeNr + 1].shapeWidget.setDefaultShape (methods[0].defaultEndNode);
+		shapeGui[shapeNr + 1].shapeWidget.setDefaultShape ();
 
 		// Show lastShape + 1
 		for (int i = 0; i < MAXSHAPES; ++i)
@@ -1191,15 +1191,6 @@ void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 					if (shapeWidgetNr == SH_TARGET)
 					{
 						int nr = LIMIT (value, 0, MAXEFFECTS - 1);
-
-						// Set default end notes (if not manually set before)
-						if
-						(
-							(ui->shapeGui[shapeNr].shapeWidget.isDefault ()) &&
-							(ui->shapeGui[shapeNr].shapeWidget.getNode (0).point.y != methods[nr].defaultEndNode.point.y))
-						{
-							ui->shapeGui[shapeNr].shapeWidget.setDefaultShape (methods[nr].defaultEndNode);
-						}
 
 						// Set shapeWidget display parameters (limits, unit, prefix, ...)
 						ui->shapeGui[shapeNr].shapeWidget.setScaleParameters
@@ -1421,10 +1412,7 @@ void BShaprGUI::editClickedCallback (BEvents::Event* event)
 							case 3:		ui->shapeGui[i].shapeWidget.deleteSelection ();
 									return;
 
-							case 4:		{
-										int nr = ui->controllers[SHAPERS + i * SH_SIZE + SH_TARGET];
-										ui->shapeGui[i].shapeWidget.reset (methods[nr].defaultEndNode);
-									}
+							case 4:		ui->shapeGui[i].shapeWidget.reset ();
 									return;
 
 							case 5:		ui->shapeGui[i].shapeWidget.undo ();

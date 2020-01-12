@@ -132,7 +132,7 @@ BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 {
 	for (int i = 0; i < MAXSHAPES; ++i)
 	{
-		shapes[i].setDefaultShape (methods[0].defaultEndNode);
+		shapes[i].setDefaultShape ();
 
 		try {audioBuffer1[i].resize (samplerate);}
 		catch (std::bad_alloc& ba) {throw ba;}
@@ -319,9 +319,6 @@ void BShapr::run (uint32_t n_samples)
 				// Target
 				if (shapeControllerNr == SH_TARGET)
 				{
-					// Keep a default shape as a default shape but with new default values
-					if (shapes[shapeNr].isDefault ()) shapes[shapeNr].setDefaultShape (methods[(int)newValue].defaultEndNode);
-
 					// Clear audiobuffers, if needed
 					if
 					(
