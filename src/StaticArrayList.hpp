@@ -75,11 +75,19 @@ template<typename T, std::size_t sz> struct StaticArrayList
 
 	T& operator[] (const size_t n) {return *iterator[n];}
 
+	const T& operator[] (const size_t n) const {return *iterator[n];}
+
 	T& at (const size_t n) {return ((n >= 0) && (n < size) ? *iterator[n] : data[0]);}
+
+	const T& at (const size_t n) const {return ((n >= 0) && (n < size) ? *iterator[n] : data[0]);}
 
 	T& front () {return *iterator[0];}
 
+	const T& front () const {return *iterator[0];}
+
 	T& back () {return *iterator[size - 1];}
+
+	const T& back () const {return *iterator[size - 1];}
 
 	void new_data_segment (T** iterator_ptr)
 	{
