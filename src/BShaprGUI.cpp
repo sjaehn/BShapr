@@ -213,6 +213,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].shapeWidget.setScaleParameters (methods[0].anchorYPos, methods[0].anchorValue, methods[0].ratio);
 		shapeGui[i].shapeWidget.setLowerLimit (methods[0].limit.min);
 		shapeGui[i].shapeWidget.setHigherLimit (methods[0].limit.max);
+		shapeGui[i].shapeWidget.setTransformation (methods[0].transformFactor, methods[0].transformOffset);
 		shapeGui[i].smoothingDial.setHardChangeable (false);
 		shapeGui[i].drywetDial.setHardChangeable (false);
 
@@ -430,7 +431,7 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 							for (unsigned int nodeNr = 0; (nodeNr < vecSize) && (nodeNr < MAXNODES); ++nodeNr)
 							{
 								Node node (&data[nodeNr * 7]);
-								shapeGui[shapeNr].shapeWidget.appendNode (node);
+								shapeGui[shapeNr].shapeWidget.appendRawNode (node);
 							}
 							shapeGui[shapeNr].shapeWidget.validateShape();
 							shapeGui[shapeNr].shapeWidget.pushToSnapshots ();
@@ -800,7 +801,7 @@ void BShaprGUI::sendShape (size_t shapeNr)
 	// Load shapeBuffer
 	for (unsigned int i = 0; i < size; ++i)
 	{
-		Node node = shapeGui[shapeNr].shapeWidget.getNode (i);
+		Node node = shapeGui[shapeNr].shapeWidget.getRawNode (i);
 		shapeBuffer[i * 7 + 0] = (float)node.nodeType;
 		shapeBuffer[i * 7 + 1] = (float)node.point.x;
 		shapeBuffer[i * 7 + 2] = (float)node.point.y;
@@ -1192,6 +1193,9 @@ void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 					{
 						int nr = LIMIT (value, 0, MAXEFFECTS - 1);
 
+						// Change transformation
+						ui->shapeGui[shapeNr].shapeWidget.setTransformation (methods[nr].transformFactor, methods[nr].transformOffset);
+
 						// Set shapeWidget display parameters (limits, unit, prefix, ...)
 						ui->shapeGui[shapeNr].shapeWidget.setScaleParameters
 						(
@@ -1203,6 +1207,7 @@ void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 						ui->shapeGui[shapeNr].shapeWidget.setPrefix (methods[nr].prefix);
 						ui->shapeGui[shapeNr].shapeWidget.setLowerLimit (methods[nr].limit.min);
 						ui->shapeGui[shapeNr].shapeWidget.setHigherLimit (methods[nr].limit.max);
+						ui->shapeGui[shapeNr].shapeWidget.update();
 
 						// Hide old controllers
 						int oldMethodNr = ui->controllers[widgetNr];

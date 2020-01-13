@@ -123,7 +123,7 @@ BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 	position(0), offset(0), refFrame(0),
 	audioInput1(NULL), audioInput2(NULL), audioOutput1(NULL), audioOutput2(NULL),
 	new_controllers {NULL}, controllers {0},
-	shapes {SmoothShape<MAXNODES> ()},
+	shapes {SmoothShape<MAXNODES> ()}, tempNodes {StaticArrayList<Node, MAXNODES> ()},
 	urids (), controlPort(NULL), notifyPort(NULL), forge (), notify_frame (),
 	key (0xFF),
 	ui_on(false), message (), monitorPos(-1), notificationsCount(0), stepCount (0),
@@ -133,6 +133,7 @@ BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 	for (int i = 0; i < MAXSHAPES; ++i)
 	{
 		shapes[i].setDefaultShape ();
+		shapes[i].setTransformation (methods[0].transformFactor, methods[0].transformOffset);
 
 		try {audioBuffer1[i].resize (samplerate);}
 		catch (std::bad_alloc& ba) {throw ba;}
@@ -319,6 +320,9 @@ void BShapr::run (uint32_t n_samples)
 				// Target
 				if (shapeControllerNr == SH_TARGET)
 				{
+					// Change transformation
+					shapes[shapeNr].setTransformation (methods[int(newValue)].transformFactor, methods[int(newValue)].transformOffset);
+
 					// Clear audiobuffers, if needed
 					if
 					(
@@ -356,6 +360,17 @@ void BShapr::run (uint32_t n_samples)
 					shapes[j].setSmoothing (smoothing);
 				}
 			}
+		}
+	}
+
+	// Check for waiting tempNodes
+	for (int i = 0; i < MAXSHAPES; ++i)
+	{
+		while (!tempNodes[i].empty())
+		{
+			Node n = tempNodes[i].back();
+			shapes[i].insertNode (n);
+			tempNodes[i].pop_back();
 		}
 	}
 
@@ -415,7 +430,7 @@ void BShapr::run (uint32_t n_samples)
 							for (unsigned int nodeNr = 0; (nodeNr < vecSize) && (nodeNr < MAXNODES); ++nodeNr)
 							{
 								Node node (&data[nodeNr * 7]);
-								shapes[shapeNr].appendNode (node);
+								shapes[shapeNr].appendRawNode (node);
 							}
 							shapes[shapeNr].validateShape();
 						}
@@ -639,7 +654,7 @@ void BShapr::notifyShapeToGui (int shapeNr)
 	// Load shapeBuffer
 	for (unsigned int i = 0; i < size; ++i)
 	{
-		Node node = shapes[shapeNr].getNode (i);
+		Node node = shapes[shapeNr].getRawNode (i);
 		shapeBuffer[i * 7] = (float)node.nodeType;
 		shapeBuffer[i * 7 + 1] = (float)node.point.x;
 		shapeBuffer[i * 7 + 2] = (float)node.point.y;
@@ -1263,10 +1278,23 @@ LV2_State_Status BShapr::state_save (LV2_State_Store_Function store, LV2_State_H
 	{
 		for (unsigned int nd = 0; nd < shapes[sh].size (); ++nd)
 		{
-			char valueString[128];
+			char valueString[160];
 			Node node = shapes[sh].getNode (nd);
-			snprintf (valueString, 126, "shp:%d; typ:%d; ptx:%f; pty:%f; h1x:%f; h1y:%f; h2x:%f; h2y:%f",
-								sh, (int) node.nodeType, node.point.x, node.point.y, node.handle1.x, node.handle1.y, node.handle2.x, node.handle2.y);
+			snprintf
+			(
+				valueString,
+				126,
+				"shp:%d; met:%d; typ:%d; ptx:%f; pty:%f; h1x:%f; h1y:%f; h2x:%f; h2y:%f",
+				sh,
+				int (controllers[SHAPERS + sh * SH_SIZE + SH_TARGET]),
+				int (node.nodeType),
+				node.point.x,
+				node.point.y,
+				node.handle1.x,
+				node.handle1.y,
+				node.handle2.x,
+				node.handle2.y
+			);
 			if ((sh < MAXSHAPES - 1) || nd < shapes[sh].size ()) strcat (valueString, ";\n");
 			else strcat(valueString, "\n");
 			strcat (shapesDataString, valueString);
@@ -1292,7 +1320,7 @@ LV2_State_Status BShapr::state_restore (LV2_State_Retrieve_Function retrieve, LV
 
 		// Parse retrieved data
 		std::string shapesDataString = (char*) shapesData;
-		const std::string keywords[8] = {"shp:", "typ:", "ptx:", "pty:", "h1x:", "h1y:", "h2x:", "h2y:"};
+		const std::string keywords[9] = {"shp:", "met:", "typ:", "ptx:", "pty:", "h1x:", "h1y:", "h2x:", "h2y:"};
 		while (!shapesDataString.empty())
 		{
 			// Look for next "shp:"
@@ -1320,7 +1348,8 @@ LV2_State_Status BShapr::state_restore (LV2_State_Retrieve_Function retrieve, LV
 			// Look for shape data
 			Node node = {NodeType::POINT_NODE, {0, 0}, {0, 0}, {0, 0}};
 			bool isTypeDef = false;
-			for (int i = 1; i < 8; ++i)
+			int methodNr = -1;
+			for (int i = 1; i < 9; ++i)
 			{
 				strPos = shapesDataString.find (keywords[i]);
 				if (strPos == std::string::npos) continue;	// Keyword not found => next keyword
@@ -1342,26 +1371,42 @@ LV2_State_Status BShapr::state_restore (LV2_State_Retrieve_Function retrieve, LV
 				if (nextPos > 0) shapesDataString.erase (0, nextPos);
 				switch (i)
 				{
-					case 1: node.nodeType = (NodeType)((int)val);
-									isTypeDef = true;
-									break;
-					case 2: node.point.x = val;
-									break;
-					case 3:	node.point.y = val;
-									break;
-					case 4:	node.handle1.x = val;
-									break;
-					case 5:	node.handle1.y = val;
-									break;
-					case 6:	node.handle2.x = val;
-									break;
-					case 7:	node.handle2.y = val;
-									break;
+					case 1: methodNr = LIM (val, 0, MAXEFFECTS - 1);
+						break;
+					case 2: node.nodeType = (NodeType)((int)val);
+						isTypeDef = true;
+						break;
+					case 3: node.point.x = val;
+						break;
+					case 4:	node.point.y = val;
+						break;
+					case 5:	node.handle1.x = val;
+						break;
+					case 6:	node.handle1.y = val;
+						break;
+					case 7:	node.handle2.x = val;
+						break;
+					case 8:	node.handle2.y = val;
+						break;
 					default:break;
 				}
 			}
 
-			if (isTypeDef) shapes[sh].appendNode (node);
+			// Set data
+			if (isTypeDef)
+			{
+				if (methodNr >=0)
+				{
+					shapes[sh].setTransformation (methods[methodNr].transformFactor, methods[methodNr].transformOffset);
+					shapes[sh].appendNode (node);
+				}
+
+				// Old versions (< 0.7): temp. store node until method is set
+				else
+				{
+					tempNodes[sh].push_back (node);
+				}
+			}
 		}
 
 		// Validate all shapes

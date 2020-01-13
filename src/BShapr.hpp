@@ -142,6 +142,7 @@ private:
 
 	// Nodes and Maps
 	SmoothShape<MAXNODES> shapes[MAXSHAPES];
+	StaticArrayList<Node, MAXNODES> tempNodes[MAXSHAPES];
 
 	// Atom port
 	BShaprURIDs urids;

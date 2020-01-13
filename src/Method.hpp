@@ -38,6 +38,8 @@ struct Method
 	double anchorYPos;
 	double anchorValue;
 	double ratio;
+	double transformFactor;
+	double transformOffset;
 	std::string prefix;
 	std::string unit;
 	std::string iconFileName;

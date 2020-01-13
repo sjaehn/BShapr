@@ -151,14 +151,15 @@ a base.
 ## What's new
 
 * Smoothing option
+* Cut, copy, paste between shapes improved by use of *relative* shape nodes
+* Automatic translation of shape nodes if effect changed
+* DSP <-> GUI communication on GUI on fixed
 
 ## TODO
 
 * Additional effects (any ideas welcome)
 * Report latency (pitch shifter)
 * Fix click on MIDI ON problem
-* Cut, copy, paste *relative* shape nodes
-* Translate shape nodes if effect changed
 
 ## See also
 

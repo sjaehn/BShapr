@@ -29,17 +29,17 @@ class SmoothShape : public Shape<sz>
 {
 public:
 	SmoothShape ();
-	SmoothShape (StaticArrayList<Node, sz> nodes);
+	SmoothShape (const StaticArrayList<Node, sz> nodes);
 
 	bool operator== (const SmoothShape<sz>& rhs);
 	bool operator!= (const SmoothShape<sz>& rhs);
 
 	virtual void clearShape () override;
 	void setSmoothing (const double smoothing);
-	double getSmoothMapValue (double x);
+	double getSmoothMapValue (const double x) const;
 
 protected:
-	virtual void renderBezier (Node& n1, Node& n2) override;
+	virtual void renderBezier (const Node& n1, const Node& n2) override;
 	void smooth ();
 	void smooth (const int x1, const int x2);
 
@@ -48,15 +48,10 @@ protected:
 
 };
 
-template<size_t sz> SmoothShape<sz>::SmoothShape () : Shape<sz> (), smoothSz (0)
-{
-	for (size_t i = 0; i < MAPRES; ++i) smoothMap[i] = 0;
-}
+template<size_t sz> SmoothShape<sz>::SmoothShape () : Shape<sz> (), smoothMap {0.0}, smoothSz (0) {}
 
-template<size_t sz> SmoothShape<sz>::SmoothShape (StaticArrayList<Node, sz> nodes) : Shape<sz> (nodes), smoothSz (0)
-{
-	for (size_t i = 0; i < MAPRES; ++i) smoothMap[i] = 0;
-}
+template<size_t sz> SmoothShape<sz>::SmoothShape (StaticArrayList<Node, sz> nodes) :
+Shape<sz> (nodes), smoothMap {0.0}, smoothSz (0) {}
 
 template<size_t sz> bool SmoothShape<sz>::operator== (const SmoothShape<sz>& rhs)
 {
@@ -77,7 +72,7 @@ template<size_t sz> void SmoothShape<sz>:: setSmoothing (const double smoothing)
 	smooth ();
 }
 
-template<size_t sz> void SmoothShape<sz>::renderBezier (Node& n1, Node& n2)
+template<size_t sz> void SmoothShape<sz>::renderBezier (const Node& n1, const Node& n2)
 {
 	Shape<sz>::renderBezier (n1, n2);
 	smooth ();
@@ -97,29 +92,29 @@ template<size_t sz> void SmoothShape<sz>::smooth (const int x1, const int x2)
 		double mean = 0;
 		for (int i = i1 - smoothSz; i <= i2 + smoothSz; ++i)
 		{
-			double iVal = Shape<sz>::map [(i + MAPRES) % MAPRES];
+			double iVal = Shape<sz>::map_[(i + MAPRES) % MAPRES];
 			mean = (mean * double (count) + iVal) / (double (count + 1));
 			++count;
 
 			if (i >= i1 + smoothSz)
 			{
 				smoothMap[i - smoothSz] = mean;
-				double rmVal = Shape<sz>::map [(i - 2 * smoothSz + 2 * MAPRES) % MAPRES];
+				double rmVal = Shape<sz>::map_[(i - 2 * smoothSz + 2 * MAPRES) % MAPRES];
 				mean = (mean * double (count) - rmVal) / (double (count - 1));
 				--count;
 			}
 		}
 	}
 
-	else for (int i = i1; i <= i2; ++i) smoothMap[i] = Shape<sz>::map[i];
+	else for (int i = i1; i <= i2; ++i) smoothMap[i] = Shape<sz>::map_[i];
 }
 
-template<size_t shapesize> double SmoothShape<shapesize>::getSmoothMapValue (double x)
+template<size_t sz> double SmoothShape<sz>::getSmoothMapValue (const double x) const
 {
 	double mapx = fmod (x * MAPRES, MAPRES);
 	double xmod = mapx - int (mapx);
 
-	return (1 - xmod) * smoothMap[int (mapx)] + xmod * smoothMap[int (mapx + 1) % MAPRES];
+	return (1 - xmod) * Shape<sz>::retransform (smoothMap[int (mapx)]) + xmod * Shape<sz>::retransform (smoothMap[int (mapx + 1) % MAPRES]);
 }
 
 #endif /* SMOOTHSHAPE_HPP_ */
