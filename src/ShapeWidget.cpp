@@ -168,9 +168,9 @@ std::vector<Node> ShapeWidget::cutSelection ()
 std::vector<Node> ShapeWidget::copySelection ()
 {
 	std::vector<Node> selectedNodes;
-	for (size_t i = 0; i < nodes.size; ++i)
+	for (size_t i = 0; i < nodes_.size; ++i)
 	{
-		if (selection[i]) selectedNodes.push_back (nodes[i]);
+		if (selection[i]) selectedNodes.push_back (nodes_[i]);
 	}
 	return selectedNodes;
 }
@@ -186,15 +186,15 @@ void ShapeWidget::pasteSelection (const std::vector<Node>& newNodes)
 		// END_NODEs: Overwrite
 		if (node.nodeType == END_NODE)
 		{
-			if (nodes.size >= 2)
+			if (nodes_.size >= 2)
 			{
 				if (node.point.x == 0.0) selection[0] = true;
-				else selection[nodes.size - 1] = true;
+				else selection[nodes_.size - 1] = true;
 
-				node.point.x = nodes[0].point.x;
-				changeNode (0, node);
-				node.point.x = nodes[nodes.size - 1].point.x;
-				changeNode (nodes.size - 1, node);
+				node.point.x = nodes_[0].point.x;
+				changeRawNode (0, node);
+				node.point.x = nodes_[nodes_.size - 1].point.x;
+				changeRawNode (nodes_.size - 1, node);
 			}
 		}
 
@@ -203,12 +203,12 @@ void ShapeWidget::pasteSelection (const std::vector<Node>& newNodes)
 		{
 			// Find insert position
 			size_t pos = 0;
-			for (size_t i = 0; i < nodes.size; ++i)
+			for (size_t i = 0; i < nodes_.size; ++i)
 			{
-				if (node.point.x < nodes[i].point.x)
+				if (node.point.x < nodes_[i].point.x)
 				{
 					// Add if not redundant
-					if ((i > 0) && (node != nodes[i - 1]))
+					if ((i > 0) && (node != nodes_[i - 1]))
 					{
 						pos = i;
 						break;
@@ -219,9 +219,9 @@ void ShapeWidget::pasteSelection (const std::vector<Node>& newNodes)
 			}
 
 			// Insert and select
-			if ((pos != 0) && (nodes.size < MAXNODES))
+			if ((pos != 0) && (nodes_.size < MAXNODES))
 			{
-				insertNode (pos, node);
+				insertRawNode (pos, node);
 				selection[pos] = true;
 			}
 		}
@@ -234,7 +234,7 @@ void ShapeWidget::deleteSelection ()
 {
 	grabbedNode = -1;
 	bool selected = false;
-	for (int i = nodes.size; i >= 0; --i)
+	for (int i = nodes_.size; i >= 0; --i)
 	{
 		if (selection[i])
 		{
@@ -318,13 +318,14 @@ void ShapeWidget::onButtonPressed (BEvents::PointerEvent* event)
 		// Node already activated => Select handles
 		if ((grabbedNode >= 0) && (grabbedNode < MAXNODES))
 		{
+			Node node = getNode (grabbedNode);
 			// Handle2 => Select
-			px = x0 + w * (nodes[grabbedNode].point.x + nodes[grabbedNode].handle2.x);
-			py = y0 + h - h * (nodes[grabbedNode].point.y + nodes[grabbedNode].handle2.y - ymin) / (ymax - ymin);
-			if ((nodes[grabbedNode].nodeType != NodeType::END_NODE) &&		// No END_NODEs
-				(nodes[grabbedNode].nodeType != NodeType::POINT_NODE) &&	// No POINT_NODEs
-				(nodes[grabbedNode].nodeType != NodeType::AUTO_SMOOTH_NODE) &&	// No AUTO_SMOOTH_NODEs
-				(event->getPosition().x >= px - 3) &&					// Within the handle2 position
+			px = x0 + w * (node.point.x + node.handle2.x);
+			py = y0 + h - h * (node.point.y + node.handle2.y - ymin) / (ymax - ymin);
+			if ((node.nodeType != NodeType::END_NODE) &&			// No END_NODEs
+				(node.nodeType != NodeType::POINT_NODE) &&		// No POINT_NODEs
+				(node.nodeType != NodeType::AUTO_SMOOTH_NODE) &&	// No AUTO_SMOOTH_NODEs
+				(event->getPosition().x >= px - 3) &&			// Within the handle2 position
 				(event->getPosition().x <= px + 3) &&
 				(event->getPosition().y >= py - 3) &&
 				(event->getPosition().y <= py + 3))
@@ -337,12 +338,12 @@ void ShapeWidget::onButtonPressed (BEvents::PointerEvent* event)
 			}
 
 			// Handle1 => Select
-			px = x0 + w * (nodes[grabbedNode].point.x + nodes[grabbedNode].handle1.x);
-			py = y0 + h - h * (nodes[grabbedNode].point.y + nodes[grabbedNode].handle1.y - ymin) / (ymax - ymin);
-			if ((nodes[grabbedNode].nodeType != NodeType::END_NODE) &&		// No END_NODEs
-				(nodes[grabbedNode].nodeType != NodeType::POINT_NODE) &&	// No POINT_NODEs
-				(nodes[grabbedNode].nodeType != NodeType::AUTO_SMOOTH_NODE) &&	// No AUTO_SMOOTH_NODEs
-				(event->getPosition().x >= px - 3) &&					// Within the handle1 position
+			px = x0 + w * (node.point.x + node.handle1.x);
+			py = y0 + h - h * (node.point.y + node.handle1.y - ymin) / (ymax - ymin);
+			if ((node.nodeType != NodeType::END_NODE) &&			// No END_NODEs
+				(node.nodeType != NodeType::POINT_NODE) &&		// No POINT_NODEs
+				(node.nodeType != NodeType::AUTO_SMOOTH_NODE) &&	// No AUTO_SMOOTH_NODEs
+				(event->getPosition().x >= px - 3) &&			// Within the handle1 position
 				(event->getPosition().x <= px + 3) &&
 				(event->getPosition().y >= py - 3) &&
 				(event->getPosition().y <= py + 3))
@@ -356,10 +357,11 @@ void ShapeWidget::onButtonPressed (BEvents::PointerEvent* event)
 		}
 
 		// Point => Select
-		for (unsigned int i = 0; i < nodes.size; ++i)
+		for (unsigned int i = 0; i < nodes_.size; ++i)
 		{
-			px = x0 + w * nodes[i].point.x;
-			py = y0 + h - h * (nodes[i].point.y - ymin) / (ymax - ymin);
+			Node node = getNode (i);
+			px = x0 + w * node.point.x;
+			py = y0 + h - h * (node.point.y - ymin) / (ymax - ymin);
 			if ((event->getPosition().x >= px - 6) &&	// Within the point position
 				(event->getPosition().x <= px + 6) &&
 				(event->getPosition().y >= py - 6) &&
@@ -492,8 +494,10 @@ void ShapeWidget::onPointerDragged (BEvents::PointerEvent* event)
 		double px = (event->getPosition().x - x0) / w;
 
 		// Node or handle dragged
-		if ((grabbedNode >= 0) && (grabbedNode < ((int)nodes.size)))
+		if ((grabbedNode >= 0) && (grabbedNode < int (nodes_.size)))
 		{
+			Node node = getNode (grabbedNode);
+
 			// Snap to grid
 			if (gridSnap)
 			{
@@ -507,21 +511,17 @@ void ShapeWidget::onPointerDragged (BEvents::PointerEvent* event)
 				// Drag right handle
 				if (grabbedHandle == 2)
 				{
-					Node node = nodes[grabbedNode];
-					node.handle2.x = px - nodes[grabbedNode].point.x;
-					node.handle2.y = py - nodes[grabbedNode].point.y;
-
+					node.handle2.x = px - node.point.x;
+					node.handle2.y = py - node.point.y;
 					if (node.nodeType == SYMMETRIC_SMOOTH_NODE) node.handle1 = BUtilities::Point (0, 0) - node.handle2;
-
 					changeNode (grabbedNode, node);
 				}
 
 				// Drag left handle
 				else if (grabbedHandle == 1)
 				{
-					Node node = nodes[grabbedNode];
-					node.handle1.x = px - nodes[grabbedNode].point.x;
-					node.handle1.y = py - nodes[grabbedNode].point.y;
+					node.handle1.x = px - node.point.x;
+					node.handle1.y = py - node.point.y;
 					changeNode (grabbedNode, node);
 				}
 			}
@@ -529,24 +529,27 @@ void ShapeWidget::onPointerDragged (BEvents::PointerEvent* event)
 			// Point: Drag all selected points
 			else if (clickMode == DRAG_NODE)
 			{
-				double dpy = py - nodes[grabbedNode].point.y;
-				double dpx = px - nodes[grabbedNode].point.x;
+				double dpy = py - node.point.y;
+				double dpx = px - node.point.x;
 
 				// Get sure that selected points are not moved over their unselected antecessors / successors
-				for (int i = 0; (i < int (nodes.size)) && (dpx != 0.0); ++i)
+				for (int i = 0; (i < int (nodes_.size)) && (dpx != 0.0); ++i)
 				{
 					if (selection[i])
 					{
+						Node iNode = getNode (i);
+
 						// END_NODEs: No X movement allowed
-						if (nodes[i].nodeType == NodeType::END_NODE) dpx = 0;
+						if (iNode.nodeType == NodeType::END_NODE) dpx = 0;
 
 						// Find antecessor
 						else if (dpx < 0)
 						{
 							size_t ant = selection.getUnselectedAntecessor (i);
-							if (ant < nodes.size)
+							if (ant < nodes_.size)
 							{
-								if (nodes[i].point.x + dpx < nodes[ant].point.x) dpx = nodes[ant].point.x - nodes[i].point.x;
+								Node antNode = getNode (ant);
+								if (iNode.point.x + dpx < antNode.point.x) dpx = antNode.point.x - iNode.point.x;
 							}
 						}
 
@@ -554,39 +557,41 @@ void ShapeWidget::onPointerDragged (BEvents::PointerEvent* event)
 						else if (dpx > 0)
 						{
 							size_t suc = selection.getUnselectedSuccessor (i);
-							if (suc < nodes.size)
+							if (suc < nodes_.size)
 							{
-								if (nodes[i].point.x + dpx > nodes[suc].point.x) dpx = nodes[suc].point.x - nodes[i].point.x;
+								Node sucNode = getNode (suc);
+								if (iNode.point.x + dpx > sucNode.point.x) dpx = sucNode.point.x - iNode.point.x;
 							}
 						}
 					}
 				}
 
 				// Move selected points
-				for (size_t i = 0; i < nodes.size; ++i)
+				for (size_t i = 0; i < nodes_.size; ++i)
 				{
 					if (selection[i])
 					{
+						Node iNode = getNode (i);
+
 						//Y drag both END_NODEs
-						if (nodes[i].nodeType == NodeType::END_NODE)
+						if (iNode.nodeType == NodeType::END_NODE)
 						{
-							if (nodes.size >= 2)
+							if (nodes_.size >= 2)
 							{
-								Node node = nodes[0];
-								node.point.x = nodes[0].point.x;
-								node.point.y = nodes[0].point.y + dpy;
-								changeNode (0, node);
-								node.point.x = nodes[nodes.size - 1].point.x;
-								changeNode (nodes.size - 1, node);
+								Node startNode = getNode (0);
+								startNode.point.y += dpy;
+								changeNode (0, startNode);
+								Node endNode = getNode (nodes_.size - 1);
+								endNode.point.y = startNode.point.y;
+								changeNode (nodes_.size - 1, endNode);
 							}
 						}
 
 						else
 						{
-							Node node = nodes[grabbedNode];
-							node.point.x = nodes[i].point.x + dpx;
-							node.point.y = nodes[i].point.y + dpy;
-							changeNode (i, node);
+							iNode.point.x += dpx;
+							iNode.point.y += dpy;
+							changeNode (i, iNode);
 						}
 					}
 				}
@@ -605,9 +610,9 @@ void ShapeWidget::onPointerDragged (BEvents::PointerEvent* event)
 
 			// Select / deselect selection[i]
 			selection.fill (false);
-			for (int i = 0; i < int (nodes.size); ++i)
+			for (int i = 0; i < int (nodes_.size); ++i)
 			{
-				BUtilities::Point p = nodes[i].point;
+				BUtilities::Point p = getNode(i).point;
 
 				if ((p.x >= p1.x) && (p.x <= p2.x) && (p.y >= p1.y) && (p.y <= p2.y))
 				{
@@ -857,8 +862,8 @@ void ShapeWidget::draw (const BUtilities::RectArea& area)
 		}
 
 		// Draw curve
-		cairo_move_to (cr, x0, y0 + h - h * (map[0] - ymin) / (ymax - ymin));
-		for (int i = 1; i < MAPRES; ++i) cairo_line_to (cr, x0 + w * i / MAPRES, y0 + h - h * (map[i] - ymin) / (ymax - ymin));
+		cairo_move_to (cr, x0, y0 + h - h * (retransform (map_[0]) - ymin) / (ymax - ymin));
+		for (int i = 1; i < MAPRES; ++i) cairo_line_to (cr, x0 + w * i / MAPRES, y0 + h - h * (retransform (map_[i]) - ymin) / (ymax - ymin));
 		cairo_set_line_width (cr, 2);
 		cairo_set_source_rgba (cr, CAIRO_RGBA (lineColor));
 		cairo_stroke_preserve (cr);
@@ -876,12 +881,13 @@ void ShapeWidget::draw (const BUtilities::RectArea& area)
 		cairo_pattern_destroy (pat);
 
 		// Draw nodes
-		for (unsigned int i = 0; i < nodes.size; ++i)
+		for (unsigned int i = 0; i < nodes_.size; ++i)
 		{
-			double xp = nodes[i].point.x;
-			double yp = nodes[i].point.y;
+			Node iNode = getNode (i);
+			double xp = iNode.point.x;
+			double yp = iNode.point.y;
 
-			if ((nodes[i].nodeType == NodeType::END_NODE) || (nodes[i].nodeType == NodeType::POINT_NODE))
+			if ((iNode.nodeType == NodeType::END_NODE) || (iNode.nodeType == NodeType::POINT_NODE))
 			{
 				cairo_move_to (cr, x0 + xp * w - 6, y0 + h - h * (yp - ymin) / (ymax - ymin));
 				cairo_line_to (cr, x0 + xp * w, y0 + h - h * (yp - ymin) / (ymax - ymin) - 6);
@@ -906,15 +912,15 @@ void ShapeWidget::draw (const BUtilities::RectArea& area)
 				cairo_stroke (cr);
 			}
 
-			if (((int)i) == grabbedNode)
+			if (int (i) == grabbedNode)
 			{
 				// Draw handles
-				if ((nodes[i].nodeType == SYMMETRIC_SMOOTH_NODE) || (nodes[i].nodeType == CORNER_NODE))
+				if ((nodes_[i].nodeType == SYMMETRIC_SMOOTH_NODE) || (nodes_[i].nodeType == CORNER_NODE))
 				{
 					if (i != 0)
 					{
-						double nx = nodes[i].handle1.x;
-						double ny = nodes[i].handle1.y;
+						double nx = iNode.handle1.x;
+						double ny = iNode.handle1.y;
 						cairo_move_to (cr, x0 + xp * w, y0 + h - h * (yp - ymin) / (ymax - ymin));
 						cairo_line_to (cr, x0 + (xp + nx) * w, y0 + h - h * (yp + ny - ymin) / (ymax - ymin));
 						cairo_arc (cr, x0 + (xp + nx) * w, y0 + h - h * (yp + ny - ymin) / (ymax - ymin), 3.0, 0.0, 2 * M_PI);
@@ -922,10 +928,10 @@ void ShapeWidget::draw (const BUtilities::RectArea& area)
 						cairo_stroke (cr);
 					}
 
-					if (i != nodes.size - 1)
+					if (i != nodes_.size - 1)
 					{
-						double nx = nodes[i].handle2.x;
-						double ny = nodes[i].handle2.y;
+						double nx = iNode.handle2.x;
+						double ny = iNode.handle2.y;
 						cairo_move_to (cr, x0 + xp * w, y0 + h - h * (yp - ymin) / (ymax - ymin));
 						cairo_line_to (cr, x0 + (xp + nx) * w, y0 + h - h * (yp + ny - ymin) / (ymax - ymin));
 						cairo_arc (cr, x0 + (xp + nx) * w, y0 + h - h * (yp + ny - ymin) / (ymax - ymin), 3.0, 0.0, 2 * M_PI);
