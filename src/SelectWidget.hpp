@@ -22,18 +22,26 @@
 #define SELECTWIDGET_HPP_
 
 #include "BWidgets/RangeWidget.hpp"
+#include "BWidgets/Focusable.hpp"
+#include "BWidgets/Label.hpp"
 
-class SelectWidget : public BWidgets::RangeWidget
+class SelectWidget : public BWidgets::RangeWidget, public BWidgets::Focusable
 {
 public:
 	SelectWidget ();
 	SelectWidget (const double x, const double y, const double width, const double height, const std::string& name,
-				  const double selectionWidth, const double selectionHeight, const double nrTools, const double value);
+		      const double selectionWidth, const double selectionHeight, const double nrTools, const double value,
+	      	      std::vector<std::string> labeltexts = {});
+	SelectWidget (const SelectWidget& that);
+
+	SelectWidget& operator= (const SelectWidget& that);
 
 	void resizeSelection (const double width, const double height);
 	virtual void applyTheme (BStyles::Theme& theme) override;
 	virtual void applyTheme (BStyles::Theme& theme, const std::string& name) override;
 	virtual void onButtonPressed (BEvents::PointerEvent* event) override;
+	virtual void onFocusIn (BEvents::FocusEvent* event) override;
+	virtual void onFocusOut (BEvents::FocusEvent* event) override;
 
 protected:
 	virtual void draw (const BUtilities::RectArea& area) override;
@@ -42,6 +50,8 @@ protected:
 	int nrTools;
 	double selectionWidth;
 	double selectionHeight;
+	std::vector<std::string> labelTexts_;
+	BWidgets::Label focusLabel_;
 };
 
 #endif /* SELECTWIDGET_HPP_ */

@@ -23,10 +23,52 @@
 SelectWidget::SelectWidget () : SelectWidget (0, 0, 0, 0, "tool", 0, 0, 0, 0) {}
 
 SelectWidget::SelectWidget (const double  x, const double y, const double width, const double height, const std::string& name,
-							const double selectionWidth, const double selectionHeight, const double nrTools, const double value) :
+			    const double selectionWidth, const double selectionHeight, const double nrTools, const double value,
+			    std::vector<std::string> labeltexts) :
 	RangeWidget (x, y, width, height, name, value, 0, nrTools, 1),
+	Focusable (std::chrono::milliseconds (BWIDGETS_DEFAULT_FOCUS_IN_MS),
+		   std::chrono::milliseconds (BWIDGETS_DEFAULT_FOCUS_OUT_MS)),
 	bgColors (BColors::greys), nrTools (nrTools),
-	selectionWidth (selectionWidth), selectionHeight (selectionHeight) {}
+	selectionWidth (selectionWidth), selectionHeight (selectionHeight),
+	labelTexts_ (labeltexts),
+	focusLabel_ (0, 0, 40, 20, name_ + BWIDGETS_DEFAULT_FOCUS_NAME, "")
+{
+	focusLabel_.setOversize (true);
+	focusLabel_.resize ();
+	focusLabel_.hide ();
+	add (focusLabel_);
+}
+
+SelectWidget::SelectWidget (const SelectWidget& that) :
+	RangeWidget (that), Focusable (that),
+	bgColors (that.bgColors), nrTools (that.nrTools),
+	selectionWidth (that.selectionWidth), selectionHeight (that.selectionHeight),
+	labelTexts_ (that.labelTexts_),
+	focusLabel_ (that.focusLabel_)
+{
+	focusLabel_.hide();
+	add (focusLabel_);
+}
+
+SelectWidget& SelectWidget::operator= (const SelectWidget& that)
+{
+	release (&focusLabel_);
+	bgColors = that.bgColors;
+	nrTools = that.nrTools;
+	selectionWidth = that.selectionWidth;
+	selectionHeight = that.selectionHeight;
+	labelTexts_ = that.labelTexts_;
+	focusLabel_ = that.focusLabel_;
+	focusLabel_.hide();
+
+	RangeWidget::operator= (that);
+	Focusable::operator= (that);
+
+	add (focusLabel_);
+
+	return *this;
+
+}
 
 void SelectWidget::resizeSelection (const double width, const double height)
 {
@@ -43,6 +85,7 @@ void SelectWidget::applyTheme (BStyles::Theme& theme) {applyTheme (theme, name_)
 void SelectWidget::applyTheme (BStyles::Theme& theme, const std::string& name)
 {
 	Widget::applyTheme (theme, name);
+	focusLabel_.applyTheme (theme, name + BWIDGETS_DEFAULT_FOCUS_NAME);
 
 	// Background colors (scale background, knob)
 	void* bgPtr = theme.getStyle(name, BWIDGETS_KEYWORD_BGCOLORS);
@@ -67,6 +110,34 @@ void SelectWidget::onButtonPressed (BEvents::PointerEvent* event)
 			}
 		}
 	}
+}
+
+void SelectWidget::onFocusIn (BEvents::FocusEvent* event)
+{
+	if (event && event->getWidget())
+	{
+		BUtilities::Point pos = event->getPosition();
+		double w = selectionWidth;
+		double sp = (nrTools >= 2 ? ((getWidth() - w * nrTools) / (nrTools - 1)) : 0);
+
+		if (w + sp > 0)
+		{
+			int t = pos.x / (w + sp);
+			if ((t < int (labelTexts_.size())) && (pos.x < t * (w + sp) + w))
+			{
+				focusLabel_.setText (labelTexts_[t]);
+				focusLabel_.resize();
+				focusLabel_.moveTo (pos.x - 0.5 * focusLabel_.getWidth(), pos.y - focusLabel_.getHeight());
+				focusLabel_.show();
+			}
+		}
+	}
+	Widget::onFocusIn (event);
+}
+void SelectWidget::onFocusOut (BEvents::FocusEvent* event)
+{
+	if (event && event->getWidget()) focusLabel_.hide();
+	Widget::onFocusOut (event);
 }
 
 void SelectWidget::draw (const BUtilities::RectArea& area)

@@ -154,12 +154,12 @@ a base.
 * Cut, copy, paste between shapes improved by use of *relative* shape nodes
 * Automatic translation of shape nodes if effect changed
 * DSP <-> GUI communication on GUI on fixed
+* Hover effects for all tools
 
 ## TODO
 
 * Additional effects (any ideas welcome)
 * Report latency (pitch shifter)
-* Fix click on MIDI ON problem
 
 ## See also
 

@@ -91,10 +91,11 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 		shapeGui[i].tabMsgBoxBg = nullptr;
 		shapeGui[i].smoothingLabel = BWidgets::Label (960, 410, 40, 10, "ssmlabel", "Smooth");
 		shapeGui[i].smoothingDial = BWidgets::DialValue (960, 366, 40, 48, "dial", 20.0, 0.0, 100.0, 0, "%3.1f ms");
-		shapeGui[i].toolSelect = SelectWidget (133, 368, 284, 44, "tool", 44, 44, 5, 2);
-		for (int j = 0; j < 4; ++j) shapeGui[i].editWidgets[j] = BWidgets::Widget (463 + j * 60, 368, 44, 44, "widget");
-		for (int j = 4; j < 7; ++j) shapeGui[i].editWidgets[j] = BWidgets::Widget (503 + j * 60, 368, 44, 44, "widget");
-		shapeGui[i].gridSelect = SelectWidget (1043, 368, 104, 44, "tool", 44, 44, 2, 2);
+		shapeGui[i].toolSelect = SelectWidget (133, 368, 284, 44, "tool", 44, 44, 5, 2,
+			{"Select", "Point node", "Auto Bezier node", "Symmetric Bezier node", "Asymmetric Bezier node"});
+		for (int j = 0; j < 4; ++j) shapeGui[i].editWidgets[j] = EditWidget (463 + j * 60, 368, 44, 44, "widget", editWidgetLabels[j]);
+		for (int j = 4; j < 7; ++j) shapeGui[i].editWidgets[j] = EditWidget (503 + j * 60, 368, 44, 44, "widget", editWidgetLabels[j]);
+		shapeGui[i].gridSelect = SelectWidget (1043, 368, 104, 44, "tool", 44, 44, 2, 2, {"Show grid", "Snap to grid"});
 		shapeGui[i].drywetLabel = BWidgets::Label (500, 494, 50, 16, "smlabel", "dry/wet");
 		shapeGui[i].drywetDial = BWidgets::DialValue (500, 434, 50, 60, "dial", 1.0, 0.0, 1.0, 0, "%1.2f");
 

@@ -48,6 +48,7 @@
 #include "HorizonWidget.hpp"
 #include "MonitorWidget.hpp"
 #include "SymbolWidget.hpp"
+#include "EditWidget.hpp"
 #include "Globals.hpp"
 #include "Urids.hpp"
 #include "BShaprNotifications.hpp"
@@ -65,6 +66,8 @@ const std::string messageStrings[MAXMESSAGES] =
 	"Msg: Orphan active shape. Select an input for this shape!",
 	"Msg: Orphan active shape. Select an output for this or a connected shape!"
 };
+
+const std::string editWidgetLabels[7] = {"Cut", "Copy", "Paste", "Delete", "Reset", "Undo", "Redo"};
 
 class BShaprGUI : public BWidgets::Window
 {
@@ -136,7 +139,7 @@ private:
 		std::array<BWidgets::ValueWidget*, MAXOPTIONS> optionWidgets;
 		std::array<BWidgets::Label, MAXOPTIONS> optionLabels;
 		SelectWidget toolSelect;
-		std::array<BWidgets::Widget, 7> editWidgets;
+		std::array<EditWidget, 7> editWidgets;
 		SelectWidget gridSelect;
 	} ;
 
@@ -186,11 +189,11 @@ private:
 	BColors::ColorSet ink2 = {{{1.0, 0.0, 0.75, 1.0}, {1.0, 0.5, 0.9, 1.0}, {0.25, 0.0, 0.1, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
 	BStyles::Border labelBorder = BStyles::Border (BStyles::noLine, 0.0, 4.0);
 	BStyles::Border menuBorder = BStyles::Border (BStyles::Line (BColors::Color (0.2, 0.2, 0.2, 1.0), 1.0));
-	BStyles::Border screenBorder = BStyles::Border (BStyles::Line (BColors::Color (0.0, 0.0, 0.0, 0.5), 2.0));
+	BStyles::Border screenBorder = BStyles::Border (BStyles::Line (BColors::Color (0.0, 0.0, 0.0, 0.75), 4.0));
 	BStyles::Border itemBorder = BStyles::Border (BStyles::noLine, 0.0, 2.0);
 	BStyles::Fill tabBg = BStyles::Fill (BColors::Color (0.5, 0, 0.5, 0.5));
 	BStyles::Fill activeTabBg = BStyles::Fill (BColors::Color (0.5, 0, 0.5, 0.875));
-	BStyles::Fill screenBg = BStyles::Fill (BColors::Color (0.0, 0.0, 0.0, 0.5));
+	BStyles::Fill screenBg = BStyles::Fill (BColors::Color (0.0, 0.0, 0.0, 0.75));
 	BStyles::Font defaultFont = BStyles::Font ("Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL, 12.0,
 						   BStyles::TEXT_ALIGN_CENTER, BStyles::TEXT_VALIGN_MIDDLE);
  	BStyles::Font smFont = BStyles::Font ("Sans", CAIRO_FONT_SLANT_NORMAL, CAIRO_FONT_WEIGHT_NORMAL, 10.0,
@@ -211,6 +214,10 @@ private:
 		{"B.Shapr", 		{{"background", STYLEPTR (&BStyles::blackFill)},
 					 {"border", STYLEPTR (&BStyles::noBorder)}}},
 		{"widget", 		{{"uses", STYLEPTR (&defaultStyles)}}},
+		{"widget/focus", 	{{"background", STYLEPTR (&screenBg)},
+				 	 {"border", STYLEPTR (&screenBorder)},
+					 {"textcolors", STYLEPTR (&txColors)},
+					 {"font", STYLEPTR (&smFont)}}},
 		{"frame", 		{{"uses", STYLEPTR (&defaultStyles)},
 					 {"border", STYLEPTR (&BStyles::whiteBorder1pt)}}},
 		{"screen", 		{{"background", STYLEPTR (&screenBg)}}},
@@ -222,6 +229,10 @@ private:
 					 {"border", STYLEPTR (&BStyles::noBorder)}}},
 		{"tool", 		{{"uses", STYLEPTR (&defaultStyles)},
 					 {"bgcolors", STYLEPTR (&BColors::whites)}}},
+		{"tool/focus", 		{{"background", STYLEPTR (&screenBg)},
+				 	 {"border", STYLEPTR (&screenBorder)},
+					 {"textcolors", STYLEPTR (&txColors)},
+					 {"font", STYLEPTR (&smFont)}}},
 		{"monitor.in", 		{{"background", STYLEPTR (&BStyles::blackFill)},
 					 {"border", STYLEPTR (&BStyles::noBorder)},
 				 	 {"fgcolors", STYLEPTR (&ink1)}}},
