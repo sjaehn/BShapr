@@ -57,6 +57,11 @@ The user can define up to four different envelope shapes by drawing Bezier curve
 shapes can be connected to different target effects, such as amplification, balance, stereo width,
 filters, pitch shift, delay, and distortion effecs and can be combined together.
 
+### Global
+
+Press the bypass button to bypass the plugin. The dry/wet dial in the top right of the plugin GUI sets the global
+mixing ratio of the plugin input : plugin output.
+
 ### Shape selector
 
 Select the shape to edit. You can choose between up to four user-defineable shapes. You can remove (-) shapes if not
@@ -150,11 +155,8 @@ a base.
 
 ## What's new
 
-* Smoothing option
-* Cut, copy, paste between shapes improved by use of *relative* shape nodes
-* Automatic translation of shape nodes if effect changed
-* DSP <-> GUI communication on GUI on fixed
-* Hover effects for all tools
+* Bypass
+* Dry / wet mixing
 
 ## TODO
 
