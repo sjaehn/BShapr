@@ -29,6 +29,8 @@
 
 const Limit globalControllerLimits [SHAPERS] =
 {
+	{0, 1, 1},
+	{0, 1, 0},
 	{0, 1, 0},
 	{0, 4095, 0},
 	{0, 2, 1},

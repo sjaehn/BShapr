@@ -71,8 +71,27 @@
 		lv2:symbol "lv2_audio_out_2" ;
 		lv2:name "Audio Output 2" ;
 	] , [
+                a lv2:InputPort , lv2:ControlPort ;
+                lv2:index 6 ;
+                lv2:symbol "bypass" ;
+                lv2:name "Bypass" ;
+		lv2:portProperty lv2:integer, lv2:enumeration ;
+		lv2:scalePoint [ rdfs:label "Off"; rdf:value 0 ] ;
+		lv2:scalePoint [ rdfs:label "On"; rdf:value 1 ] ;
+                lv2:default 0 ;
+                lv2:minimum 0 ;
+                lv2:maximum 1 ;
+        ] , [
+                a lv2:InputPort , lv2:ControlPort ;
+                lv2:index 7 ;
+                lv2:symbol "dry_wet" ;
+                lv2:name "Dry / wet" ;
+		lv2:default 1.0 ;
+                lv2:minimum 0.0 ;
+                lv2:maximum 1.0 ;
+        ] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 6 ;
+		lv2:index 8 ;
 		lv2:symbol "midi_control" ;
 		lv2:name "MIDI control" ;
 		lv2:portProperty lv2:integer ;
@@ -81,7 +100,7 @@
 		lv2:maximum 1 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 7 ;
+		lv2:index 9 ;
 		lv2:symbol "midi_keys" ;
 		lv2:name "MIDI Keys" ;
 		lv2:portProperty lv2:integer ;
@@ -90,7 +109,7 @@
 		lv2:maximum 4095 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 8 ;
+		lv2:index 10 ;
 		lv2:symbol "base" ;
 		lv2:name "Base" ;
 		lv2:portProperty lv2:integer, lv2:enumeration ;
@@ -102,7 +121,7 @@
 		lv2:maximum 2 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 9 ;
+		lv2:index 11 ;
 		lv2:symbol "base_value" ;
 		lv2:name "Base value" ;
 		lv2:default 1.0 ;
@@ -110,7 +129,7 @@
 		lv2:maximum 16.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 10 ;
+		lv2:index 12 ;
 		lv2:symbol "active_shape" ;
 		lv2:name "Active shape" ;
 		lv2:portProperty lv2:integer ;
@@ -119,7 +138,7 @@
 		lv2:maximum 4 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 11 ;
+		lv2:index 13 ;
 		lv2:symbol "sh1_input" ;
 		lv2:name "Shaper 1: input" ;
 		lv2:portProperty lv2:integer, lv2:enumeration ;
@@ -134,7 +153,7 @@
 		lv2:maximum 6 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 12 ;
+		lv2:index 14 ;
 		lv2:symbol "sh1_input_amp" ;
 		lv2:name "Shaper 1: input amplification" ;
 		lv2:default 1.0 ;
@@ -142,7 +161,7 @@
 		lv2:maximum 1.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 13 ;
+		lv2:index 15 ;
 		lv2:symbol "sh1_target" ;
 		lv2:name "Shaper 1: target" ;
 		lv2:portProperty lv2:integer, lv2:enumeration ;
@@ -165,7 +184,7 @@
 		lv2:maximum 13 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 14 ;
+		lv2:index 16 ;
 		lv2:symbol "sh1_dry_wet" ;
 		lv2:name "Shaper 1: dry / wet" ;
 		lv2:default 1.0 ;
@@ -173,7 +192,7 @@
 		lv2:maximum 1.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 15 ;
+		lv2:index 17 ;
 		lv2:symbol "sh1_output" ;
 		lv2:name "Shaper 1: output" ;
 		lv2:portProperty lv2:integer, lv2:enumeration ;
@@ -184,7 +203,7 @@
 		lv2:maximum 1 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 16 ;
+		lv2:index 18 ;
 		lv2:symbol "sh1_output_amp" ;
 		lv2:name "Shaper 1: output amplification" ;
 		lv2:default 1.0 ;
@@ -192,7 +211,7 @@
 		lv2:maximum 1.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 17 ;
+		lv2:index 19 ;
 		lv2:symbol "sh1_smoothing" ;
 		lv2:name "Shaper 1: smoothing" ;
 		lv2:default 20.0 ;
@@ -200,7 +219,7 @@
 		lv2:maximum 100.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 18 ;
+		lv2:index 20 ;
 		lv2:symbol "sh1_opt1" ;
 		lv2:name "Shaper 1: option 1" ;
 		lv2:portProperty lv2:integer ;
@@ -209,7 +228,7 @@
 		lv2:maximum 72 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 19 ;
+		lv2:index 21 ;
 		lv2:symbol "sh1_opt2" ;
 		lv2:name "Shaper 1: option 2" ;
 		lv2:portProperty lv2:integer ;
@@ -218,7 +237,7 @@
 		lv2:maximum 4 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 20 ;
+		lv2:index 22 ;
 		lv2:symbol "sh1_opt3" ;
 		lv2:name "Shaper 1: option 3" ;
 		lv2:default 0.0 ;
@@ -226,7 +245,7 @@
 		lv2:maximum 30.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 21 ;
+		lv2:index 23 ;
 		lv2:symbol "sh1_opt4" ;
 		lv2:name "Shaper 1: option 4" ;
 		lv2:default 0.0 ;
@@ -234,7 +253,7 @@
 		lv2:maximum 1.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 22 ;
+		lv2:index 24 ;
 		lv2:symbol "sh2_input" ;
 		lv2:name "Shaper 2: input" ;
 		lv2:portProperty lv2:integer, lv2:enumeration ;
@@ -249,7 +268,7 @@
 		lv2:maximum 6 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 23 ;
+		lv2:index 25 ;
 		lv2:symbol "sh2_input_amp" ;
 		lv2:name "Shaper 2: input amplification" ;
 		lv2:default 1.0 ;
@@ -257,7 +276,7 @@
 		lv2:maximum 1.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 24 ;
+		lv2:index 26 ;
 		lv2:symbol "sh2_target" ;
 		lv2:name "Shaper 2: target" ;
 		lv2:portProperty lv2:integer, lv2:enumeration ;
@@ -280,7 +299,7 @@
 		lv2:maximum 13 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 25 ;
+		lv2:index 27 ;
 		lv2:symbol "sh2_dry_wet" ;
 		lv2:name "Shaper 2: dry / wet" ;
 		lv2:default 1.0 ;
@@ -288,7 +307,7 @@
 		lv2:maximum 1.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 26 ;
+		lv2:index 28 ;
 		lv2:symbol "sh2_output" ;
 		lv2:name "Shaper 2: output" ;
 		lv2:portProperty lv2:integer, lv2:enumeration ;
@@ -299,7 +318,7 @@
 		lv2:maximum 1 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 27 ;
+		lv2:index 29 ;
 		lv2:symbol "sh2_output_amp" ;
 		lv2:name "Shaper 2: output amplification" ;
 		lv2:default 1.0 ;
@@ -307,7 +326,7 @@
 		lv2:maximum 1.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 28 ;
+		lv2:index 30 ;
 		lv2:symbol "sh2_smoothing" ;
 		lv2:name "Shaper 2: smoothing" ;
 		lv2:default 20.0 ;
@@ -315,7 +334,7 @@
 		lv2:maximum 100.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 29 ;
+		lv2:index 31 ;
 		lv2:symbol "sh2_opt1" ;
 		lv2:name "Shaper 2: option 1" ;
 		lv2:portProperty lv2:integer ;
@@ -324,7 +343,7 @@
 		lv2:maximum 72 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 30 ;
+		lv2:index 32 ;
 		lv2:symbol "sh2_opt2" ;
 		lv2:name "Shaper 2: option 2" ;
 		lv2:portProperty lv2:integer ;
@@ -333,7 +352,7 @@
 		lv2:maximum 4 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 31 ;
+		lv2:index 33 ;
 		lv2:symbol "sh2_opt3" ;
 		lv2:name "Shaper 2: option 3" ;
 		lv2:default 0.0 ;
@@ -341,7 +360,7 @@
 		lv2:maximum 30.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 32 ;
+		lv2:index 34 ;
 		lv2:symbol "sh2_opt4" ;
 		lv2:name "Shaper 2: option 4" ;
 		lv2:default 0.0 ;
@@ -349,7 +368,7 @@
 		lv2:maximum 1.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 33 ;
+		lv2:index 35 ;
 		lv2:symbol "sh3_input" ;
 		lv2:name "Shaper 3: input" ;
 		lv2:portProperty lv2:integer, lv2:enumeration ;
@@ -364,7 +383,7 @@
 		lv2:maximum 6 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 34 ;
+		lv2:index 36 ;
 		lv2:symbol "sh3_input_amp" ;
 		lv2:name "Shaper 3: input amplification" ;
 		lv2:portProperty lv2:integer ;
@@ -373,7 +392,7 @@
 		lv2:maximum 1.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 35 ;
+		lv2:index 37 ;
 		lv2:symbol "sh3_target" ;
 		lv2:name "Shaper 3: target" ;
 		lv2:portProperty lv2:integer, lv2:enumeration ;
@@ -396,7 +415,7 @@
 		lv2:maximum 13 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 36 ;
+		lv2:index 38 ;
 		lv2:symbol "sh3_dry_wet" ;
 		lv2:name "Shaper 3: dry / wet" ;
 		lv2:default 1.0 ;
@@ -404,7 +423,7 @@
 		lv2:maximum 1.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 37 ;
+		lv2:index 39 ;
 		lv2:symbol "sh3_output" ;
 		lv2:name "Shaper 3: output" ;
 		lv2:portProperty lv2:integer, lv2:enumeration ;
@@ -415,7 +434,7 @@
 		lv2:maximum 1 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 38 ;
+		lv2:index 40 ;
 		lv2:symbol "sh3_output_amp" ;
 		lv2:name "Shaper 3: output amplification" ;
 		lv2:default 1.0 ;
@@ -423,7 +442,7 @@
 		lv2:maximum 1.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 39 ;
+		lv2:index 41 ;
 		lv2:symbol "sh3_smoothing" ;
 		lv2:name "Shaper 3: smoothing" ;
 		lv2:default 20.0 ;
@@ -431,7 +450,7 @@
 		lv2:maximum 100.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 40 ;
+		lv2:index 42 ;
 		lv2:symbol "sh3_opt1" ;
 		lv2:name "Shaper 3: option 1" ;
 		lv2:portProperty lv2:integer ;
@@ -440,7 +459,7 @@
 		lv2:maximum 72 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 41 ;
+		lv2:index 43 ;
 		lv2:symbol "sh3_opt2" ;
 		lv2:name "Shaper 3: option 2" ;
 		lv2:portProperty lv2:integer ;
@@ -449,7 +468,7 @@
 		lv2:maximum 4 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 42 ;
+		lv2:index 44 ;
 		lv2:symbol "sh3_opt3" ;
 		lv2:name "Shaper 3: option 3" ;
 		lv2:default 0.0 ;
@@ -457,7 +476,7 @@
 		lv2:maximum 30.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 43 ;
+		lv2:index 45 ;
 		lv2:symbol "sh3_opt4" ;
 		lv2:name "Shaper 3: option 4" ;
 		lv2:default 0.0 ;
@@ -465,7 +484,7 @@
 		lv2:maximum 1.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 44 ;
+		lv2:index 46 ;
 		lv2:symbol "sh4_input" ;
 		lv2:name "Shaper 4: input" ;
 		lv2:portProperty lv2:integer, lv2:enumeration ;
@@ -480,7 +499,7 @@
 		lv2:maximum 6 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 45 ;
+		lv2:index 47 ;
 		lv2:symbol "sh4_input_amp" ;
 		lv2:name "Shaper 4: input amplification" ;
 		lv2:portProperty lv2:integer ;
@@ -489,7 +508,7 @@
 		lv2:maximum 1.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 46 ;
+		lv2:index 48 ;
 		lv2:symbol "sh4_target" ;
 		lv2:name "Shaper 4: target" ;
 		lv2:portProperty lv2:integer, lv2:enumeration ;
@@ -512,7 +531,7 @@
 		lv2:maximum 13 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 47 ;
+		lv2:index 49 ;
 		lv2:symbol "sh4_dry_wet" ;
 		lv2:name "Shaper 4: dry / wet" ;
 		lv2:default 1.0 ;
@@ -520,7 +539,7 @@
 		lv2:maximum 1.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 48 ;
+		lv2:index 50 ;
 		lv2:symbol "sh4_output" ;
 		lv2:name "Shaper 4: output" ;
 		lv2:portProperty lv2:integer, lv2:enumeration ;
@@ -531,7 +550,7 @@
 		lv2:maximum 1 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 49 ;
+		lv2:index 51 ;
 		lv2:symbol "sh4_output_amp" ;
 		lv2:name "Shaper 4: output amplification" ;
 		lv2:default 1.0 ;
@@ -539,7 +558,7 @@
 		lv2:maximum 1.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 50 ;
+		lv2:index 52 ;
 		lv2:symbol "sh4_smoothing" ;
 		lv2:name "Shaper 4: smoothing" ;
 		lv2:default 20.0 ;
@@ -547,7 +566,7 @@
 		lv2:maximum 100.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 51 ;
+		lv2:index 53 ;
 		lv2:symbol "sh4_opt1" ;
 		lv2:name "Shaper 4: option 1" ;
 		lv2:portProperty lv2:integer ;
@@ -556,7 +575,7 @@
 		lv2:maximum 72 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 52 ;
+		lv2:index 54 ;
 		lv2:symbol "sh4_opt2" ;
 		lv2:name "Shaper 4: option 2" ;
 		lv2:portProperty lv2:integer ;
@@ -565,7 +584,7 @@
 		lv2:maximum 4 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 53 ;
+		lv2:index 55 ;
 		lv2:symbol "sh4_opt3" ;
 		lv2:name "Shaper 4: option 3" ;
 		lv2:default 0.0 ;
@@ -573,7 +592,7 @@
 		lv2:maximum 30.0 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
-		lv2:index 54 ;
+		lv2:index 56 ;
 		lv2:symbol "sh4_opt4" ;
 		lv2:name "Shaper 4: option 4" ;
 		lv2:default 0.0 ;

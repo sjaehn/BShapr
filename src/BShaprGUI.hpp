@@ -49,6 +49,7 @@
 #include "MonitorWidget.hpp"
 #include "SymbolWidget.hpp"
 #include "EditWidget.hpp"
+#include "LightButton.hpp"
 #include "Globals.hpp"
 #include "Urids.hpp"
 #include "BShaprNotifications.hpp"
@@ -145,6 +146,8 @@ private:
 
 	BWidgets::ImageIcon mContainer;
 	BWidgets::Label messageLabel;
+	LightButton bypassButton;
+        BWidgets::DialValue drywetDial;
 	BWidgets::VSwitch midiSwitch;
 	BWidgets::HPianoRoll midiPiano;
 	BWidgets::Label midiLabel;
@@ -178,6 +181,7 @@ private:
 
 	// Definition of styles
 	BColors::ColorSet fgColors = {{{0.75, 0.0, 0.75, 1.0}, {1.0, 0.0, 1.0, 1.0}, {0.25, 0.0, 0.25, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
+	BColors::ColorSet rdColors = {{{0.75, 0.0, 0.0, 1.0}, {1.0, 0.25, 0.25, 1.0}, {0.2, 0.0, 0.0, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
 	BColors::ColorSet txColors = {{{1.0, 1.0, 1.0, 1.0}, {1.0, 1.0, 1.0, 1.0}, {0.2, 0.2, 0.2, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
 	BColors::ColorSet bgColors = {{{0.15, 0.15, 0.15, 1.0}, {0.3, 0.3, 0.3, 1.0}, {0.05, 0.05, 0.05, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
 	BColors::ColorSet ltbgColors = {{{0.3, 0.3, 0.3, 1.0}, {0.5, 0.5, 0.5, 1.0}, {0.1, 0.1, 0.1, 1.0}, {0.0, 0.0, 0.0, 0.0}}};
@@ -248,6 +252,9 @@ private:
 		{"shape/focus", 	{{"uses", STYLEPTR (&labelStyles)},
 					 {"background", STYLEPTR (&screenBg)},
 				 	 {"border", STYLEPTR (&screenBorder)}}},
+		{"redbutton", 		{{"uses", STYLEPTR (&defaultStyles)},
+				 	 {"fgcolors", STYLEPTR (&rdColors)},
+				 	 {"bgcolors", STYLEPTR (&bgColors)}}},
 		{"dial", 		{{"uses", STYLEPTR (&defaultStyles)},
 					 {"fgcolors", STYLEPTR (&fgColors)},
 					 {"bgcolors", STYLEPTR (&bgColors)},

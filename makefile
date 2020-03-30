@@ -84,6 +84,7 @@ GUI_INCL = \
 	src/BWidgets/Text.cpp \
 	src/BWidgets/UpButton.cpp \
 	src/BWidgets/DownButton.cpp \
+	src/BWidgets/ToggleButton.cpp \
 	src/BWidgets/Button.cpp \
 	src/BWidgets/DialValue.cpp \
 	src/BWidgets/Dial.cpp \

@@ -1095,8 +1095,8 @@ void BShapr::play (uint32_t start, uint32_t end)
 	// Return if halted or bpm == 0
 	if (((speed == 0.0f) && (controllers[BASE] != SECONDS)) || (bpm < 1.0f))
 	{
-		memset(audioOutput1,0,(end-start)*sizeof(float));
-		memset(audioOutput2,0,(end-start)*sizeof(float));
+		memset(&audioOutput1[start], 0, (end - start) * sizeof(float));
+		memset(&audioOutput2[start], 0, (end - start) * sizeof(float));
 		return;
 	}
 
@@ -1109,8 +1109,15 @@ void BShapr::play (uint32_t start, uint32_t end)
 		float output1 = 0;
 		float output2 = 0;
 
+		// Bypass
+		if (controllers[BYPASS] != 0.0f)
+		{
+			output1 = audioInput1[i];
+			output2 = audioInput2[i];
+		}
+
 		// Audio calculations only if MIDI-independent or key pressed
-		if ((controllers[MIDI_CONTROL] == 0.0f) || (key != 0xFF))
+		else if ((controllers[MIDI_CONTROL] == 0.0f) || (key != 0xFF))
 		{
 			float input1;
 			float input2;
@@ -1264,8 +1271,8 @@ void BShapr::play (uint32_t start, uint32_t end)
 		}
 
 		// Store in audio out
-		audioOutput1[i] = output1;
-		audioOutput2[i] = output2;
+		audioOutput1[i] = audioInput1[i] * (1 - controllers[DRY_WET]) + output1 * controllers[DRY_WET];
+		audioOutput2[i] = audioInput2[i] * (1 - controllers[DRY_WET]) + output2 * controllers[DRY_WET];
 	}
 }
 

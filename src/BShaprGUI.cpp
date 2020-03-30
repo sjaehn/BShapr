@@ -26,7 +26,9 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	bpm (120), beatsPerBar (4.0), beatUnit (4),
 
 	mContainer (0, 0, 1200, 710, "widget"),
-	messageLabel (600, 45, 600, 20, "label", ""),
+	messageLabel (500, 45, 500, 20, "label", ""),
+	bypassButton (1090, 66, 24, 24, "redbutton"),
+	drywetDial (1140, 60, 40, 48, "dial", 1.0, 0.0, 1.0, 0.0, "%1.2f"),
 	midiSwitch (720, 580, 20, 40, "dial", 0),
 	midiPiano (900, 580, 140, 55, "widget", 0, 11),
 	midiLabel (950, 565, 40, 10, "smlabel", "Filter"),
@@ -142,6 +144,8 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 
 	// Link controller widgets
 	controllerWidgets.fill (nullptr);
+	controllerWidgets[BYPASS] = (BWidgets::ValueWidget*) &bypassButton;
+	controllerWidgets[DRY_WET] = (BWidgets::ValueWidget*) &drywetDial;
 	controllerWidgets[MIDI_CONTROL] = (BWidgets::ValueWidget*) &midiSwitch;
 	controllerWidgets[BASE] = (BWidgets::ValueWidget*) &baseListBox;
 	controllerWidgets[BASE_VALUE] = (BWidgets::ValueWidget*) &baseValueSelect;
@@ -161,6 +165,8 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	for (int i = 0; i < NR_CONTROLLERS; ++i) controllers[i] = (controllerWidgets[i] ? controllerWidgets[i]->getValue () : 0);
 
 	// Set callbacks
+	bypassButton.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
+	drywetDial.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 	midiSwitch.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 	midiPiano.setCallbackFunction (BEvents::EventType::BUTTON_PRESS_EVENT, BShaprGUI::pianoCallback);
 	midiPiano.setCallbackFunction (BEvents::EventType::BUTTON_RELEASE_EVENT, BShaprGUI::pianoCallback);
@@ -194,6 +200,7 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	calculateXSteps ();
 	mContainer.loadImage (BColors::NORMAL, pluginPath + BG_FILE);
 	std::vector<bool> keys (12, true);
+	drywetDial.setHardChangeable (false);
 	midiPiano.setKeysToggleable (true);
 	midiPiano.pressKeys (keys);
 	midiPiano.hide();
@@ -261,6 +268,8 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 
 		mContainer.add (shapeGui[i].shapeContainer);
 	}
+	mContainer.add (bypassButton);
+	mContainer.add (drywetDial);
 	mContainer.add (midiSwitch);
 	mContainer.add (midiPiano);
 	mContainer.add (midiLabel);
@@ -567,7 +576,9 @@ void BShaprGUI::resizeGUI(const double sz)
 
 	// Resize widgets
 	RESIZE (mContainer, 0, 0, 1200, 710, sz);
-	RESIZE (messageLabel, 600, 45, 600, 20, sz);
+	RESIZE (messageLabel, 500, 45, 500, 20, sz);
+	RESIZE (bypassButton, 1090, 66, 24, 24, sz);
+	RESIZE (drywetDial, 1140, 60, 40, 48, sz);
 	RESIZE (midiSwitch, 720, 580, 20, 40, sz);
 	RESIZE (midiPiano, 900, 580, 140, 55, sz);
 	RESIZE (midiLabel, 950, 565, 40, 10, sz);
@@ -670,6 +681,8 @@ void BShaprGUI::applyChildThemes ()
 {
 	mContainer.applyTheme (theme);
 	messageLabel.applyTheme (theme);
+	bypassButton.applyTheme (theme);
+	drywetDial.applyTheme (theme);
 	midiSwitch.applyTheme (theme);
 	midiPiano.applyTheme (theme);
 	midiLabel.applyTheme (theme);
