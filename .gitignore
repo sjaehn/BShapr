@@ -1,6 +1,2 @@
-/.cproject
-/.project
-/.settings/language.settings.xml
 /BShapr.lv2/**
-/.tracecompass/**
-/.settings/**
+.tags
