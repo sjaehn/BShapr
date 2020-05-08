@@ -27,8 +27,8 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 
 	mContainer (0, 0, 1200, 710, "widget"),
 	messageLabel (500, 45, 500, 20, "label", ""),
-	bypassButton (1090, 66, 24, 24, "redbutton"),
-	drywetDial (1140, 60, 40, 48, "dial", 1.0, 0.0, 1.0, 0.0, "%1.2f"),
+	bypassButton (1090, 15, 16, 16, "redbutton"),
+	drywetDial (1144, 5, 33, 40, "dial", 1.0, 0.0, 1.0, 0.0, "%1.2f"),
 	midiSwitch (720, 580, 20, 40, "dial", 0),
 	midiPiano (900, 580, 140, 55, "widget", 0, 11),
 	midiLabel (950, 565, 40, 10, "smlabel", "Filter"),
@@ -577,8 +577,8 @@ void BShaprGUI::resizeGUI(const double sz)
 	// Resize widgets
 	RESIZE (mContainer, 0, 0, 1200, 710, sz);
 	RESIZE (messageLabel, 500, 45, 500, 20, sz);
-	RESIZE (bypassButton, 1090, 66, 24, 24, sz);
-	RESIZE (drywetDial, 1140, 60, 40, 48, sz);
+	RESIZE (bypassButton, 1090, 15, 16, 16, sz);
+	RESIZE (drywetDial, 1144, 5, 33, 40, sz);
 	RESIZE (midiSwitch, 720, 580, 20, 40, sz);
 	RESIZE (midiPiano, 900, 580, 140, 55, sz);
 	RESIZE (midiLabel, 950, 565, 40, 10, sz);
