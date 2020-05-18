@@ -89,6 +89,9 @@ GUI_INCL = \
 	src/BWidgets/Button.cpp \
 	src/BWidgets/DialValue.cpp \
 	src/BWidgets/Dial.cpp \
+	src/BWidgets/HSwitch.cpp \
+	src/BWidgets/HSlider.cpp \
+	src/BWidgets/HScale.cpp \
 	src/BWidgets/VSwitch.cpp \
 	src/BWidgets/VSlider.cpp \
 	src/BWidgets/VScale.cpp \

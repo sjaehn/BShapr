@@ -142,15 +142,18 @@ Select a effect that will be applied on the input signal by the use of the shape
 * Distortion
 * Decimate
 * Bitcrush
+* Send (shape to MIDI CC)
 
 ### MIDI control
 
-B.Shapr can optionally be controlled by a MIDI device. Once switched to B.Shapr's MIDI mode, you can select and
-deselect the keys to which B.Shapr shall respond. This takes effect to all four shapers.
+B.Shapr can optionally be controlled by a MIDI device. Once switched to B.Shapr's MIDI trigger mode, you can select
+and deselect the keys to which B.Shapr shall respond. This takes effect to all four shapers.
+
+The MIDI Thru option allows to forward an incoming MIDI signal. Be careful not to create dead loops!
 
 ### Sequence size
 
-On the bottom of the widget, you can set the lenght of the whole shape sequence between 1 and 16 seconds,
+On the bottom of the widget, you can set the length of the whole shape sequence between 1 and 16 seconds,
 beats or bars. Change the value by dragging, scrolling or clicking on its up and down arrows and select
 a base.
 
@@ -159,6 +162,7 @@ a base.
 * Bypass
 * Dry / wet mixing
 * Send shape to MIDI CC (experimental)
+* MIDI Thru option
 
 ## TODO
 

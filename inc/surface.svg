@@ -27,9 +27,9 @@
      borderopacity="1.0"
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
-     inkscape:zoom="1"
-     inkscape:cx="860.88898"
-     inkscape:cy="401.16505"
+     inkscape:zoom="1.0916667"
+     inkscape:cx="493.74047"
+     inkscape:cy="355"
      inkscape:document-units="px"
      inkscape:current-layer="layer2"
      showgrid="true"
@@ -2170,39 +2170,31 @@
        id="rect1922-3"
        style="display:inline;fill:#000000;fill-opacity:0.81176471;stroke:none;stroke-width:0;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:0.74901961" />
     <text
-       transform="skewX(-20.000001)"
-       id="text2042-4-6"
-       y="185.13777"
-       x="231.01805"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:7.05555534px;line-height:6.61458302px;font-family:'Good Times';-inkscape-font-specification:'Good Times';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458332"
-       xml:space="preserve"><tspan
-         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-family:'Good Times';-inkscape-font-specification:'Good Times';fill:#ffffff;stroke-width:0.26458332"
-         y="185.13777"
-         x="231.01805"
-         id="tspan2040-9-7"
-         sodipodi:role="line">MIDI:</tspan></text>
-    <text
        id="text1003"
-       y="180.01721"
-       x="200.50865"
+       y="177.10881"
+       x="200.38747"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:6.61458302px;font-family:'Good Times';-inkscape-font-specification:'Good Times';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        xml:space="preserve"><tspan
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;font-family:'Good Times';-inkscape-font-specification:'Good Times';fill:#ffffff;stroke-width:0.26458332"
-         y="180.01721"
-         x="200.50865"
+         y="177.10881"
+         x="200.38747"
          id="tspan1001"
-         sodipodi:role="line">on</tspan></text>
+         sodipodi:role="line">T<tspan
+   style="font-size:2.82222223px"
+   id="tspan1469">Rigger On/OFF</tspan></tspan></text>
     <text
        id="text1007"
-       y="187.98645"
-       x="200.50865"
+       y="190.36769"
+       x="208.31371"
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:6.61458302px;font-family:'Good Times';-inkscape-font-specification:'Good Times';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458332"
        xml:space="preserve"><tspan
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;font-family:'Good Times';-inkscape-font-specification:'Good Times';fill:#ffffff;stroke-width:0.26458332"
-         y="187.98645"
-         x="200.50865"
+         y="190.36769"
+         x="208.31371"
          id="tspan1005"
-         sodipodi:role="line">off</tspan></text>
+         sodipodi:role="line"><tspan
+   style="font-size:4.23333311px"
+   id="tspan1467">I</tspan>n</tspan></text>
     <rect
        y="171.97917"
        x="5.8208332"
@@ -3071,5 +3063,161 @@
          x="301.36044"
          y="37.777538"
          style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:2.82222223px;font-family:sans-serif;-inkscape-font-specification:sans-serif;fill:#ffffff;stroke-width:0.26458332">Dry/wet</tspan></text>
+    <text
+       id="text1007-3"
+       y="190.71548"
+       x="165.83862"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.50800753px;line-height:7.04376221px;font-family:'Good Times';-inkscape-font-specification:'Good Times';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.28175047"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5.64444447px;font-family:'Good Times';-inkscape-font-specification:'Good Times';fill:#ffffff;stroke-width:0.28175047"
+         y="190.71548"
+         x="165.83862"
+         id="tspan1005-6"
+         sodipodi:role="line">MIDI</tspan></text>
+    <g
+       id="g1465"
+       transform="matrix(0.78947472,0,0,0.78947472,37.2086,37.821308)">
+      <path
+         d="m 177.25969,179.57342 a 5.2916665,5.2916665 0 0 1 -4.91323,5.62214 5.2916665,5.2916665 0 0 1 -5.64447,-4.88758 5.2916665,5.2916665 0 0 1 4.86182,-5.66666 5.2916665,5.2916665 0 0 1 5.68875,4.83595"
+         sodipodi:open="true"
+         sodipodi:end="6.2000553"
+         sodipodi:start="6.2182765"
+         sodipodi:ry="5.2916665"
+         sodipodi:rx="5.2916665"
+         sodipodi:cy="179.91666"
+         sodipodi:cx="171.97917"
+         sodipodi:type="arc"
+         id="path1410"
+         style="fill:#000000;fill-rule:evenodd;stroke:#ffffff;stroke-width:0.52916664;stroke-miterlimit:4;stroke-dasharray:none" />
+      <rect
+         y="183.88541"
+         x="170.92084"
+         height="0.79374999"
+         width="2.1166666"
+         id="rect1412"
+         style="opacity:1;fill:#000000;fill-opacity:1;stroke:#ffffff;stroke-width:0.79374999;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1" />
+      <path
+         d="m 172.50722,176.44276 a 0.52916664,0.52916664 0 0 1 -0.49132,0.56221 0.52916664,0.52916664 0 0 1 -0.56445,-0.48876 0.52916664,0.52916664 0 0 1 0.48619,-0.56666 0.52916664,0.52916664 0 0 1 0.56887,0.48359"
+         sodipodi:open="true"
+         sodipodi:end="6.2000553"
+         sodipodi:start="6.2182765"
+         sodipodi:ry="0.52916664"
+         sodipodi:rx="0.52916664"
+         sodipodi:cy="176.47708"
+         sodipodi:cx="171.97917"
+         sodipodi:type="arc"
+         id="path1414"
+         style="fill:#ffffff;fill-rule:evenodd;stroke:#ffffff;stroke-width:0.26458332" />
+      <path
+         d="m 170.39237,177.28045 a 0.52916664,0.52916664 0 0 1 -0.49132,0.56221 0.52916664,0.52916664 0 0 1 -0.56445,-0.48875 0.52916664,0.52916664 0 0 1 0.48618,-0.56667 0.52916664,0.52916664 0 0 1 0.56888,0.48359"
+         sodipodi:open="true"
+         sodipodi:end="6.2000553"
+         sodipodi:start="6.2182765"
+         sodipodi:ry="0.52916664"
+         sodipodi:rx="0.52916664"
+         sodipodi:cy="177.31477"
+         sodipodi:cx="169.86432"
+         sodipodi:type="arc"
+         id="path1414-7"
+         style="display:inline;fill:#ffffff;fill-rule:evenodd;stroke:#ffffff;stroke-width:0.26458332" />
+      <path
+         d="m 169.33333,179.38749 a 0.52916664,0.52916664 0 0 1 -0.49132,0.56221 0.52916664,0.52916664 0 0 1 -0.56445,-0.48875 0.52916664,0.52916664 0 0 1 0.48619,-0.56667 0.52916664,0.52916664 0 0 1 0.56887,0.48359"
+         sodipodi:open="true"
+         sodipodi:end="6.2000553"
+         sodipodi:start="6.2182765"
+         sodipodi:ry="0.52916664"
+         sodipodi:rx="0.52916664"
+         sodipodi:cy="179.42181"
+         sodipodi:cx="168.80528"
+         sodipodi:type="arc"
+         id="path1414-5"
+         style="display:inline;fill:#ffffff;fill-rule:evenodd;stroke:#ffffff;stroke-width:0.26458332" />
+      <path
+         d="m 174.62499,177.27084 a 0.52916664,0.52916664 0 0 1 -0.49132,0.56221 0.52916664,0.52916664 0 0 1 -0.56445,-0.48876 0.52916664,0.52916664 0 0 1 0.48618,-0.56666 0.52916664,0.52916664 0 0 1 0.56888,0.48359"
+         sodipodi:open="true"
+         sodipodi:end="6.2000553"
+         sodipodi:start="6.2182765"
+         sodipodi:ry="0.52916664"
+         sodipodi:rx="0.52916664"
+         sodipodi:cy="177.30516"
+         sodipodi:cx="174.09694"
+         sodipodi:type="arc"
+         id="path1414-7-3"
+         style="display:inline;fill:#ffffff;fill-rule:evenodd;stroke:#ffffff;stroke-width:0.26458332" />
+      <path
+         d="m 175.68333,179.38749 a 0.52916664,0.52916664 0 0 1 -0.49133,0.56221 0.52916664,0.52916664 0 0 1 -0.56444,-0.48875 0.52916664,0.52916664 0 0 1 0.48618,-0.56667 0.52916664,0.52916664 0 0 1 0.56887,0.48359"
+         sodipodi:open="true"
+         sodipodi:end="6.2000553"
+         sodipodi:start="6.2182765"
+         sodipodi:ry="0.52916664"
+         sodipodi:rx="0.52916664"
+         sodipodi:cy="179.42181"
+         sodipodi:cx="175.15527"
+         sodipodi:type="arc"
+         id="path1414-7-5"
+         style="display:inline;fill:#ffffff;fill-rule:evenodd;stroke:#ffffff;stroke-width:0.26458332" />
+    </g>
+    <path
+       style="fill:none;stroke:#ffffff;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 235.47921,174.625 V 190.5"
+       id="path1471"
+       inkscape:connector-curvature="0" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-width:0.26458332px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       d="M 264.58338,174.625 V 190.5"
+       id="path1473"
+       inkscape:connector-curvature="0" />
+    <text
+       id="text1007-6"
+       y="190.12532"
+       x="244.84637"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:6.61458349px;font-family:'Good Times';-inkscape-font-specification:'Good Times';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;font-family:'Good Times';-inkscape-font-specification:'Good Times';fill:#ffffff;stroke-width:0.26458332"
+         y="190.12532"
+         x="244.84637"
+         id="tspan1005-2"
+         sodipodi:role="line"><tspan
+   style="font-size:4.23333311px;stroke-width:0.26458332"
+   id="tspan1467-9">T</tspan>rhu</tspan></text>
+    <text
+       id="text1007-1"
+       y="190.36769"
+       x="283.45551"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:6.61458349px;font-family:'Good Times';-inkscape-font-specification:'Good Times';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;font-family:'Good Times';-inkscape-font-specification:'Good Times';fill:#ffffff;stroke-width:0.26458332"
+         y="190.36769"
+         x="283.45551"
+         id="tspan1005-27"
+         sodipodi:role="line"><tspan
+   style="font-size:4.23333311px;stroke-width:0.26458332"
+   id="tspan1467-0">O</tspan>ut</tspan></text>
+    <text
+       id="text1003-9"
+       y="183.4588"
+       x="250.12892"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:6.61458349px;font-family:'Good Times';-inkscape-font-specification:'Good Times';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;font-family:'Good Times';-inkscape-font-specification:'Good Times';fill:#ffffff;stroke-width:0.26458332"
+         y="183.4588"
+         x="250.12892"
+         id="tspan1001-3"
+         sodipodi:role="line"><tspan
+           style="font-size:2.82222223px;stroke-width:0.26458332"
+           id="tspan1469-6">Off</tspan></tspan></text>
+    <text
+       id="text1003-9-0"
+       y="178.69637"
+       x="250.12889"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:6.61458349px;font-family:'Good Times';-inkscape-font-specification:'Good Times';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;display:inline;fill:#ffffff;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       xml:space="preserve"><tspan
+         style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:3.52777767px;font-family:'Good Times';-inkscape-font-specification:'Good Times';fill:#ffffff;stroke-width:0.26458332"
+         y="178.69637"
+         x="250.12889"
+         id="tspan1001-3-6"
+         sodipodi:role="line"><tspan
+           style="font-size:2.82222223px;stroke-width:0.26458332"
+           id="tspan1469-6-2">On</tspan></tspan></text>
   </g>
 </svg>

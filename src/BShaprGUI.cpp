@@ -29,9 +29,9 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	messageLabel (500, 45, 500, 20, "label", ""),
 	bypassButton (1090, 15, 16, 16, "redbutton"),
 	drywetDial (1144, 5, 33, 40, "dial", 1.0, 0.0, 1.0, 0.0, "%1.2f"),
-	midiSwitch (720, 580, 20, 40, "dial", 0),
-	midiPiano (900, 580, 140, 55, "widget", 0, 11),
-	midiLabel (950, 565, 40, 10, "smlabel", "Filter"),
+	midiTriggerSwitch (720, 568, 30, 12, "dial", 0),
+	midiPiano (720, 585, 150, 30, "widget", 0, 11),
+	midiThruSwitch (924, 575, 12, 30, "dial", 0),
 	baseValueSelect (480, 660, 100, 20, "select", 1.0, 1.0, 16.0, 0.01),
 	baseListBox (620, 660, 100, 20, 0, -80, 100, 80, "menu", BItems::ItemList ({{0, "Seconds"}, {1, "Beats"}, {2, "Bars"}})),
 	monitorContainer (24, 134, 1152, 352, "monitor"),
@@ -161,7 +161,8 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	controllerWidgets.fill (nullptr);
 	controllerWidgets[BYPASS] = (BWidgets::ValueWidget*) &bypassButton;
 	controllerWidgets[DRY_WET] = (BWidgets::ValueWidget*) &drywetDial;
-	controllerWidgets[MIDI_CONTROL] = (BWidgets::ValueWidget*) &midiSwitch;
+	controllerWidgets[MIDI_CONTROL] = (BWidgets::ValueWidget*) &midiTriggerSwitch;
+	controllerWidgets[MIDI_THRU] = (BWidgets::ValueWidget*) &midiThruSwitch;
 	controllerWidgets[BASE] = (BWidgets::ValueWidget*) &baseListBox;
 	controllerWidgets[BASE_VALUE] = (BWidgets::ValueWidget*) &baseValueSelect;
 	for (int i = 0; i < MAXSHAPES; ++i)
@@ -182,10 +183,11 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	// Set callbacks
 	bypassButton.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 	drywetDial.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
-	midiSwitch.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
+	midiTriggerSwitch.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 	midiPiano.setCallbackFunction (BEvents::EventType::BUTTON_PRESS_EVENT, BShaprGUI::pianoCallback);
 	midiPiano.setCallbackFunction (BEvents::EventType::BUTTON_RELEASE_EVENT, BShaprGUI::pianoCallback);
 	midiPiano.setCallbackFunction (BEvents::EventType::POINTER_DRAG_EVENT, BShaprGUI::pianoCallback);
+	midiThruSwitch.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 	baseValueSelect.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 	baseListBox.setCallbackFunction (BEvents::EventType::VALUE_CHANGED_EVENT, BShaprGUI::valueChangedCallback);
 	monitorContainer.setCallbackFunction (BEvents::EventType::WHEEL_SCROLL_EVENT, BShaprGUI::wheelScrolledCallback);
@@ -219,7 +221,6 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	midiPiano.setKeysToggleable (true);
 	midiPiano.pressKeys (keys);
 	midiPiano.hide();
-	midiLabel.hide();
 	monitorContainer.setScrollable (true);
 	input1Monitor.setScrollable (false);
 	output1Monitor.setScrollable (false);
@@ -285,9 +286,9 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	}
 	mContainer.add (bypassButton);
 	mContainer.add (drywetDial);
-	mContainer.add (midiSwitch);
+	mContainer.add (midiTriggerSwitch);
 	mContainer.add (midiPiano);
-	mContainer.add (midiLabel);
+	mContainer.add (midiThruSwitch);
 	mContainer.add (messageLabel);
 	mContainer.add (baseValueSelect);
 	mContainer.add (baseListBox);
@@ -515,16 +516,8 @@ void BShaprGUI::portEvent(uint32_t port, uint32_t bufferSize, uint32_t format, c
 			{
 				if (controllerWidgets[MIDI_CONTROL]) controllerWidgets[MIDI_CONTROL]->setValue (value);
 
-				if (value == 1.0f)
-				{
-					midiPiano.show ();
-					midiLabel.show ();
-				}
-				else
-				{
-					midiPiano.hide ();
-					midiLabel.hide ();
-				}
+				if (value == 1.0f) midiPiano.show ();
+				else midiPiano.hide ();
 			}
 
 			// Base, base value
@@ -594,9 +587,9 @@ void BShaprGUI::resizeGUI(const double sz)
 	RESIZE (messageLabel, 500, 45, 500, 20, sz);
 	RESIZE (bypassButton, 1090, 15, 16, 16, sz);
 	RESIZE (drywetDial, 1144, 5, 33, 40, sz);
-	RESIZE (midiSwitch, 720, 580, 20, 40, sz);
-	RESIZE (midiPiano, 900, 580, 140, 55, sz);
-	RESIZE (midiLabel, 950, 565, 40, 10, sz);
+	RESIZE (midiTriggerSwitch, 720, 568, 30, 12, sz);
+	RESIZE (midiPiano, 720, 585, 150, 30, sz);
+	RESIZE (midiThruSwitch, 924, 575, 12, 30, sz);
 	RESIZE (baseValueSelect, 480, 660, 100, 20, sz);
 	RESIZE (baseListBox, 620, 660, 100, 20, sz);
 	baseListBox.resizeListBox (BUtilities::Point (100 * sz, 80 * sz));
@@ -715,9 +708,9 @@ void BShaprGUI::applyChildThemes ()
 	messageLabel.applyTheme (theme);
 	bypassButton.applyTheme (theme);
 	drywetDial.applyTheme (theme);
-	midiSwitch.applyTheme (theme);
+	midiTriggerSwitch.applyTheme (theme);
 	midiPiano.applyTheme (theme);
-	midiLabel.applyTheme (theme);
+	midiThruSwitch.applyTheme (theme);
 	baseValueSelect.applyTheme (theme);
 	baseListBox.applyTheme (theme);
 	monitorContainer.applyTheme (theme);
@@ -1210,16 +1203,8 @@ void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 			{
 				if (widgetNr == MIDI_CONTROL)
 				{
-					if (value == 1.0f)
-					{
-						ui->midiPiano.show ();
-						ui->midiLabel.show ();
-					}
-					else
-					{
-						ui->midiPiano.hide ();
-						ui->midiLabel.hide ();
-					}
+					if (value == 1.0f) ui->midiPiano.show ();
+					else ui->midiPiano.hide ();
 				}
 
 				else if ((widgetNr == BASE) || (widgetNr == BASE_VALUE))

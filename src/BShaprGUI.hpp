@@ -40,6 +40,7 @@
 #include "BWidgets/Dial.hpp"
 #include "BWidgets/DialValue.hpp"
 #include "BWidgets/PopupListBox.hpp"
+#include "BWidgets/HSwitch.hpp"
 #include "BWidgets/VSwitch.hpp"
 #include "BWidgets/HPianoRoll.hpp"
 #include "BWidgets/MessageBox.hpp"
@@ -148,9 +149,9 @@ private:
 	BWidgets::Label messageLabel;
 	LightButton bypassButton;
         BWidgets::DialValue drywetDial;
-	BWidgets::VSwitch midiSwitch;
+	BWidgets::HSwitch midiTriggerSwitch;
 	BWidgets::HPianoRoll midiPiano;
-	BWidgets::Label midiLabel;
+	BWidgets::VSwitch midiThruSwitch;
 	ValueSelect baseValueSelect;
 	BWidgets::PopupListBox baseListBox;
 	BWidgets::Widget monitorContainer;

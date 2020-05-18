@@ -35,11 +35,12 @@ typedef enum
 	DRY_WET		= 1,
 	MIDI_CONTROL	= 2,
 	MIDI_KEYS	= 3,
-	BASE		= 4,
-	BASE_VALUE	= 5,
-	ACTIVE_SHAPE	= 6,
+	MIDI_THRU	= 4,
+	BASE		= 5,
+	BASE_VALUE	= 6,
+	ACTIVE_SHAPE	= 7,
 
-	SHAPERS		= 7,
+	SHAPERS		= 8,
 	SH_INPUT	= 0,
 	SH_INPUT_AMP	= 1,
 	SH_TARGET	= 2,
@@ -50,7 +51,7 @@ typedef enum
 	SH_OPTION	= 7,
 	SH_SIZE		= 15,
 
-	NR_CONTROLLERS	= 67
+	NR_CONTROLLERS	= 68
 } BShaprPortIndex;
 
 typedef enum
