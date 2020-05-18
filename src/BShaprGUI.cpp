@@ -114,28 +114,43 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 					(
 						0, 0, 50, 60, "dial",
 						options[j].value, options[j].limit.min, options[j].limit.max, options[j].limit.step,
-						options[j].format
+						options[j].param.get<std::string>()
 					);
 					if (!shapeGui[i].optionWidgets[j]) throw std::bad_alloc();
 					shapeGui[i].optionWidgets[j]->setHardChangeable (false);
+					shapeGui[i].optionLabels[j] = BWidgets::Label (220 + j * 70, 494, 70, 16, "smlabel", options[j].name);
 					break;
 
 				case POPUP_WIDGET:
-					shapeGui[i].optionWidgets[j] = new BWidgets::PopupListBox
-					(
-						0, 0, 120, 20, 0, -120, 120, 120, "menu",
-						BItems::ItemList ({{0, "Hardclip"}, {1, "Softclip"}, {2, "Foldback"}, {3, "Overdrive"}, {4, "Fuzz"}}),
-						options[j].value
-					);
-					if (!shapeGui[i].optionWidgets[j]) throw std::bad_alloc();
+					{
+						BItems::ItemList il = options[j].param.get<BItems::ItemList>();
+						size_t max = 0;
+						for (BItems::Item const& it : il)
+						{
+							if (it.getWidget())
+							{
+								BWidgets::Label* l = (BWidgets::Label*) it.getWidget();
+								if (l->getText().size() > max) max = l->getText().size();
+							}
+						}
+						int w = max * 9 + 20;
+						w = LIMIT (w, 50, 270 - j * 70);
+						int h = (il.size() + 1) * 20;
+						h = LIMIT (h, 20, 400);
+						shapeGui[i].optionWidgets[j] = new BWidgets::PopupListBox
+						(
+							0, 0, w, 20, 0, -h, w, h, "menu", il,
+							options[j].value
+						);
+						if (!shapeGui[i].optionWidgets[j]) throw std::bad_alloc();
+						shapeGui[i].optionLabels[j] = BWidgets::Label (220 + j * 70, 494, w, 16, "smlabel", options[j].name);
+					}
 					break;
 
 				default:
 					shapeGui[i].optionWidgets[j] = nullptr;
 					break;
 			}
-			shapeGui[i].optionLabels[j] = BWidgets::Label (220 + j * 70, 494, 60, 16, "smlabel", "");
-			shapeGui[i].optionLabels[j].rename ("smlabel");
 		}
 	}
 
@@ -645,22 +660,39 @@ void BShaprGUI::resizeGUI(const double sz)
 					switch (options[optionNr].widgetType)
 					{
 						case DIAL_WIDGET:
-							RESIZE ((*shapeGui[i].optionWidgets[optionNr]), 225 + j * 70, 434, 50, 60, sz);
+							RESIZE ((*shapeGui[i].optionWidgets[optionNr]), 230 + j * 70, 434, 50, 60, sz);
+							RESIZE ((shapeGui[i].optionLabels[optionNr]), 220 + j * 70, 494, 70, 16, sz);
 							break;
 
 						case POPUP_WIDGET:
-							RESIZE ((*shapeGui[i].optionWidgets[optionNr]), 230 + j * 70, 460, 120, 20, sz);
-							((BWidgets::PopupListBox*) shapeGui[i].optionWidgets[optionNr])->resizeListBox (BUtilities::Point (120 * sz, 120 * sz));
-							((BWidgets::PopupListBox*) shapeGui[i].optionWidgets[optionNr])->moveListBox (BUtilities::Point (0, -120 * sz));
-							((BWidgets::PopupListBox*) shapeGui[i].optionWidgets[optionNr])->resizeListBoxItems (BUtilities::Point (120 * sz, 20 * sz));
+							{
+								BItems::ItemList il = options[optionNr].param.get<BItems::ItemList>();
+								size_t max = 0;
+								for (BItems::Item const& it : il)
+								{
+									if (it.getWidget())
+									{
+										BWidgets::Label* l = (BWidgets::Label*) it.getWidget();
+										if (l->getText().size() > max) max = l->getText().size();
+									}
+								}
+								int w = max * 9 + 20;
+								w = LIMIT (w, 50, 270 - j * 70);
+								int h = (il.size() + 1) * 20;
+								h = LIMIT (h, 20, 400);
+
+								RESIZE ((*shapeGui[i].optionWidgets[optionNr]), 220 + j * 70, 455, w, 20, sz);
+								((BWidgets::PopupListBox*) shapeGui[i].optionWidgets[optionNr])->resizeListBox (BUtilities::Point (w * sz, h * sz));
+								((BWidgets::PopupListBox*) shapeGui[i].optionWidgets[optionNr])->moveListBox (BUtilities::Point (0, -h * sz));
+
+								RESIZE ((shapeGui[i].optionLabels[optionNr]), 220 + j * 70, 494, w, 16, sz);
+							}
 							break;
 
 						default:
 							break;
 					}
 				}
-
-				RESIZE (shapeGui[i].optionLabels[optionNr], 220 + j * 70, 494, 60, 16, sz);
 			}
 		}
 	}
@@ -1249,7 +1281,8 @@ void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 									{
 										if (ui->shapeGui[shapeNr].optionWidgets[optionNr])
 										{
-											RESIZE ((*ui->shapeGui[shapeNr].optionWidgets[optionNr]), 225 + i * 70, 434, 50, 60, ui->sz);
+											RESIZE ((*ui->shapeGui[shapeNr].optionWidgets[optionNr]), 230 + i * 70, 434, 50, 60, ui->sz);
+											RESIZE ((ui->shapeGui[shapeNr].optionLabels[optionNr]), 220 + i * 70, 494, 70, 16, ui->sz);
 										}
 									}
 
@@ -1257,9 +1290,26 @@ void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 									{
 										if (ui->shapeGui[shapeNr].optionWidgets[optionNr])
 										{
-											RESIZE ((*ui->shapeGui[shapeNr].optionWidgets[optionNr]), 230 + i * 70, 460, 120, 20, ui->sz);
-											((BWidgets::PopupListBox*) ui->shapeGui[shapeNr].optionWidgets[optionNr])->resizeListBox (BUtilities::Point (120 * ui->sz, 120 * ui->sz));
-											((BWidgets::PopupListBox*) ui->shapeGui[shapeNr].optionWidgets[optionNr])->moveListBox (BUtilities::Point (0, -120 * ui->sz));
+											BItems::ItemList il = options[optionNr].param.get<BItems::ItemList>();
+											size_t max = 0;
+											for (BItems::Item const& it : il)
+											{
+												if (it.getWidget())
+												{
+													BWidgets::Label* l = (BWidgets::Label*) it.getWidget();
+													if (l->getText().size() > max) max = l->getText().size();
+												}
+											}
+											int w = max * 9 + 20;
+											w = LIMIT (w, 50, 270 - i * 70);
+											int h = (il.size() + 1) * 20;
+											h = LIMIT (h, 20, 400);
+
+											RESIZE ((*ui->shapeGui[shapeNr].optionWidgets[optionNr]), 220 + i * 70, 455, w, 20, ui->sz);
+											((BWidgets::PopupListBox*) ui->shapeGui[shapeNr].optionWidgets[optionNr])->resizeListBox (BUtilities::Point (w * ui->sz, h * ui->sz));
+											((BWidgets::PopupListBox*) ui->shapeGui[shapeNr].optionWidgets[optionNr])->moveListBox (BUtilities::Point (0, -h * ui->sz));
+
+											RESIZE ((ui->shapeGui[shapeNr].optionLabels[optionNr]), 220 + i * 70, 494, w, 16, ui->sz);
 										}
 									}
 
@@ -1272,7 +1322,7 @@ void BShaprGUI::valueChangedCallback (BEvents::Event* event)
 
 									// Show option label
 									ui->shapeGui[shapeNr].optionLabels[optionNr].applyTheme (ui->theme);
-									ui->shapeGui[shapeNr].optionLabels[optionNr].setText (options[optionNr].name);
+									//RESIZE ((ui->shapeGui[shapeNr].optionLabels[optionNr]), 220 + i * 70, 494, 60, 16, ui->sz);
 									ui->shapeGui[shapeNr].optionLabels[optionNr].show ();
 								}
 							}

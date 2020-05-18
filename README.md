@@ -158,6 +158,7 @@ a base.
 
 * Bypass
 * Dry / wet mixing
+* Send shape to MIDI CC (experimental)
 
 ## TODO
 

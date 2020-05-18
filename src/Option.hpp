@@ -23,6 +23,7 @@
 
 #include <string>
 #include "Limit.hpp"
+#include "BUtilities/Any.hpp"
 
 enum WidgetType
 {
@@ -39,7 +40,7 @@ struct Option
 	std::string name;
 	double value;
 	Limit limit;
-	std::string format;
+	BUtilities::Any param;
 };
 
 #endif /* OPTION_HPP_ */

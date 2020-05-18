@@ -50,6 +50,10 @@ const Limit shapeControllerLimits [SH_SIZE] =
 	{MIN_OPT_VAL, MAX_OPT_VAL, 0},
 	{MIN_OPT_VAL, MAX_OPT_VAL, 0},
 	{MIN_OPT_VAL, MAX_OPT_VAL, 0},
+	{MIN_OPT_VAL, MAX_OPT_VAL, 0},
+	{MIN_OPT_VAL, MAX_OPT_VAL, 0},
+	{MIN_OPT_VAL, MAX_OPT_VAL, 0},
+	{MIN_OPT_VAL, MAX_OPT_VAL, 0},
 	{MIN_OPT_VAL, MAX_OPT_VAL, 0}
 };
 
@@ -62,12 +66,32 @@ enum Distortions
 	FUZZ		= 4
 };
 
+#ifndef BSHAPRGUI_HPP_
+#define DB_PER_OCT_OPT_PARAM 0
+#define DISTORTION_OPT_PARAM 0
+#define LIMIT_DB_OPT_PARAM 0
+#define SEND_MIDI_CH_PARAM 0
+#define SEND_MIDI_CC_PARAM 0
+#else
+#include "BWidgets/BItems.hpp"
+#include "CCList.hpp"
+#define DB_PER_OCT_OPT_PARAM std::string ("%1.0f")
+#define DISTORTION_OPT_PARAM BItems::ItemList ({{0, "Hardclip"}, {1, "Softclip"}, {2, "Foldback"}, {3, "Overdrive"}, {4, "Fuzz"}})
+#define LIMIT_DB_OPT_PARAM std::string ("%2.1f")
+#define SEND_MIDI_CH_PARAM BItems::ItemList ( \
+		{{0, "All"}, {1, "CH 1"}, {2, "CH 2"}, {3, "CH 3"}, {4, "CH 4"}, {5, "CH 5"}, {6, "CH 6"}, {7, "CH 7"}, {8, "CH 8"}, {9, "CH 9"}, \
+		 {10, "CH 10"}, {11, "CH 11"}, {12, "CH 12"}, {13, "CH 13"}, {14, "CH 14"}, {15, "CH 15"}, {16, "CH 16"}})
+#define SEND_MIDI_CC_PARAM BItems::ItemList (CCLIST_HPP_)
+#endif /* BSHAPRGUI_HPP_ */
+
 const Option options[MAXOPTIONS] =
 {
-        {DIAL_WIDGET, "-db/octave", 36, {12, 72, 12}, "%1.0f"},
-        {POPUP_WIDGET, "", 0, {0, 4, 1}, ""},
-	{DIAL_WIDGET, "Limit (db)", 0, {-60, 30, 0}, "%2.1f"},
-        {NO_WIDGET, "", 0, {0, 0, 0}, ""}
+        {DIAL_WIDGET, "-db/octave", 36, {12, 72, 12}, DB_PER_OCT_OPT_PARAM},
+        {POPUP_WIDGET, "Method", 0, {0, 4, 1}, DISTORTION_OPT_PARAM},
+	{DIAL_WIDGET, "Limit (db)", 0, {-60, 30, 0}, LIMIT_DB_OPT_PARAM},
+	{POPUP_WIDGET, "MIDI Channel", 0, {0, 16, 1}, SEND_MIDI_CH_PARAM},
+	{POPUP_WIDGET, "MIDI CC", 0, {0, 127, 1}, SEND_MIDI_CC_PARAM},
+        {NO_WIDGET, "", 0, {0, 0, 0}, 0}
 };
 
 enum OptionIndex
@@ -75,7 +99,9 @@ enum OptionIndex
         NO_OPT		= -1,
         DB_PER_OCT_OPT	= 0,
 	DISTORTION_OPT	= 1,
-	LIMIT_DB_OPT	= 2
+	LIMIT_DB_OPT	= 2,
+	SEND_MIDI_CH	= 3,
+	SEND_MIDI_CC	= 4
 };
 
 const Method methods[MAXEFFECTS] =
@@ -94,6 +120,7 @@ const Method methods[MAXEFFECTS] =
 	{11, {DISTORTION_OPT, NO_OPT, LIMIT_DB_OPT, NO_OPT}, {-30, 60, 0}, 0.33, 0, 100, 30.0, 0.0, "", "db", "inc/Distortion.png"},
 	{12, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {1, 96000, 0}, 0.05, 0, 110000, 48000.0, 48000.0, "", "Hz", "inc/Decimate.png"},
 	{13, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {1, 32, 0}, 0.5, 16, 34, 16.0, 16.0, "", "", "inc/Bitcrush.png"},
+	{14, {SEND_MIDI_CH, SEND_MIDI_CC, NO_OPT, NO_OPT}, {0, 1, 0}, 0.05, 0, 1.1, 1.0, 0.5, "", "", "inc/Send.png"}
 };
 
 #endif /* GLOBALS_HPP_ */

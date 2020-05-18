@@ -122,6 +122,7 @@ BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 	rate(samplerate), bpm(120.0f), speed(1), bar (0), barBeat (0), beatsPerBar (4), beatUnit (4),
 	position(0), offset(0), refFrame(0),
 	audioInput1(NULL), audioInput2(NULL), audioOutput1(NULL), audioOutput2(NULL),
+	sendValue{0xFF},
 	new_controllers {NULL}, controllers {0},
 	shapes {SmoothShape<MAXNODES> ()}, tempNodes {StaticArrayList<Node, MAXNODES> ()},
 	urids (), controlPort(NULL), notifyPort(NULL), forge (), notify_frame (),
@@ -559,9 +560,21 @@ void BShapr::run (uint32_t n_samples)
 		// Read incoming MIDI events
 		if (ev->body.type == urids.midi_Event)
 		{
+			const uint8_t* const msg = (const uint8_t*)(ev + 1);
+
+			// Forward MIDI event
+			/*LV2_Atom midiatom;
+			midiatom.type = urids.midi_Event;
+			midiatom.size = 3;
+
+			lv2_atom_forge_frame_time (&forge, ev->time.frames);
+			lv2_atom_forge_raw (&forge, &midiatom, sizeof (LV2_Atom));
+			lv2_atom_forge_raw (&forge, msg, 3);
+			lv2_atom_forge_pad (&forge, sizeof (LV2_Atom) + 3);*/
+
+			// Analyze MIDI event
 			if (controllers[MIDI_CONTROL] == 1.0f)
 			{
-				const uint8_t* const msg = (const uint8_t*)(ev + 1);
 				uint8_t typ = lv2_midi_message_type(msg);
 				// uint8_t chn = msg[0] & 0x0F;
 				uint8_t note = msg[1];
@@ -1088,6 +1101,37 @@ void BShapr::bitcrush (const float input1, const float input2, float* output1, f
 	*output2 = double (bits2) / f;
 }
 
+void BShapr::sendMidi (const float input1, const float input2, float* output1, float* output2, const uint8_t midiCh, const uint8_t midiCC, const float amp, uint32_t frames, const int shape)
+{
+	*output1 = input1;
+	*output2 = input2;
+
+	uint8_t newValue = amp * 128;
+	newValue = LIM (newValue, 0, 127);
+
+	if (newValue != sendValue[shape])
+	{
+		LV2_Atom midiatom;
+		midiatom.type = urids.midi_Event;
+		midiatom.size = 3;
+
+		uint8_t startCh = (midiCh == 0 ? 0 : midiCh - 1);
+		uint8_t endCh = (midiCh == 0 ? 15 : midiCh - 1);
+
+		for (uint8_t ch = startCh; ch <= endCh; ++ ch)
+		{
+			uint8_t status = LV2_MIDI_MSG_CONTROLLER + ch;
+			uint8_t msg[3] = {status, midiCC, newValue};
+
+			lv2_atom_forge_frame_time (&forge, frames);
+			lv2_atom_forge_raw (&forge, &midiatom, sizeof (LV2_Atom));
+			lv2_atom_forge_raw (&forge, &msg, 3);
+			lv2_atom_forge_pad (&forge, sizeof (LV2_Atom) + 3);
+		}
+		sendValue[shape] = newValue;
+	}
+}
+
 void BShapr::play (uint32_t start, uint32_t end)
 {
 	if (end < start) return;
@@ -1213,7 +1257,13 @@ void BShapr::play (uint32_t start, uint32_t end)
 							break;
 
 						case BShaprTargetIndex::DISTORTION:
-							distortion (input1, input2, &wet1, &wet2, controllers[SHAPERS + sh * SH_SIZE + SH_OPTION + DISTORTION_OPT], iFactor, controllers[SHAPERS + sh * SH_SIZE + SH_OPTION + LIMIT_DB_OPT]);
+							distortion
+							(
+								input1, input2, &wet1, &wet2,
+								controllers[SHAPERS + sh * SH_SIZE + SH_OPTION + DISTORTION_OPT],
+								iFactor,
+								controllers[SHAPERS + sh * SH_SIZE + SH_OPTION + LIMIT_DB_OPT]
+							);
 							break;
 
 						case BShaprTargetIndex::DECIMATE:
@@ -1222,6 +1272,16 @@ void BShapr::play (uint32_t start, uint32_t end)
 
 						case BShaprTargetIndex::BITCRUSH:
 							bitcrush (input1, input2, &wet1, &wet2, iFactor);
+							break;
+
+						case BShaprTargetIndex::SEND_MIDI:
+							sendMidi
+							(
+								input1, input2, &wet1, &wet2,
+								controllers[SHAPERS + sh * SH_SIZE + SH_OPTION + SEND_MIDI_CH],
+								controllers[SHAPERS + sh * SH_SIZE + SH_OPTION + SEND_MIDI_CC],
+								iFactor, i, sh
+							);
 							break;
 					}
 

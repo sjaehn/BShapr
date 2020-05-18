@@ -48,9 +48,9 @@ typedef enum
 	SH_OUTPUT_AMP	= 5,
 	SH_SMOOTHING	= 6,
 	SH_OPTION	= 7,
-	SH_SIZE		= 11,
+	SH_SIZE		= 15,
 
-	NR_CONTROLLERS	= 51
+	NR_CONTROLLERS	= 67
 } BShaprPortIndex;
 
 typedef enum
@@ -83,7 +83,8 @@ typedef enum
 	DOPPLER		= 10,
 	DISTORTION	= 11,
 	DECIMATE	= 12,
-	BITCRUSH	= 13
+	BITCRUSH	= 13,
+	SEND_MIDI	= 14
 } BShaprTargetIndex;
 
 typedef enum

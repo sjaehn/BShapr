@@ -52,6 +52,7 @@ protected:
 
 public:
         Any () {}
+        template <class T> Any (const T& t) {set<T> (t);}
         Any (const Any& that) : dataTypeHash (that.dataTypeHash)
         {dataptr = that.clone ();}
 
