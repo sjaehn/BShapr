@@ -335,6 +335,9 @@ void BShapr::run (uint32_t n_samples)
 						audioBuffer1[shapeNr].reset ();
 						audioBuffer2[shapeNr].reset ();
 					}
+
+					// Force update & send MIDI if switched to MIDI
+					else if (newValue == BShaprTargetIndex::SEND_MIDI) sendValue[shapeNr] = 0xff;
 				}
 
 				else if (shapeControllerNr == SH_SMOOTHING)
@@ -347,6 +350,9 @@ void BShapr::run (uint32_t n_samples)
 				{
 					int optionNr = shapeControllerNr - SH_OPTION;
 					newValue = options[optionNr].limit.validate (newValue);
+
+					// Force update & send MIDI if parameter changed
+					if ((optionNr == SEND_MIDI_CH) || (optionNr == SEND_MIDI_CC)) sendValue[shapeNr] = 0xff;
 				}
 			}
 
