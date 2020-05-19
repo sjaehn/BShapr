@@ -596,7 +596,7 @@ void BShapr::run (uint32_t n_samples)
 						if (filter & (1 << (note % 12)))
 						{
 							key = note;
-							offset = position;
+							offset = floorfrac (position + offset);
 							position = 0;
 							refFrame = ev->time.frames;
 						}
