@@ -121,7 +121,13 @@ const Method methods[MAXEFFECTS] =
 	{11, {DISTORTION_OPT, NO_OPT, LIMIT_DB_OPT, NO_OPT}, {-30, 60, 0}, 0.33, 0, 100, 30.0, 0.0, "", "db", "inc/Distortion.png"},
 	{12, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {1, 96000, 0}, 0.05, 0, 110000, 48000.0, 48000.0, "", "Hz", "inc/Decimate.png"},
 	{13, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {1, 32, 0}, 0.5, 16, 34, 16.0, 16.0, "", "", "inc/Bitcrush.png"},
-	{14, {SEND_MIDI_CH, SEND_MIDI_CC, NO_OPT, NO_OPT}, {0, 1, 0}, 0.05, 0, 1.1, 1.0, 0.5, "", "", "inc/Send.png"}
+
+#ifdef SUPPORTS_CV
+	{14, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {0, 1, 0}, 0.05, 0, 1.1, 1.0, 0.5, "", "", "inc/Send_cv.png"}
+#else
+	{14, {SEND_MIDI_CH, SEND_MIDI_CC, NO_OPT, NO_OPT}, {0, 1, 0}, 0.05, 0, 1.1, 1.0, 0.5, "", "", "inc/Send_midi.png"}
+#endif
+
 };
 
 #endif /* GLOBALS_HPP_ */

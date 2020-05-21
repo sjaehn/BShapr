@@ -100,7 +100,13 @@ private:
 	void decimate (const float input1, const float input2, float* output1, float* output2, const float hz, const int shape);
 	void distortion (const float input1, const float input2, float* output1, float* output2, const int mode, const float drive, const float limit);
 	void bitcrush (const float input1, const float input2, float* output1, float* output2, const float bitNr);
+
+#ifdef SUPPORTS_CV
+	void sendCv (const float input1, const float input2, float* output1, float* output2, float* cv, const float amp);
+#else
 	void sendMidi (const float input1, const float input2, float* output1, float* output2, const uint8_t midiCh, const uint8_t midiCC, const float amp, const uint32_t frames, const int shape);
+#endif
+
 	void play(uint32_t start, uint32_t end);
 	void notifyMonitorToGui ();
 	void notifyShapeToGui (int shapeNr);
@@ -151,6 +157,10 @@ private:
 
 	LV2_Atom_Sequence* controlPort;
 	LV2_Atom_Sequence* notifyPort;
+
+#ifdef SUPPORTS_CV
+	float* cvOutputs[MAXSHAPES];
+#endif
 
 	LV2_Atom_Forge forge;
 	LV2_Atom_Forge_Frame notify_frame;

@@ -7,7 +7,17 @@
         lv2:binary <BShapr.so> ;
         rdfs:seeAlso <BShapr.ttl> .
 
-<https://www.jahnichen.de/plugins/lv2/BShapr#gui>   
+<https://www.jahnichen.de/plugins/lv2/BShapr#gui>
         a ui:X11UI;
-		ui:binary <BShaprGUI.so>;
-		rdfs:seeAlso <BShapr.ttl>.
+	ui:binary <BShaprGUI.so>;
+	rdfs:seeAlso <BShapr.ttl>.
+
+<https://www.jahnichen.de/plugins/lv2/BShapr-cv>
+        a lv2:Plugin ;
+        lv2:binary <BShapr-cv.so> ;
+        rdfs:seeAlso <BShapr-cv.ttl> .
+
+<https://www.jahnichen.de/plugins/lv2/BShapr-cv#gui>
+        a ui:X11UI;
+	ui:binary <BShaprGUI-cv.so>;
+	rdfs:seeAlso <BShapr-cv.ttl>.

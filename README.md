@@ -142,7 +142,7 @@ Select a effect that will be applied on the input signal by the use of the shape
 * Distortion
 * Decimate
 * Bitcrush
-* Send (shape to MIDI CC)
+* Send (shape to CV out or MIDI CC)
 
 ### MIDI control
 
@@ -162,6 +162,7 @@ a base.
 * Bypass
 * Dry / wet mixing
 * Send shape to MIDI CC (experimental)
+* Send shape to CV out (experimental)
 * MIDI Thru option
 
 ## TODO

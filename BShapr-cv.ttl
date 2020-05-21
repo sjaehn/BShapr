@@ -1,0 +1,768 @@
+@prefix atom: <http://lv2plug.in/ns/ext/atom#> .
+@prefix doap: <http://usefulinc.com/ns/doap#> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix lv2:  <http://lv2plug.in/ns/lv2core#> .
+@prefix time: <http://lv2plug.in/ns/ext/time#> .
+@prefix midi: <http://lv2plug.in/ns/ext/midi#> .
+@prefix urid: <http://lv2plug.in/ns/ext/urid#> .
+@prefix state: <http://lv2plug.in/ns/ext/state#> .
+@prefix ui: <http://lv2plug.in/ns/extensions/ui#> .
+@prefix rsz: <http://lv2plug.in/ns/ext/resize-port#> .
+
+
+<http://www.jahnichen.de/sjaehn#me>
+	a foaf:Person;
+	foaf:name "Sven Jaehnichen";
+#	foaf:mbox ;
+	foaf:homepage <https://github.com/sjaehn/> .
+
+<https://www.jahnichen.de/plugins/lv2/BShapr-cv#gui>
+	a ui:X11UI;
+	ui:binary <BShaprGUI-cv.so> ;
+	lv2:extensionData ui:idleInterface ;
+	lv2:requiredFeature ui:idleInterface .
+
+<https://www.jahnichen.de/plugins/lv2/BShapr-cv>
+	a lv2:Plugin, lv2:EnvelopePlugin, doap:Project ;
+	doap:name "B.Shapr (CV)" ;
+	rdfs:comment "Beat and LFO shaping plugin." ;
+  	doap:maintainer <http://www.jahnichen.de/sjaehn#me> ;
+  	doap:license <http://usefulinc.com/doap/licenses/gpl> ;
+	lv2:optionalFeature lv2:hardRTCapable ;
+	lv2:extensionData state:interface ;
+    	lv2:binary <BShapr-cv.so> ;
+  	lv2:requiredFeature urid:map ;
+  	ui:ui <https://www.jahnichen.de/plugins/lv2/BShapr-cv#gui> ;
+	lv2:port [
+		a lv2:InputPort , atom:AtomPort ;
+		atom:bufferType atom:Sequence ;
+		atom:supports time:Position ;
+		atom:supports midi:MidiEvent ;
+		lv2:index 0 ;
+		lv2:symbol "control" ;
+		lv2:name "Control" ;
+	] , [
+		a lv2:OutputPort , atom:AtomPort ;
+		atom:bufferType atom:Sequence ;
+		lv2:index 1 ;
+		lv2:symbol "notify" ;
+		lv2:name "Notify" ;
+		rsz:minimumSize 73000;
+	] , [
+		a lv2:AudioPort , lv2:InputPort ;
+		lv2:index 2 ;
+		lv2:symbol "lv2_audio_in_1" ;
+		lv2:name "Audio Input 1" ;
+	] , [
+		a lv2:AudioPort , lv2:InputPort ;
+		lv2:index 3 ;
+		lv2:symbol "lv2_audio_in_2" ;
+		lv2:name "Audio Input 2" ;
+	] , [
+		a lv2:AudioPort , lv2:OutputPort ;
+		lv2:index 4 ;
+		lv2:symbol "lv2_audio_out_1" ;
+		lv2:name "Audio Output 1" ;
+	] , [
+		a lv2:AudioPort , lv2:OutputPort ;
+		lv2:index 5 ;
+		lv2:symbol "lv2_audio_out_2" ;
+		lv2:name "Audio Output 2" ;
+	] , [
+		a lv2:CVPort , lv2:OutputPort ;
+		lv2:index 6 ;
+		lv2:symbol "cv_out_1" ;
+		lv2:name "CV Output 1" ;
+	] , [
+		a lv2:CVPort , lv2:OutputPort ;
+		lv2:index 7 ;
+		lv2:symbol "cv_out_2" ;
+		lv2:name "CV Output 2" ;
+	] , [
+		a lv2:CVPort , lv2:OutputPort ;
+		lv2:index 8 ;
+		lv2:symbol "cv_out_3" ;
+		lv2:name "CV Output 3" ;
+	] , [
+		a lv2:CVPort , lv2:OutputPort ;
+		lv2:index 9 ;
+		lv2:symbol "cv_out_4" ;
+		lv2:name "CV Output 4" ;
+	] , [
+                a lv2:InputPort , lv2:ControlPort ;
+                lv2:index 10 ;
+                lv2:symbol "bypass" ;
+                lv2:name "Bypass" ;
+		lv2:portProperty lv2:integer, lv2:enumeration ;
+		lv2:scalePoint [ rdfs:label "Off"; rdf:value 0 ] ;
+		lv2:scalePoint [ rdfs:label "On"; rdf:value 1 ] ;
+                lv2:default 0 ;
+                lv2:minimum 0 ;
+                lv2:maximum 1 ;
+        ] , [
+                a lv2:InputPort , lv2:ControlPort ;
+                lv2:index 11 ;
+                lv2:symbol "dry_wet" ;
+                lv2:name "Dry / wet" ;
+		lv2:default 1.0 ;
+                lv2:minimum 0.0 ;
+                lv2:maximum 1.0 ;
+        ] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 12 ;
+		lv2:symbol "midi_control" ;
+		lv2:name "MIDI control" ;
+		lv2:portProperty lv2:integer ;
+		lv2:portProperty lv2:integer, lv2:enumeration ;
+		lv2:scalePoint [ rdfs:label "Off"; rdf:value 0 ] ;
+		lv2:scalePoint [ rdfs:label "On"; rdf:value 1 ] ;
+		lv2:default 0 ;
+		lv2:minimum 0 ;
+		lv2:maximum 1 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 13 ;
+		lv2:symbol "midi_keys" ;
+		lv2:name "MIDI Keys" ;
+		lv2:portProperty lv2:integer ;
+		lv2:default 4095 ;
+		lv2:minimum 0 ;
+		lv2:maximum 4095 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 14 ;
+		lv2:symbol "midi_thru" ;
+		lv2:name "MIDI thru" ;
+		lv2:portProperty lv2:integer ;
+		lv2:portProperty lv2:integer, lv2:enumeration ;
+		lv2:scalePoint [ rdfs:label "Disable"; rdf:value 0 ] ;
+		lv2:scalePoint [ rdfs:label "Enable"; rdf:value 1 ] ;
+		lv2:default 0 ;
+		lv2:minimum 0 ;
+		lv2:maximum 1 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 15 ;
+		lv2:symbol "base" ;
+		lv2:name "Base" ;
+		lv2:portProperty lv2:integer, lv2:enumeration ;
+		lv2:scalePoint [ rdfs:label "Seconds"; rdf:value 0 ] ;
+		lv2:scalePoint [ rdfs:label "Beats"; rdf:value 1 ] ;
+		lv2:scalePoint [ rdfs:label "Bars"; rdf:value 2 ] ;
+		lv2:default 2 ;
+		lv2:minimum 0 ;
+		lv2:maximum 2 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 16 ;
+		lv2:symbol "base_value" ;
+		lv2:name "Base value" ;
+		lv2:default 1.0 ;
+		lv2:minimum 1.0 ;
+		lv2:maximum 16.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 17 ;
+		lv2:symbol "active_shape" ;
+		lv2:name "Active shape" ;
+		lv2:portProperty lv2:integer ;
+		lv2:default 1 ;
+		lv2:minimum 1 ;
+		lv2:maximum 4 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 18 ;
+		lv2:symbol "sh1_input" ;
+		lv2:name "Shaper 1: input" ;
+		lv2:portProperty lv2:integer, lv2:enumeration ;
+		lv2:scalePoint [ rdfs:label "Off"; rdf:value 0 ] ;
+		lv2:scalePoint [ rdfs:label "Audio in"; rdf:value 1 ] ;
+		lv2:scalePoint [ rdfs:label "Constant"; rdf:value 2 ] ;
+		lv2:scalePoint [ rdfs:label "Shaper 2"; rdf:value 4 ] ;
+		lv2:scalePoint [ rdfs:label "Shaper 3"; rdf:value 5 ] ;
+		lv2:scalePoint [ rdfs:label "Shaper 4"; rdf:value 6 ] ;
+		lv2:default 1 ;
+		lv2:minimum 0 ;
+		lv2:maximum 6 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 19 ;
+		lv2:symbol "sh1_input_amp" ;
+		lv2:name "Shaper 1: input amplification" ;
+		lv2:default 1.0 ;
+		lv2:minimum -1.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 20 ;
+		lv2:symbol "sh1_target" ;
+		lv2:name "Shaper 1: target" ;
+		lv2:portProperty lv2:integer, lv2:enumeration ;
+		lv2:scalePoint [ rdfs:label "Level"; rdf:value 0 ] ;
+		lv2:scalePoint [ rdfs:label "Balance"; rdf:value 1 ] ;
+		lv2:scalePoint [ rdfs:label "Width"; rdf:value 2 ] ;
+		lv2:scalePoint [ rdfs:label "Low pass"; rdf:value 3 ] ;
+		lv2:scalePoint [ rdfs:label "High pass"; rdf:value 4 ] ;
+		lv2:scalePoint [ rdfs:label "Gain"; rdf:value 5 ] ;
+		lv2:scalePoint [ rdfs:label "Low pass (log)"; rdf:value 6 ] ;
+		lv2:scalePoint [ rdfs:label "High pass (log)"; rdf:value 7 ] ;
+		lv2:scalePoint [ rdfs:label "Pitch"; rdf:value 8 ] ;
+		lv2:scalePoint [ rdfs:label "Delay (const. pitch)"; rdf:value 9 ] ;
+		lv2:scalePoint [ rdfs:label "Doppler delay"; rdf:value 10 ] ;
+		lv2:scalePoint [ rdfs:label "Distortion"; rdf:value 11 ] ;
+		lv2:scalePoint [ rdfs:label "Decimate"; rdf:value 12 ] ;
+		lv2:scalePoint [ rdfs:label "Bitcrush"; rdf:value 13 ] ;
+		lv2:scalePoint [ rdfs:label "Send"; rdf:value 14 ] ;
+		lv2:default 0 ;
+		lv2:minimum 0 ;
+		lv2:maximum 14 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 21 ;
+		lv2:symbol "sh1_dry_wet" ;
+		lv2:name "Shaper 1: dry / wet" ;
+		lv2:default 1.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 22 ;
+		lv2:symbol "sh1_output" ;
+		lv2:name "Shaper 1: output" ;
+		lv2:portProperty lv2:integer, lv2:enumeration ;
+		lv2:scalePoint [ rdfs:label "Internal"; rdf:value 0 ] ;
+		lv2:scalePoint [ rdfs:label "Audio out"; rdf:value 1 ] ;
+		lv2:default 1 ;
+		lv2:minimum 0 ;
+		lv2:maximum 1 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 23 ;
+		lv2:symbol "sh1_output_amp" ;
+		lv2:name "Shaper 1: output amplification" ;
+		lv2:default 1.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 24 ;
+		lv2:symbol "sh1_smoothing" ;
+		lv2:name "Shaper 1: smoothing" ;
+		lv2:default 20.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 100.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 25 ;
+		lv2:symbol "sh1_opt1" ;
+		lv2:name "Shaper 1: option 1" ;
+		lv2:portProperty lv2:integer ;
+		lv2:default 36 ;
+		lv2:minimum 12 ;
+		lv2:maximum 72 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 26 ;
+		lv2:symbol "sh1_opt2" ;
+		lv2:name "Shaper 1: option 2" ;
+		lv2:portProperty lv2:integer ;
+		lv2:default 0 ;
+		lv2:minimum 0 ;
+		lv2:maximum 4 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 27 ;
+		lv2:symbol "sh1_opt3" ;
+		lv2:name "Shaper 1: option 3" ;
+		lv2:default 0.0 ;
+		lv2:minimum -60.0 ;
+		lv2:maximum 30.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 28 ;
+		lv2:symbol "sh1_opt4" ;
+		lv2:name "Shaper 1: option 4" ;
+		lv2:default 1.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 16.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 29 ;
+		lv2:symbol "sh1_opt5" ;
+		lv2:name "Shaper 1: option 5" ;
+		lv2:default 1.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 127.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 30 ;
+		lv2:symbol "sh1_opt6" ;
+		lv2:name "Shaper 1: option 6" ;
+		lv2:default 0.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 31 ;
+		lv2:symbol "sh1_opt7" ;
+		lv2:name "Shaper 1: option 7" ;
+		lv2:default 0.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 32 ;
+		lv2:symbol "sh1_opt8" ;
+		lv2:name "Shaper 1: option 8" ;
+		lv2:default 0.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 33 ;
+		lv2:symbol "sh2_input" ;
+		lv2:name "Shaper 2: input" ;
+		lv2:portProperty lv2:integer, lv2:enumeration ;
+		lv2:scalePoint [ rdfs:label "Off"; rdf:value 0 ] ;
+		lv2:scalePoint [ rdfs:label "Audio in"; rdf:value 1 ] ;
+		lv2:scalePoint [ rdfs:label "Constant"; rdf:value 2 ] ;
+		lv2:scalePoint [ rdfs:label "Shaper 1"; rdf:value 3 ] ;
+		lv2:scalePoint [ rdfs:label "Shaper 3"; rdf:value 5 ] ;
+		lv2:scalePoint [ rdfs:label "Shaper 4"; rdf:value 6 ] ;
+		lv2:default 3 ;
+		lv2:minimum 0 ;
+		lv2:maximum 6 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 34 ;
+		lv2:symbol "sh2_input_amp" ;
+		lv2:name "Shaper 2: input amplification" ;
+		lv2:default 1.0 ;
+		lv2:minimum -1.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 35 ;
+		lv2:symbol "sh2_target" ;
+		lv2:name "Shaper 2: target" ;
+		lv2:portProperty lv2:integer, lv2:enumeration ;
+		lv2:scalePoint [ rdfs:label "Level"; rdf:value 0 ] ;
+		lv2:scalePoint [ rdfs:label "Balance"; rdf:value 1 ] ;
+		lv2:scalePoint [ rdfs:label "Width"; rdf:value 2 ] ;
+		lv2:scalePoint [ rdfs:label "Low pass"; rdf:value 3 ] ;
+		lv2:scalePoint [ rdfs:label "High pass"; rdf:value 4 ] ;
+		lv2:scalePoint [ rdfs:label "Gain"; rdf:value 5 ] ;
+		lv2:scalePoint [ rdfs:label "Low pass (log)"; rdf:value 6 ] ;
+		lv2:scalePoint [ rdfs:label "High pass (log)"; rdf:value 7 ] ;
+		lv2:scalePoint [ rdfs:label "Pitch"; rdf:value 8 ] ;
+		lv2:scalePoint [ rdfs:label "Delay (const. pitch)"; rdf:value 9 ] ;
+		lv2:scalePoint [ rdfs:label "Doppler delay"; rdf:value 10 ] ;
+		lv2:scalePoint [ rdfs:label "Distortion"; rdf:value 11 ] ;
+		lv2:scalePoint [ rdfs:label "Decimate"; rdf:value 12 ] ;
+		lv2:scalePoint [ rdfs:label "Bitcrush"; rdf:value 13 ] ;
+		lv2:scalePoint [ rdfs:label "Send"; rdf:value 14 ] ;
+		lv2:default 0 ;
+		lv2:minimum 0 ;
+		lv2:maximum 14 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 36 ;
+		lv2:symbol "sh2_dry_wet" ;
+		lv2:name "Shaper 2: dry / wet" ;
+		lv2:default 1.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 37 ;
+		lv2:symbol "sh2_output" ;
+		lv2:name "Shaper 2: output" ;
+		lv2:portProperty lv2:integer, lv2:enumeration ;
+		lv2:scalePoint [ rdfs:label "Internal"; rdf:value 0 ] ;
+		lv2:scalePoint [ rdfs:label "Audio out"; rdf:value 1 ] ;
+		lv2:default 0 ;
+		lv2:minimum 0 ;
+		lv2:maximum 1 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 38 ;
+		lv2:symbol "sh2_output_amp" ;
+		lv2:name "Shaper 2: output amplification" ;
+		lv2:default 1.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 39 ;
+		lv2:symbol "sh2_smoothing" ;
+		lv2:name "Shaper 2: smoothing" ;
+		lv2:default 20.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 100.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 40 ;
+		lv2:symbol "sh2_opt1" ;
+		lv2:name "Shaper 2: option 1" ;
+		lv2:portProperty lv2:integer ;
+		lv2:default 36 ;
+		lv2:minimum 12 ;
+		lv2:maximum 72 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 41 ;
+		lv2:symbol "sh2_opt2" ;
+		lv2:name "Shaper 2: option 2" ;
+		lv2:portProperty lv2:integer ;
+		lv2:default 0 ;
+		lv2:minimum 0 ;
+		lv2:maximum 4 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 42 ;
+		lv2:symbol "sh2_opt3" ;
+		lv2:name "Shaper 2: option 3" ;
+		lv2:default 0.0 ;
+		lv2:minimum -60.0 ;
+		lv2:maximum 30.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 43 ;
+		lv2:symbol "sh2_opt4" ;
+		lv2:name "Shaper 2: option 4" ;
+		lv2:default 1.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 16.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 44 ;
+		lv2:symbol "sh2_opt5" ;
+		lv2:name "Shaper 2: option 5" ;
+		lv2:default 1.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 127.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 45 ;
+		lv2:symbol "sh2_opt6" ;
+		lv2:name "Shaper 2: option 6" ;
+		lv2:default 0.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 46 ;
+		lv2:symbol "sh2_opt7" ;
+		lv2:name "Shaper 2: option 7" ;
+		lv2:default 0.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 47 ;
+		lv2:symbol "sh2_opt8" ;
+		lv2:name "Shaper 2: option 8" ;
+		lv2:default 0.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 48 ;
+		lv2:symbol "sh3_input" ;
+		lv2:name "Shaper 3: input" ;
+		lv2:portProperty lv2:integer, lv2:enumeration ;
+		lv2:scalePoint [ rdfs:label "Off"; rdf:value 0 ] ;
+		lv2:scalePoint [ rdfs:label "Audio in"; rdf:value 1 ] ;
+		lv2:scalePoint [ rdfs:label "Constant"; rdf:value 2 ] ;
+		lv2:scalePoint [ rdfs:label "Shaper 1"; rdf:value 3 ] ;
+		lv2:scalePoint [ rdfs:label "Shaper 2"; rdf:value 4 ] ;
+		lv2:scalePoint [ rdfs:label "Shaper 4"; rdf:value 6 ] ;
+		lv2:default 4 ;
+		lv2:minimum 0 ;
+		lv2:maximum 6 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 49 ;
+		lv2:symbol "sh3_input_amp" ;
+		lv2:name "Shaper 3: input amplification" ;
+		lv2:portProperty lv2:integer ;
+		lv2:default 1.0 ;
+		lv2:minimum -1.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 50 ;
+		lv2:symbol "sh3_target" ;
+		lv2:name "Shaper 3: target" ;
+		lv2:portProperty lv2:integer, lv2:enumeration ;
+		lv2:scalePoint [ rdfs:label "Level"; rdf:value 0 ] ;
+		lv2:scalePoint [ rdfs:label "Balance"; rdf:value 1 ] ;
+		lv2:scalePoint [ rdfs:label "Width"; rdf:value 2 ] ;
+		lv2:scalePoint [ rdfs:label "Low pass"; rdf:value 3 ] ;
+		lv2:scalePoint [ rdfs:label "High pass"; rdf:value 4 ] ;
+		lv2:scalePoint [ rdfs:label "Gain"; rdf:value 5 ] ;
+		lv2:scalePoint [ rdfs:label "Low pass (log)"; rdf:value 6 ] ;
+		lv2:scalePoint [ rdfs:label "High pass (log)"; rdf:value 7 ] ;
+		lv2:scalePoint [ rdfs:label "Pitch"; rdf:value 8 ] ;
+		lv2:scalePoint [ rdfs:label "Delay (const. pitch)"; rdf:value 9 ] ;
+		lv2:scalePoint [ rdfs:label "Doppler delay"; rdf:value 10 ] ;
+		lv2:scalePoint [ rdfs:label "Distortion"; rdf:value 11 ] ;
+		lv2:scalePoint [ rdfs:label "Decimate"; rdf:value 12 ] ;
+		lv2:scalePoint [ rdfs:label "Bitcrush"; rdf:value 13 ] ;
+		lv2:scalePoint [ rdfs:label "Send"; rdf:value 14 ] ;
+		lv2:default 0 ;
+		lv2:minimum 0 ;
+		lv2:maximum 14 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 51 ;
+		lv2:symbol "sh3_dry_wet" ;
+		lv2:name "Shaper 3: dry / wet" ;
+		lv2:default 1.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 52 ;
+		lv2:symbol "sh3_output" ;
+		lv2:name "Shaper 3: output" ;
+		lv2:portProperty lv2:integer, lv2:enumeration ;
+		lv2:scalePoint [ rdfs:label "Internal"; rdf:value 0 ] ;
+		lv2:scalePoint [ rdfs:label "Audio out"; rdf:value 1 ] ;
+		lv2:default 0 ;
+		lv2:minimum 0 ;
+		lv2:maximum 1 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 53 ;
+		lv2:symbol "sh3_output_amp" ;
+		lv2:name "Shaper 3: output amplification" ;
+		lv2:default 1.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 54 ;
+		lv2:symbol "sh3_smoothing" ;
+		lv2:name "Shaper 3: smoothing" ;
+		lv2:default 20.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 100.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 55 ;
+		lv2:symbol "sh3_opt1" ;
+		lv2:name "Shaper 3: option 1" ;
+		lv2:portProperty lv2:integer ;
+		lv2:default 36 ;
+		lv2:minimum 12 ;
+		lv2:maximum 72 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 56 ;
+		lv2:symbol "sh3_opt2" ;
+		lv2:name "Shaper 3: option 2" ;
+		lv2:portProperty lv2:integer ;
+		lv2:default 0 ;
+		lv2:minimum 0 ;
+		lv2:maximum 4 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 57 ;
+		lv2:symbol "sh3_opt3" ;
+		lv2:name "Shaper 3: option 3" ;
+		lv2:default 0.0 ;
+		lv2:minimum -60.0 ;
+		lv2:maximum 30.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 58 ;
+		lv2:symbol "sh3_opt4" ;
+		lv2:name "Shaper 3: option 4" ;
+		lv2:default 1.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 16.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 59 ;
+		lv2:symbol "sh3_opt5" ;
+		lv2:name "Shaper 3: option 5" ;
+		lv2:default 1.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 127.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 60 ;
+		lv2:symbol "sh3_opt6" ;
+		lv2:name "Shaper 3: option 6" ;
+		lv2:default 0.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 61 ;
+		lv2:symbol "sh3_opt7" ;
+		lv2:name "Shaper 3: option 7" ;
+		lv2:default 0.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 62 ;
+		lv2:symbol "sh3_opt8" ;
+		lv2:name "Shaper 3: option 8" ;
+		lv2:default 0.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 63 ;
+		lv2:symbol "sh4_input" ;
+		lv2:name "Shaper 4: input" ;
+		lv2:portProperty lv2:integer, lv2:enumeration ;
+		lv2:scalePoint [ rdfs:label "Off"; rdf:value 0 ] ;
+		lv2:scalePoint [ rdfs:label "Audio in"; rdf:value 1 ] ;
+		lv2:scalePoint [ rdfs:label "Constant"; rdf:value 2 ] ;
+		lv2:scalePoint [ rdfs:label "Shaper 1"; rdf:value 3 ] ;
+		lv2:scalePoint [ rdfs:label "Shaper 2"; rdf:value 4 ] ;
+		lv2:scalePoint [ rdfs:label "Shaper 3"; rdf:value 5 ] ;
+		lv2:default 5 ;
+		lv2:minimum 0 ;
+		lv2:maximum 6 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 64 ;
+		lv2:symbol "sh4_input_amp" ;
+		lv2:name "Shaper 4: input amplification" ;
+		lv2:portProperty lv2:integer ;
+		lv2:default 1.0 ;
+		lv2:minimum -1.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 65 ;
+		lv2:symbol "sh4_target" ;
+		lv2:name "Shaper 4: target" ;
+		lv2:portProperty lv2:integer, lv2:enumeration ;
+		lv2:scalePoint [ rdfs:label "Level"; rdf:value 0 ] ;
+		lv2:scalePoint [ rdfs:label "Balance"; rdf:value 1 ] ;
+		lv2:scalePoint [ rdfs:label "Width"; rdf:value 2 ] ;
+		lv2:scalePoint [ rdfs:label "Low pass"; rdf:value 3 ] ;
+		lv2:scalePoint [ rdfs:label "High pass"; rdf:value 4 ] ;
+		lv2:scalePoint [ rdfs:label "Gain"; rdf:value 5 ] ;
+		lv2:scalePoint [ rdfs:label "Low pass (log)"; rdf:value 6 ] ;
+		lv2:scalePoint [ rdfs:label "High pass (log)"; rdf:value 7 ] ;
+		lv2:scalePoint [ rdfs:label "Pitch"; rdf:value 8 ] ;
+		lv2:scalePoint [ rdfs:label "Delay (const. pitch)"; rdf:value 9 ] ;
+		lv2:scalePoint [ rdfs:label "Doppler delay"; rdf:value 10 ] ;
+		lv2:scalePoint [ rdfs:label "Distortion"; rdf:value 11 ] ;
+		lv2:scalePoint [ rdfs:label "Decimate"; rdf:value 12 ] ;
+		lv2:scalePoint [ rdfs:label "Bitcrush"; rdf:value 13 ] ;
+		lv2:scalePoint [ rdfs:label "Send"; rdf:value 14 ] ;
+		lv2:default 0 ;
+		lv2:minimum 0 ;
+		lv2:maximum 14 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 66 ;
+		lv2:symbol "sh4_dry_wet" ;
+		lv2:name "Shaper 4: dry / wet" ;
+		lv2:default 1.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 67 ;
+		lv2:symbol "sh4_output" ;
+		lv2:name "Shaper 4: output" ;
+		lv2:portProperty lv2:integer, lv2:enumeration ;
+		lv2:scalePoint [ rdfs:label "Internal"; rdf:value 0 ] ;
+		lv2:scalePoint [ rdfs:label "Audio out"; rdf:value 1 ] ;
+		lv2:default 0 ;
+		lv2:minimum 0 ;
+		lv2:maximum 1 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 68 ;
+		lv2:symbol "sh4_output_amp" ;
+		lv2:name "Shaper 4: output amplification" ;
+		lv2:default 1.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 69 ;
+		lv2:symbol "sh4_smoothing" ;
+		lv2:name "Shaper 4: smoothing" ;
+		lv2:default 20.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 100.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 70 ;
+		lv2:symbol "sh4_opt1" ;
+		lv2:name "Shaper 4: option 1" ;
+		lv2:portProperty lv2:integer ;
+		lv2:default 36 ;
+		lv2:minimum 12 ;
+		lv2:maximum 72 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 71 ;
+		lv2:symbol "sh4_opt2" ;
+		lv2:name "Shaper 4: option 2" ;
+		lv2:portProperty lv2:integer ;
+		lv2:default 0 ;
+		lv2:minimum 0 ;
+		lv2:maximum 4 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 72 ;
+		lv2:symbol "sh4_opt3" ;
+		lv2:name "Shaper 4: option 3" ;
+		lv2:default 0.0 ;
+		lv2:minimum -60.0 ;
+		lv2:maximum 30.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 73 ;
+		lv2:symbol "sh4_opt4" ;
+		lv2:name "Shaper 4: option 4" ;
+		lv2:default 1.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 16.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 74 ;
+		lv2:symbol "sh4_opt5" ;
+		lv2:name "Shaper 4: option 5" ;
+		lv2:default 1.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 127.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 75 ;
+		lv2:symbol "sh4_opt6" ;
+		lv2:name "Shaper 4: option 6" ;
+		lv2:default 0.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 76 ;
+		lv2:symbol "sh4_opt7" ;
+		lv2:name "Shaper 4: option 7" ;
+		lv2:default 0.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 1.0 ;
+	] , [
+		a lv2:InputPort , lv2:ControlPort ;
+		lv2:index 77 ;
+		lv2:symbol "sh4_opt8" ;
+		lv2:name "Shaper 4: option 8" ;
+		lv2:default 0.0 ;
+		lv2:minimum 0.0 ;
+		lv2:maximum 1.0 ;
+	] .

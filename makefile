@@ -33,13 +33,17 @@ DSP = BShapr
 DSP_SRC = ./src/BShapr.cpp
 GUI = BShaprGUI
 GUI_SRC = ./src/BShaprGUI.cpp
+CV_EXT = -cv
 OBJ_EXT = .so
 DSP_OBJ = $(DSP)$(OBJ_EXT)
 GUI_OBJ = $(GUI)$(OBJ_EXT)
-B_OBJECTS = $(addprefix $(BUNDLE)/, $(DSP_OBJ) $(GUI_OBJ))
+DSP_CV_OBJ = $(DSP)$(CV_EXT)$(OBJ_EXT)
+GUI_CV_OBJ = $(GUI)$(CV_EXT)$(OBJ_EXT)
+B_OBJECTS = $(addprefix $(BUNDLE)/, $(DSP_OBJ) $(GUI_OBJ) $(DSP_CV_OBJ) $(GUI_CV_OBJ))
 ROOTFILES = \
 	manifest.ttl \
 	BShapr.ttl \
+	BShapr-cv.ttl \
 	LICENSE
 
 INCFILES = \
@@ -62,7 +66,8 @@ INCFILES = \
 	inc/Distortion.png \
 	inc/Decimate.png \
 	inc/Bitcrush.png \
-	inc/Send.png
+	inc/Send_midi.png \
+	inc/Send_cv.png
 
 B_FILES = $(addprefix $(BUNDLE)/, $(ROOTFILES) $(INCFILES))
 
@@ -124,7 +129,7 @@ ifeq ($(shell $(PKG_CONFIG) --exists cairo || echo no), no)
   $(error Cairo not found. Please install cairo first.)
 endif
 
-$(BUNDLE): clean $(DSP_OBJ) $(GUI_OBJ)
+$(BUNDLE): clean $(DSP_OBJ) $(GUI_OBJ) $(DSP_CV_OBJ) $(GUI_CV_OBJ)
 	@cp $(ROOTFILES) $(BUNDLE)
 	@mkdir -p $(BUNDLE)/inc
 	@cp $(INCFILES) $(BUNDLE)/inc
@@ -141,6 +146,18 @@ $(GUI_OBJ): $(GUI_SRC)
 	@echo -n Build $(BUNDLE) GUI...
 	@mkdir -p $(BUNDLE)
 	@$(CXX) $< $(GUI_INCL) -o $(BUNDLE)/$@ $(CPPFLAGS) $(GUIPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(GUIFLAGS)
+	@echo \ done.
+
+$(DSP_CV_OBJ): $(DSP_SRC)
+	@echo -n Build $(BUNDLE) \(CV version\) DSP...
+	@mkdir -p $(BUNDLE)
+	@$(CXX) $< -o $(BUNDLE)/$@ -DSUPPORTS_CV $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(DSPFLAGS)
+	@echo \ done.
+
+$(GUI_CV_OBJ): $(GUI_SRC)
+	@echo -n Build $(BUNDLE) \(CV version\) GUI...
+	@mkdir -p $(BUNDLE)
+	@$(CXX) $< $(GUI_INCL) -o $(BUNDLE)/$@ $(CPPFLAGS) -DSUPPORTS_CV $(GUIPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(GUIFLAGS)
 	@echo \ done.
 
 install:
@@ -167,6 +184,8 @@ uninstall:
 	-@rmdir $(DESTDIR)$(LV2DIR)/$(BUNDLE)/inc
 	@rm -f $(DESTDIR)$(LV2DIR)/$(BUNDLE)/$(GUI_OBJ)
 	@rm -f $(DESTDIR)$(LV2DIR)/$(BUNDLE)/$(DSP_OBJ)
+	@rm -f $(DESTDIR)$(LV2DIR)/$(BUNDLE)/$(GUI_CV_OBJ)
+	@rm -f $(DESTDIR)$(LV2DIR)/$(BUNDLE)/$(DSP_CV_OBJ)
 	-@rmdir $(DESTDIR)$(LV2DIR)/$(BUNDLE)
 	@echo \ done.
 

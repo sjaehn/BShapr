@@ -30,7 +30,13 @@ typedef enum
 	AUDIO_OUT_1	= 4,
 	AUDIO_OUT_2	= 5,
 
+#ifdef SUPPORTS_CV
+	CV_OUT		= 6,
+	CONTROLLERS	= 10,
+#else
 	CONTROLLERS	= 6,
+#endif
+
 	BYPASS		= 0,
 	DRY_WET		= 1,
 	MIDI_CONTROL	= 2,
@@ -85,7 +91,13 @@ typedef enum
 	DISTORTION	= 11,
 	DECIMATE	= 12,
 	BITCRUSH	= 13,
+
+#ifdef SUPPORTS_CV
+	SEND_CV		= 14
+#else
 	SEND_MIDI	= 14
+#endif
+
 } BShaprTargetIndex;
 
 typedef enum

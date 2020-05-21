@@ -125,7 +125,13 @@ BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 	sendValue{0xFF},
 	new_controllers {NULL}, controllers {0},
 	shapes {SmoothShape<MAXNODES> ()}, tempNodes {StaticArrayList<Node, MAXNODES> ()},
-	urids (), controlPort(NULL), notifyPort(NULL), forge (), notify_frame (),
+	urids (), controlPort(NULL), notifyPort(NULL),
+
+#ifdef SUPPORTS_CV
+	cvOutputs {NULL},
+#endif
+
+	forge (), notify_frame (),
 	key (0xFF),
 	ui_on(false), message (), monitorPos(-1), notificationsCount(0), stepCount (0),
 	scheduleNotifyStatus (true)
@@ -180,6 +186,7 @@ void BShapr::connect_port(uint32_t port, void *data)
 	case NOTIFY:
 		notifyPort = (LV2_Atom_Sequence*) data;
 		break;
+
 	case AUDIO_IN_1:
 		audioInput1 = (float*) data;
 		break;
@@ -193,6 +200,11 @@ void BShapr::connect_port(uint32_t port, void *data)
 		audioOutput2 = (float*) data;
 		break;
 	default:
+
+#ifdef SUPPORTS_CV
+		if ((port >= CV_OUT) && (port < CV_OUT + MAXSHAPES)) cvOutputs[port - CV_OUT] = (float*) data;
+#endif
+
 		if ((port >= CONTROLLERS) && (port < CONTROLLERS + NR_CONTROLLERS)) new_controllers[port - CONTROLLERS] = (float*) data;
 	}
 }
@@ -336,8 +348,10 @@ void BShapr::run (uint32_t n_samples)
 						audioBuffer2[shapeNr].reset ();
 					}
 
+#ifndef SUPPORTS_CV
 					// Force update & send MIDI if switched to MIDI
 					else if (newValue == BShaprTargetIndex::SEND_MIDI) sendValue[shapeNr] = 0xff;
+#endif
 				}
 
 				else if (shapeControllerNr == SH_SMOOTHING)
@@ -1110,6 +1124,16 @@ void BShapr::bitcrush (const float input1, const float input2, float* output1, f
 	*output2 = double (bits2) / f;
 }
 
+
+#ifdef SUPPORTS_CV
+void BShapr::sendCv (const float input1, const float input2, float* output1, float* output2, float* cv, const float amp)
+{
+	*output1 = input1;
+	*output2 = input2;
+	if (cv) *cv = LIM (amp, 0.0f, 1.0f);
+}
+
+#else
 void BShapr::sendMidi (const float input1, const float input2, float* output1, float* output2, const uint8_t midiCh, const uint8_t midiCC, const float amp, uint32_t frames, const int shape)
 {
 	*output1 = input1;
@@ -1140,10 +1164,19 @@ void BShapr::sendMidi (const float input1, const float input2, float* output1, f
 		sendValue[shape] = newValue;
 	}
 }
+#endif
 
 void BShapr::play (uint32_t start, uint32_t end)
 {
 	if (end < start) return;
+
+#ifdef SUPPORTS_CV
+	// Clear CV out
+	for (int i = 0; i < MAXSHAPES; ++i)
+	{
+		if (cvOutputs[i]) memset(&cvOutputs[i][start], 0, (end - start) * sizeof(float));
+	}
+#endif
 
 	// Return if halted or bpm == 0
 	if (((speed == 0.0f) && (controllers[BASE] != SECONDS)) || (bpm < 1.0f))
@@ -1283,6 +1316,12 @@ void BShapr::play (uint32_t start, uint32_t end)
 							bitcrush (input1, input2, &wet1, &wet2, iFactor);
 							break;
 
+#ifdef SUPPORTS_CV
+						case BShaprTargetIndex::SEND_CV:
+							sendCv (input1, input2, &wet1, &wet2, (cvOutputs[sh] ? &cvOutputs[sh][i] : nullptr), iFactor);
+							break;
+#else
+
 						case BShaprTargetIndex::SEND_MIDI:
 							sendMidi
 							(
@@ -1292,6 +1331,7 @@ void BShapr::play (uint32_t start, uint32_t end)
 								iFactor, i, sh
 							);
 							break;
+#endif
 					}
 
 					shapeOutput1[sh] = (1 - drywet) * input1 + drywet * wet1;

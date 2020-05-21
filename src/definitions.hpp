@@ -31,8 +31,14 @@
 #define MAXMESSAGES 4
 #define MAXUNDO 20
 #define GRIDSIZE 2.0
+
+#ifdef SUPPORTS_CV
+#define BSHAPR_URI "https://www.jahnichen.de/plugins/lv2/BShapr-cv"
+#define BSHAPR_GUI_URI "https://www.jahnichen.de/plugins/lv2/BShapr-cv#gui"
+#else
 #define BSHAPR_URI "https://www.jahnichen.de/plugins/lv2/BShapr"
 #define BSHAPR_GUI_URI "https://www.jahnichen.de/plugins/lv2/BShapr#gui"
+#endif
 
 enum MessageNr
 {

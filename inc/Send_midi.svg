@@ -15,8 +15,8 @@
    version="1.1"
    id="svg8"
    inkscape:version="0.92.3 (2405546, 2018-03-11)"
-   sodipodi:docname="Send.svg"
-   inkscape:export-filename="/home/sven/dev/c/BShapr/inc/Send.png"
+   sodipodi:docname="Send_midi.svg"
+   inkscape:export-filename="/home/sven/dev/c/BShapr/inc/Send_midi.png"
    inkscape:export-xdpi="96"
    inkscape:export-ydpi="96">
   <defs
@@ -114,10 +114,10 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="2.8"
-     inkscape:cx="-51.428571"
-     inkscape:cy="22.886003"
+     inkscape:cx="49.642858"
+     inkscape:cy="37.171717"
      inkscape:document-units="mm"
-     inkscape:current-layer="layer1"
+     inkscape:current-layer="layer2"
      showgrid="true"
      units="px"
      inkscape:pagecheckerboard="false"
@@ -155,23 +155,23 @@
        x="0"
        y="286.41666" />
     <path
-       style="fill:none;stroke:#ffffff;stroke-width:0.79375;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 10.583333,290.3854 c 2.645834,0 2.645834,0 2.645834,0"
+       style="fill:none;stroke:#ffffff;stroke-width:0.79374999;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 10.054166,290.3854 c 2.645834,0 2.645834,0 2.645834,0"
        id="path841"
        inkscape:connector-curvature="0" />
     <path
-       style="fill:#000000;fill-rule:evenodd;stroke:#ffffff;stroke-width:0.79375;stroke-miterlimit:4;stroke-dasharray:none"
-       d="m 15.875,287.73956 v 0.002 a 2.6458332,2.6455243 0 0 0 -0.207739,0.006 2.6458332,2.6455243 0 0 0 -2.430859,2.83292 2.6458332,2.6455243 0 0 0 2.638598,2.44675 v 0.003 h 2.645834 v -5.29105 z"
+       style="fill:#000000;fill-rule:evenodd;stroke:#ffffff;stroke-width:0.79374999;stroke-miterlimit:4;stroke-dasharray:none"
+       d="m 15.345833,287.73956 v 0.002 a 2.6458332,2.6455243 0 0 0 -0.207739,0.006 2.6458332,2.6455243 0 0 0 -2.430859,2.83292 2.6458332,2.6455243 0 0 0 2.638598,2.44675 v 0.003 h 2.645834 v -5.29105 z"
        id="path843"
        inkscape:connector-curvature="0" />
     <path
-       style="fill:none;stroke:#ffffff;stroke-width:0.79375;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 18.520834,289.06248 c 2.645833,0 2.645833,0 2.645833,0"
+       style="fill:none;stroke:#ffffff;stroke-width:0.79374999;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 17.991667,289.06248 c 2.645833,0 2.645833,0 2.645833,0"
        id="path841-3"
        inkscape:connector-curvature="0" />
     <path
-       style="fill:none;stroke:#ffffff;stroke-width:0.79375;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="m 18.520834,291.70831 c 2.645833,0 2.645833,0 2.645833,0"
+       style="fill:none;stroke:#ffffff;stroke-width:0.79374999;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="m 17.991667,291.70831 c 2.645833,0 2.645833,0 2.645833,0"
        id="path841-6"
        inkscape:connector-curvature="0" />
   </g>
@@ -201,5 +201,16 @@
    id="tspan833">S</tspan>end <tspan
    style="font-size:3.52777786px"
    id="tspan869">S</tspan>hape</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:4.23333311px;line-height:6.61458349px;font-family:'Good Times';-inkscape-font-specification:'Good Times';font-variant-ligatures:normal;font-variant-caps:normal;font-variant-numeric:normal;font-feature-settings:normal;text-align:start;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.26458332"
+       x="23.39011"
+       y="3.1858478"
+       id="text4559-3"><tspan
+         sodipodi:role="line"
+         id="tspan4557-6"
+         x="23.39011"
+         y="3.1858478"
+         style="font-size:2.82222223px;fill:#ffffff;stroke-width:0.26458332">MIDI</tspan></text>
   </g>
 </svg>
