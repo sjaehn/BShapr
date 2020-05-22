@@ -587,12 +587,12 @@ void BShapr::run (uint32_t n_samples)
 			{
 				LV2_Atom midiatom;
 				midiatom.type = urids.midi_Event;
-				midiatom.size = 3;
+				midiatom.size = ev->body.size;
 
 				lv2_atom_forge_frame_time (&forge, ev->time.frames);
 				lv2_atom_forge_raw (&forge, &midiatom, sizeof (LV2_Atom));
-				lv2_atom_forge_raw (&forge, msg, 3);
-				lv2_atom_forge_pad (&forge, sizeof (LV2_Atom) + 3);
+				lv2_atom_forge_raw (&forge, msg, midiatom.size);
+				lv2_atom_forge_pad (&forge, sizeof (LV2_Atom) + midiatom.size);
 			}
 
 			// Analyze MIDI event
