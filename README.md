@@ -56,7 +56,7 @@ Notes:
 B.Shapr is an envelope plugin for time or beat position-dependent effects.
 The user can define up to four different envelope shapes by drawing Bezier curves. Each of these envelope
 shapes can be connected to different target effects, such as amplification, balance, stereo width,
-filters, pitch shift, delay, and distortion effecs and can be combined together.
+filters, pitch shift, delay, and distortion effects and can be combined together.
 
 ### Global
 
@@ -112,7 +112,7 @@ The toolobar is located below the shape editor. It is divided into five sections
 
 In section 1 you will find **node tools** to select nodes or to set different types of nodes. Selection of existing nodes
 can be done by clicking on a node or by selection of an area. Node types provided are point node, auto smooth
-Bezier node, symmetic Bezier node, and asymmetic Bezier node.
+Bezier node, symmetric Bezier node, and asymmetric Bezier node.
 
 Section 2 consists of **edit tools** to apply on selected nodes. This are cut, copy, paste, and delete.
 
@@ -149,7 +149,8 @@ Select a effect that will be applied on the input signal by the use of the shape
 B.Shapr can optionally be controlled by a MIDI device. Once switched to B.Shapr's MIDI trigger mode, you can select
 and deselect the keys to which B.Shapr shall respond. This takes effect to all four shapers.
 
-The MIDI Thru option allows to forward an incoming MIDI signal. Be careful not to create dead loops!
+The MIDI Thru option allows to forward an incoming MIDI signal. Be careful not to create dead loops in combination
+with MIDI IN!
 
 ### Sequence size
 
@@ -159,10 +160,8 @@ a base.
 
 ## What's new
 
-* Bypass
-* Dry / wet mixing
 * Send shape to MIDI CC (experimental)
-* Send shape to CV out (experimental)
+* Send shape to CV out (experimental, use CV version of this plugin)
 * MIDI Thru option
 
 ## TODO

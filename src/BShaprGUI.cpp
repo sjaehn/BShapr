@@ -29,9 +29,9 @@ BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features
 	messageLabel (500, 45, 500, 20, "label", ""),
 	bypassButton (1090, 15, 16, 16, "redbutton"),
 	drywetDial (1144, 5, 33, 40, "dial", 1.0, 0.0, 1.0, 0.0, "%1.2f"),
-	midiTriggerSwitch (720, 568, 30, 12, "dial", 0),
-	midiPiano (720, 585, 150, 30, "widget", 0, 11),
-	midiThruSwitch (924, 575, 12, 30, "dial", 0),
+	midiTriggerSwitch (760, 568, 30, 12, "dial", 0),
+	midiPiano (760, 585, 150, 30, "widget", 0, 11),
+	midiThruSwitch (1044, 575, 12, 30, "dial", 0),
 	baseValueSelect (480, 660, 100, 20, "select", 1.0, 1.0, 16.0, 0.01),
 	baseListBox (620, 660, 100, 20, 0, -80, 100, 80, "menu", BItems::ItemList ({{0, "Seconds"}, {1, "Beats"}, {2, "Bars"}})),
 	monitorContainer (24, 134, 1152, 352, "monitor"),
@@ -587,9 +587,9 @@ void BShaprGUI::resizeGUI(const double sz)
 	RESIZE (messageLabel, 500, 45, 500, 20, sz);
 	RESIZE (bypassButton, 1090, 15, 16, 16, sz);
 	RESIZE (drywetDial, 1144, 5, 33, 40, sz);
-	RESIZE (midiTriggerSwitch, 720, 568, 30, 12, sz);
-	RESIZE (midiPiano, 720, 585, 150, 30, sz);
-	RESIZE (midiThruSwitch, 924, 575, 12, 30, sz);
+	RESIZE (midiTriggerSwitch, 760, 568, 30, 12, sz);
+	RESIZE (midiPiano, 760, 585, 150, 30, sz);
+	RESIZE (midiThruSwitch, 1044, 575, 12, 30, sz);
 	RESIZE (baseValueSelect, 480, 660, 100, 20, sz);
 	RESIZE (baseListBox, 620, 660, 100, 20, sz);
 	baseListBox.resizeListBox (BUtilities::Point (100 * sz, 80 * sz));
