@@ -39,13 +39,20 @@ sudo make install PREFIX=/usr/local
 
 After the installation Ardour, Carla, and any other LV2 host should automatically detect B.Shapr.
 
-If jalv is installed, you can also call it
+If jalv is installed, you can also call it using one of the graphical jalv executables (like
+jalv.gtk, or jalv.gtk3, or jalv.qt4, or jalv.qt5, depending on what is installed), like
 
 ```
 jalv.gtk https://www.jahnichen.de/plugins/lv2/BShapr
 ```
 
 to run it stand-alone and connect it to the JACK system.
+
+If you are interested in the CV version of this plugin call
+
+```
+jalv.gtk https://www.jahnichen.de/plugins/lv2/BShapr-cv
+```
 
 Notes:
 
