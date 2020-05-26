@@ -82,24 +82,11 @@ output. This means:
 audio in > shape1 > (shape2 > (shape3 > (shape4))) > audio out.
 ```
 
-**In the lv2 backend**, you can also build more complex audio routes. You have to follow the rules:
+**Deprecated:** Complex non-linear routing of the shapers by manual change of "shx_input" and "shx_output" in the
+LV2 backend will not be supported in future versions and will be removed until the first official release of B.Shapr.
 
-* You can only route in forward direction, shape2 > shape1 will not work
-* But you can skip shapes
-* sh1_input must be audio in
-* All other shape inputs can also take audio in or the output of any previous shape
-* At least the last used shape must send to audio out
-* All other shape outputs can also directly send to audio out (or to internal)
-
-An example for complex routing would be:
-
-```
-audio in > shape1 > shape3 ─┐
-      ╰──> shape2 ──────────┤
-               ╰──> shape4 ─┴> audio out
-```
-
-**Warning: Complex routing made in lv2 backend will be simplified if you add or delete shapes in GUI!**
+**Deprecated:** Constant value input will not be supported in future versions and will be removed until the first
+official release of B.Shapr. Think about to use the "send" effects instead. 
 
 ### Shape editor
 
