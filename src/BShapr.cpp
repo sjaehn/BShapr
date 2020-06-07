@@ -21,6 +21,7 @@
 #include <cstdio>
 #include <string>
 #include <stdexcept>
+#include <algorithm>
 #include "BShapr.hpp"
 
 #define LIM(g , min, max) ((g) > (max) ? (max) : ((g) < (min) ? (min) : (g)))
@@ -122,7 +123,6 @@ BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 	rate(samplerate), bpm(120.0f), speed(1), bar (0), barBeat (0), beatsPerBar (4), beatUnit (4),
 	position(0), offset(0), refFrame(0),
 	audioInput1(NULL), audioInput2(NULL), audioOutput1(NULL), audioOutput2(NULL),
-	sendValue{0xFF},
 	new_controllers {NULL}, controllers {0},
 	shapes {SmoothShape<MAXNODES> ()}, tempNodes {StaticArrayList<Node, MAXNODES> ()},
 	urids (), controlPort(NULL), notifyPort(NULL),
@@ -137,6 +137,7 @@ BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 	scheduleNotifyStatus (true)
 
 {
+	std::fill (sendValue, sendValue + MAXSHAPES, 0xFF);
 	for (int i = 0; i < MAXSHAPES; ++i)
 	{
 		shapes[i].setDefaultShape ();
