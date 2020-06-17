@@ -7,7 +7,7 @@ Description: Beat / envelope shaper LV2 plugin
 ## Installation
 
 a) Install the bshapr package for your system
-* [NixOS](https://github.com/NixOS/nixpkgs/blob/master/pkgs/applications/audio/bshapr/default.ni) by Bart Brouns
+* [NixOS](https://github.com/NixOS/nixpkgs/blob/master/pkgs/applications/audio/bshapr/default.nix) by Bart Brouns
 * [Debian](https://kx.studio/Repositories:Plugins) by falkTX
 * Check https://repology.org/project/bshapr/versions for other systems
 
@@ -72,7 +72,7 @@ mixing ratio of the plugin input : plugin output.
 
 ### Shape selector
 
-Select the shape to edit. You can choose between up to four user-defineable shapes. You can remove (-) shapes if not
+Select the shape to edit. You can choose between up to four user-definable shapes. You can remove (-) shapes if not
 required or add (+) new shapes (max. 4).
 
 **In the GUI**, the audio input signals are routed through the shapers in the order of their numbers to the audio
