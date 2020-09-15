@@ -33,7 +33,7 @@ SelectWidget::SelectWidget (const double  x, const double y, const double width,
 	labelTexts_ (labeltexts),
 	focusLabel_ (0, 0, 40, 20, name_ + BWIDGETS_DEFAULT_FOCUS_NAME, "")
 {
-	focusLabel_.setOversize (true);
+	focusLabel_.setStacking (BWidgets::STACKING_OVERSIZE);
 	focusLabel_.resize ();
 	focusLabel_.hide ();
 	add (focusLabel_);

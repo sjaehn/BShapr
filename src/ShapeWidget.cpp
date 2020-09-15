@@ -42,7 +42,7 @@ ShapeWidget::ShapeWidget (const double x, const double y, const double width, co
 	setDraggable (true);
 	setScrollable (true);
 
-	focusText.setOversize (true);
+	focusText.setStacking (BWidgets::STACKING_OVERSIZE);
 	focusText.setYResizable (true);
 	focusText.hide ();
 	add (focusText);
