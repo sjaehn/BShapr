@@ -23,6 +23,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include "BShapr.hpp"
+#include "BUtilities/stof.hpp"
 
 #define LIM(g , min, max) ((g) > (max) ? (max) : ((g) < (min) ? (min) : (g)))
 #define SGN(a) ((a) < 0 ? -1 : 1)
@@ -1448,7 +1449,7 @@ LV2_State_Status BShapr::state_restore (LV2_State_Retrieve_Function retrieve, LV
 			shapesDataString.erase (0, strPos + 4);
 
 			int sh;
-			try {sh = std::stof (shapesDataString, &nextPos);}
+			try {sh = BUtilities::stof (shapesDataString, &nextPos);}
 			catch  (const std::exception& e)
 			{
 				fprintf (stderr, "BShapr.lv2: Restore shape state incomplete. Can't parse shape number from \"%s...\"", shapesDataString.substr (0, 63).c_str());
@@ -1477,7 +1478,7 @@ LV2_State_Status BShapr::state_restore (LV2_State_Retrieve_Function retrieve, LV
 				}
 				if (strPos > 0) shapesDataString.erase (0, strPos + 4);
 				float val;
-				try {val = std::stof (shapesDataString, &nextPos);}
+				try {val = BUtilities::stof (shapesDataString, &nextPos);}
 				catch  (const std::exception& e)
 				{
 					fprintf (stderr, "BShapr.lv2: Restore shape state incomplete. Can't parse %s from \"%s...\"",
