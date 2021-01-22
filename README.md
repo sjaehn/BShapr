@@ -86,7 +86,7 @@ audio in > shape1 > (shape2 > (shape3 > (shape4))) > audio out.
 LV2 backend will not be supported in future versions and will be removed until the first official release of B.Shapr.
 
 **Deprecated:** Constant value input will not be supported in future versions and will be removed until the first
-official release of B.Shapr. Think about to use the "send" effects instead. 
+official release of B.Shapr. Think about to use the "send" effects instead.
 
 ### Shape editor
 
@@ -154,9 +154,7 @@ a base.
 
 ## What's new
 
-* Send shape to MIDI CC (experimental)
-* Send shape to CV out (experimental, use CV version of this plugin)
-* MIDI Thru option
+* Enable enter slider and dial values via keyboard
 
 ## TODO
 

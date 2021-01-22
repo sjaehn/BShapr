@@ -71,6 +71,8 @@ INCFILES = \
 
 B_FILES = $(addprefix $(BUNDLE)/, $(ROOTFILES) $(INCFILES))
 
+DSP_INCL = src/BUtilities/stof.cpp
+
 GUI_INCL = \
 	src/MonitorWidget.cpp \
 	src/SelectWidget.cpp \
@@ -115,7 +117,8 @@ GUI_INCL = \
 	src/BWidgets/cairoplus.c \
 	src/BWidgets/pugl/pugl_x11_cairo.c \
 	src/BWidgets/pugl/pugl_x11.c \
-	src/BUtilities/to_string.cpp
+	src/BUtilities/to_string.cpp \
+	src/BUtilities/stof.cpp
 
 ifeq ($(shell $(PKG_CONFIG) --exists lv2 || echo no), no)
   $(error LV2 not found. Please install LV2 first.)
@@ -139,7 +142,7 @@ all: $(BUNDLE)
 $(DSP_OBJ): $(DSP_SRC)
 	@echo -n Build $(BUNDLE) DSP...
 	@mkdir -p $(BUNDLE)
-	@$(CXX) $< -o $(BUNDLE)/$@ $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(DSPFLAGS)
+	@$(CXX) $< $(DSP_INCL) -o $(BUNDLE)/$@ $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(DSPFLAGS)
 	@echo \ done.
 
 $(GUI_OBJ): $(GUI_SRC)
