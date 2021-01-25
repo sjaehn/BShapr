@@ -21,7 +21,7 @@
 #include "BShaprGUI.hpp"
 
 BShaprGUI::BShaprGUI (const char *bundlePath, const LV2_Feature *const *features, PuglNativeWindow parentWindow) :
-	Window (1200, 710, "B.Shapr", parentWindow, true),
+	Window (1200, 710, "B.Shapr", parentWindow, true, PUGL_MODULE, 0),
 	controller (NULL), write_function (NULL),
 	bpm (120), beatsPerBar (4.0), beatUnit (4),
 
