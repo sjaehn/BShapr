@@ -165,13 +165,17 @@ $(GUI_OBJ): $(GUI_SRC)
 $(DSP_CV_OBJ): $(DSP_SRC)
 	@echo -n Build $(BUNDLE) \(CV version\) DSP...
 	@mkdir -p $(BUNDLE)
-	@$(CXX) $< -o $(BUNDLE)/$@ -DSUPPORTS_CV $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(DSPFLAGS)
+	@$(CXX) $(CPPFLAGS) -DSUPPORTS_CV $(CXXFLAGS) $(LDFLAGS) $(DSPCFLAGS) -Wl,--start-group $(DSPLFLAGS) $< $(DSP_INCL) -Wl,--end-group -o $(BUNDLE)/$@
 	@echo \ done.
 
 $(GUI_CV_OBJ): $(GUI_SRC)
 	@echo -n Build $(BUNDLE) \(CV version\) GUI...
 	@mkdir -p $(BUNDLE)
-	@$(CXX) $< $(GUI_INCL) -o $(BUNDLE)/$@ $(CPPFLAGS) -DSUPPORTS_CV $(GUIPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(GUIFLAGS)
+	@mkdir -p $(BUNDLE)/tmp
+	@cd $(BUNDLE)/tmp; $(CC) $(CPPFLAGS) -DSUPPORTS_CV $(GUIPPFLAGS) $(CFLAGS) $(GUICFLAGS) $(addprefix ../../, $(GUI_C_INCL)) -c
+	@cd $(BUNDLE)/tmp; $(CXX) $(CPPFLAGS) -DSUPPORTS_CV $(GUIPPFLAGS) $(CXXFLAGS) $(GUICFLAGS) $(addprefix ../../, $< $(GUI_CXX_INCL)) -c
+	@$(CXX) $(CPPFLAGS) -DSUPPORTS_CV $(GUIPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(GUICFLAGS) -Wl,--start-group $(GUILFLAGS) $(BUNDLE)/tmp/*.o -Wl,--end-group -o $(BUNDLE)/$@
+	@rm -rf $(BUNDLE)/tmp
 	@echo \ done.
 
 install:
