@@ -1772,7 +1772,7 @@ static const void* extensionData(const char* uri)
 	else return NULL;
 }
 
-const LV2UI_Descriptor guiDescriptor = {
+static const LV2UI_Descriptor guiDescriptor = {
 		BSHAPR_GUI_URI,
 		instantiate,
 		cleanup,
