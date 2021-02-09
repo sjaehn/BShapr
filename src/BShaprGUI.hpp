@@ -74,7 +74,7 @@ const std::string editWidgetLabels[7] = {"Cut", "Copy", "Paste", "Delete", "Rese
 class BShaprGUI : public BWidgets::Window
 {
 public:
-	BShaprGUI (const char *bundlePath, const LV2_Feature *const *features, PuglNativeWindow parentWindow);
+	BShaprGUI (const char *bundlePath, const LV2_Feature *const *features, PuglNativeView parentWindow);
 	~BShaprGUI ();
 	void portEvent (uint32_t port, uint32_t bufferSize, uint32_t format, const void *buffer);
 	void sendGuiOn ();
