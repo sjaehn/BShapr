@@ -1541,7 +1541,7 @@ LV2_State_Status BShapr::state_restore (LV2_State_Retrieve_Function retrieve, LV
 	return LV2_STATE_SUCCESS;
 }
 
-LV2_Handle instantiate (const LV2_Descriptor* descriptor, double samplerate, const char* bundle_path, const LV2_Feature* const* features)
+static LV2_Handle instantiate (const LV2_Descriptor* descriptor, double samplerate, const char* bundle_path, const LV2_Feature* const* features)
 {
 	// New instance
 	BShapr* instance;
@@ -1568,19 +1568,19 @@ LV2_Handle instantiate (const LV2_Descriptor* descriptor, double samplerate, con
 	return (LV2_Handle)instance;
 }
 
-void connect_port (LV2_Handle instance, uint32_t port, void *data)
+static void connect_port (LV2_Handle instance, uint32_t port, void *data)
 {
 	BShapr* inst = (BShapr*) instance;
 	inst->connect_port (port, data);
 }
 
-void run (LV2_Handle instance, uint32_t n_samples)
+static void run (LV2_Handle instance, uint32_t n_samples)
 {
 	BShapr* inst = (BShapr*) instance;
 	inst->run (n_samples);
 }
 
-void cleanup (LV2_Handle instance)
+static void cleanup (LV2_Handle instance)
 {
 	BShapr* inst = (BShapr*) instance;
 	delete inst;
