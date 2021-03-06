@@ -1737,26 +1737,28 @@ static LV2UI_Handle instantiate (const LV2UI_Descriptor *descriptor, const char 
 static void cleanup(LV2UI_Handle ui)
 {
 	BShaprGUI* pluginGui = (BShaprGUI*) ui;
-	delete pluginGui;
+	if (pluginGui) delete pluginGui;
 }
 
 static void portEvent(LV2UI_Handle ui, uint32_t port_index, uint32_t buffer_size,
 	uint32_t format, const void* buffer)
 {
 	BShaprGUI* pluginGui = (BShaprGUI*) ui;
-	pluginGui->portEvent(port_index, buffer_size, format, buffer);
+	if (pluginGui) pluginGui->portEvent(port_index, buffer_size, format, buffer);
 }
 
 static int callIdle (LV2UI_Handle ui)
 {
 	BShaprGUI* pluginGui = (BShaprGUI*) ui;
-	pluginGui->handleEvents ();
+	if (pluginGui) pluginGui->handleEvents ();
 	return 0;
 }
 
 static int callResize (LV2UI_Handle ui, int width, int height)
 {
 	BShaprGUI* self = (BShaprGUI*) ui;
+	if (!self) return 0;
+	
 	BEvents::ExposeEvent* ev = new BEvents::ExposeEvent (self, self, BEvents::CONFIGURE_REQUEST_EVENT, self->getPosition().x, self->getPosition().y, width, height);
 	self->addEventToQueue (ev);
 	return 0;
