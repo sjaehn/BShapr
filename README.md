@@ -164,6 +164,8 @@ a base.
 
 ## What's new
 
+* Check dependencies / versions
+* Support older systems (gcc < 8, clang < 10, lv2 < 1.18)
 * Bugfixes
 
 ## TODO
