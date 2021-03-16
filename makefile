@@ -145,13 +145,13 @@ $(BUNDLE): clean $(DSP_OBJ) $(GUI_OBJ) $(DSP_CV_OBJ) $(GUI_CV_OBJ)
 all: $(BUNDLE)
 
 $(DSP_OBJ): $(DSP_SRC)
-	@echo Build $(BUNDLE) DSP...
+	@echo -n Build $(BUNDLE) DSP...
 	@mkdir -p $(BUNDLE)
 	@$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(LDFLAGS) $(DSPCFLAGS) -Wl,--start-group $(DSPLFLAGS) $< $(DSP_INCL) -Wl,--end-group -o $(BUNDLE)/$@
 	@echo \ done.
 
 $(GUI_OBJ): $(GUI_SRC)
-	@echo Build $(BUNDLE) GUI...
+	@echo -n Build $(BUNDLE) GUI...
 	@mkdir -p $(BUNDLE)/tmp
 	@cd $(BUNDLE)/tmp; $(CC) $(CPPFLAGS) $(GUIPPFLAGS) $(CFLAGS) $(GUICFLAGS) $(addprefix ../../, $(GUI_C_INCL)) -c
 	@cd $(BUNDLE)/tmp; $(CXX) $(CPPFLAGS) $(GUIPPFLAGS) $(CXXFLAGS) $(GUICFLAGS) $(addprefix ../../, $< $(GUI_CXX_INCL)) -c
@@ -160,13 +160,13 @@ $(GUI_OBJ): $(GUI_SRC)
 	@echo \ done.
 
 $(DSP_CV_OBJ): $(DSP_SRC)
-	@echo Build $(BUNDLE) \(CV version\) DSP...
+	@echo -n Build $(BUNDLE) \(CV version\) DSP...
 	@mkdir -p $(BUNDLE)
 	@$(CXX) $(CPPFLAGS) -DSUPPORTS_CV $(CXXFLAGS) $(LDFLAGS) $(DSPCFLAGS) -Wl,--start-group $(DSPLFLAGS) $< $(DSP_INCL) -Wl,--end-group -o $(BUNDLE)/$@
 	@echo \ done.
 
 $(GUI_CV_OBJ): $(GUI_SRC)
-	@echo Build $(BUNDLE) \(CV version\) GUI...
+	@echo -n Build $(BUNDLE) \(CV version\) GUI...
 	@mkdir -p $(BUNDLE)/tmp_cv
 	@cd $(BUNDLE)/tmp_cv; $(CC) $(CPPFLAGS) -DSUPPORTS_CV $(GUIPPFLAGS) $(CFLAGS) $(GUICFLAGS) $(addprefix ../../, $(GUI_C_INCL)) -c
 	@cd $(BUNDLE)/tmp_cv; $(CXX) $(CPPFLAGS) -DSUPPORTS_CV $(GUIPPFLAGS) $(CXXFLAGS) $(GUICFLAGS) $(addprefix ../../, $< $(GUI_CXX_INCL)) -c
@@ -175,7 +175,7 @@ $(GUI_CV_OBJ): $(GUI_SRC)
 	@echo \ done.
 
 install:
-	@echo Install $(BUNDLE) to $(DESTDIR)$(LV2DIR)...
+	@echo -n Install $(BUNDLE) to $(DESTDIR)$(LV2DIR)...
 	@$(INSTALL) -d $(DESTDIR)$(LV2DIR)/$(BUNDLE)
 	@$(INSTALL) -d $(DESTDIR)$(LV2DIR)/$(BUNDLE)/inc
 	@$(INSTALL_PROGRAM) -m755 $(B_OBJECTS) $(DESTDIR)$(LV2DIR)/$(BUNDLE)
@@ -207,3 +207,5 @@ clean:
 	@rm -rf $(BUNDLE)
 
 .PHONY: all install install-strip uninstall clean
+
+.NOTPARALLEL:
