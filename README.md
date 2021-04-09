@@ -1,7 +1,7 @@
 # B.Shapr
 Description: Beat / envelope shaper LV2 plugin
 
-![screenshot](https://raw.githubusercontent.com/sjaehn/BShapr/master/screenshot.png "Screenshot from B.Shapr")
+![screenshot](https://raw.githubusercontent.com/sjaehn/BShapr/master/doc/screenshot.png "Screenshot from B.Shapr")
 
 
 ## Installation
