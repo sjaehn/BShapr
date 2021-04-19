@@ -7,8 +7,10 @@ Description: Beat / envelope shaper LV2 plugin
 ## Installation
 
 a) Install the bshapr package for your system
+* [Arch](https://git.archlinux.org/svntogit/community.git/tree/trunk?h=packages/bshapr)
 * [NixOS](https://github.com/NixOS/nixpkgs/blob/master/pkgs/applications/audio/bshapr/default.nix) by Bart Brouns
-* [Debian](https://kx.studio/Repositories:Plugins) by falkTX
+* [openSUSE](https://software.opensuse.org/package/BShapr)
+* [Ubuntu](https://packages.ubuntu.com/source/hirsute/bshapr) by Erich Eickmeyer, trebmuh
 * Check https://repology.org/project/bshapr/versions for other systems
 
 b) Build your own binaries in the following three steps.
