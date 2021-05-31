@@ -269,7 +269,7 @@ template<size_t sz> bool Shape<sz>::validateNode (const size_t nr)
 	// Exception: Invalid node order
 	if ((nodes_.size >= 3) && (nr > 1) && (nr < nodes_.size - 1) && (nodes_[nr-1].point.x > nodes_[nr+1].point.x))
 	{
-		fprintf (stderr, "BShapr.lv2: Corrupt node data at node %li. Reset shape.\n", nr);
+		fprintf (stderr, "BShapr.lv2: Corrupt node data at node %li (%f, %f). Reset shape.\n", nr, nodes_[nr].point.x, nodes_[nr].point.y);
 		setDefaultShape ();
 		return false;
 	}
@@ -482,8 +482,8 @@ template<size_t sz> void Shape<sz>::drawLineOnMap (BUtilities::Point p1, BUtilit
 
 	else
 	{
-		uint32_t i = ((uint32_t) (p1.x * MAPRES)) % MAPRES;
-		map_ [i] = p1.y;
+		uint32_t i = ((uint32_t) (p2.x * MAPRES)) % MAPRES;
+		map_ [i] = p2.y;
 	}
 }
 
