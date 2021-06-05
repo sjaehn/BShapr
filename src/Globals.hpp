@@ -87,18 +87,18 @@ enum Distortions
 
 const Option options[MAXOPTIONS] =
 {
-        {DIAL_WIDGET, "-db/octave", 36, {12, 72, 12}, DB_PER_OCT_OPT_PARAM},
-        {POPUP_WIDGET, "Method", 0, {0, 4, 1}, DISTORTION_OPT_PARAM},
+	{DIAL_WIDGET, "-db/octave", 36, {12, 72, 12}, DB_PER_OCT_OPT_PARAM},
+	{POPUP_WIDGET, "Method", 0, {0, 4, 1}, DISTORTION_OPT_PARAM},
 	{DIAL_WIDGET, "Limit (db)", 0, {-60, 30, 0}, LIMIT_DB_OPT_PARAM},
 	{POPUP_WIDGET, "MIDI Channel", 0, {0, 16, 1}, SEND_MIDI_CH_PARAM},
 	{POPUP_WIDGET, "MIDI CC", 0, {0, 127, 1}, SEND_MIDI_CC_PARAM},
-        {NO_WIDGET, "", 0, {0, 0, 0}, 0}
+	{NO_WIDGET, "", 0, {0, 0, 0}, 0}
 };
 
 enum OptionIndex
 {
-        NO_OPT		= -1,
-        DB_PER_OCT_OPT	= 0,
+    NO_OPT		= -1,
+    DB_PER_OCT_OPT	= 0,
 	DISTORTION_OPT	= 1,
 	LIMIT_DB_OPT	= 2,
 	SEND_MIDI_CH	= 3,
@@ -107,25 +107,25 @@ enum OptionIndex
 
 const Method methods[MAXEFFECTS] =
 {
-	{0, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {0, 2, 0}, 0.05, 0, 2.2, 1.0, 1.0, "", "", "inc/Level.png"},
-	{2, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {-1, 1, 0}, 0.5, 0, 2.2, 1.0, 0.0, "", "", "inc/Balance.png"},
-	{3, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {0, 100, 0}, 0.05, 0, 2.2, 1.0, 1.0, "", "", "inc/Width.png"},
-	{4, {DB_PER_OCT_OPT, NO_OPT, NO_OPT, NO_OPT}, {20, 20000, 0}, 0, 0, 8100, 1000.0, 1000.0, "", "Hz", "inc/Low_pass.png"},
-	{6, {DB_PER_OCT_OPT, NO_OPT, NO_OPT, NO_OPT}, {20, 20000, 0}, 0, 0, 8100, 1000.0, 1000.0, "", "Hz", "inc/High_pass.png"},
-	{1, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {-90, 12, 0}, 0.75, 0, 132, 30.0, 0.0, "", "dB", "inc/Amplify.png"},
-	{5, {DB_PER_OCT_OPT, NO_OPT, NO_OPT, NO_OPT},  {1.301, 4.301, 0}, 0.1, 1.3, 3.5, 1.0, 3.0, "10^", "Hz", "inc/Low_pass_log.png"},
-	{7, {DB_PER_OCT_OPT, NO_OPT, NO_OPT, NO_OPT}, {1.301, 4.301, 0}, 0.1, 1.3, 3.5, 1.0, 3.0, "10^", "Hz", "inc/High_pass_log.png"},
-	{8, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {-12, 12, 0}, 0.5, 0, 25, 12.0, 0.0, "", "semitones", "inc/Pitch_shift.png"},
-	{9, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {0, 800, 0}, 0.05, 0, 880, 200.0, 200.0, "", "ms", "inc/Delay.png"},
-	{10, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {0, 800, 0}, 0.05, 0, 880, 200.0, 200.0, "", "ms", "inc/Doppler_delay.png"},
-	{11, {DISTORTION_OPT, NO_OPT, LIMIT_DB_OPT, NO_OPT}, {-30, 60, 0}, 0.33, 0, 100, 30.0, 0.0, "", "db", "inc/Distortion.png"},
-	{12, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {1, 96000, 0}, 0.05, 0, 110000, 48000.0, 48000.0, "", "Hz", "inc/Decimate.png"},
-	{13, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {1, 32, 0}, 0.5, 16, 34, 16.0, 16.0, "", "", "inc/Bitcrush.png"},
+	{0, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {0, 2, 0}, 0.05, 0, 2.2, 1.0, 1.0, 1.0, "", "", "inc/Level.png"},
+	{2, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {-1, 1, 0}, 0.5, 0, 2.2, 1.0, 0.0, 1.0, "", "", "inc/Balance.png"},
+	{3, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {0, 100, 0}, 0.05, 0, 2.2, 1.0, 1.0, 1.0, "", "", "inc/Width.png"},
+	{4, {DB_PER_OCT_OPT, NO_OPT, NO_OPT, NO_OPT}, {20, 20000, 0}, 0, 0, 8100, 1000.0, 1000.0, 1000.0, "", "Hz", "inc/Low_pass.png"},
+	{6, {DB_PER_OCT_OPT, NO_OPT, NO_OPT, NO_OPT}, {20, 20000, 0}, 0, 0, 8100, 1000.0, 1000.0, 1000.0, "", "Hz", "inc/High_pass.png"},
+	{1, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {-90, 12, 0}, 0.75, 0, 132, 30.0, 0.0, 30.0, "", "dB", "inc/Amplify.png"},
+	{5, {DB_PER_OCT_OPT, NO_OPT, NO_OPT, NO_OPT},  {1.301, 4.301, 0}, 0.1, 1.3, 3.5, 1.0, 3.0, 1.0,  "10^", "Hz", "inc/Low_pass_log.png"},
+	{7, {DB_PER_OCT_OPT, NO_OPT, NO_OPT, NO_OPT}, {1.301, 4.301, 0}, 0.1, 1.3, 3.5, 1.0, 3.0, 1.0, "10^", "Hz", "inc/High_pass_log.png"},
+	{8, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {-12, 12, 0}, 0.5, 0, 25, 12.0, 0.0, 12.0, "", "semitones", "inc/Pitch_shift.png"},
+	{9, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {0, 800, 0}, 0.05, 0, 880, 200.0, 200.0, 200.0, "", "ms", "inc/Delay.png"},
+	{10, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {0, 800, 0}, 0.05, 0, 880, 200.0, 200.0, 200.0, "", "ms", "inc/Doppler_delay.png"},
+	{11, {DISTORTION_OPT, NO_OPT, LIMIT_DB_OPT, NO_OPT}, {-30, 60, 0}, 0.33, 0, 100, 30.0, 0.0, 30.0, "", "db", "inc/Distortion.png"},
+	{12, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {1, 96000, 0}, 0.05, 0, 110000, 48000.0, 48000.0, 48000.0, "", "Hz", "inc/Decimate.png"},
+	{13, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {1, 32, 0}, 0.5, 16, 34, 16.0, 16.0, 16.0, "", "", "inc/Bitcrush.png"},
 
 #ifdef SUPPORTS_CV
-	{14, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {0, 1, 0}, 0.05, 0, 1.1, 1.0, 0.5, "", "", "inc/Send_cv.png"}
+	{14, {NO_OPT, NO_OPT, NO_OPT, NO_OPT}, {0, 1, 0}, 0.05, 0, 1.1, 1.0, 0.5, 0.5, "", "", "inc/Send_cv.png"}
 #else
-	{14, {SEND_MIDI_CH, SEND_MIDI_CC, NO_OPT, NO_OPT}, {0, 1, 0}, 0.05, 0, 1.1, 1.0, 0.5, "", "", "inc/Send_midi.png"}
+	{14, {SEND_MIDI_CH, SEND_MIDI_CC, NO_OPT, NO_OPT}, {0, 1, 0}, 0.05, 0, 1.1, 1.0, 0.5, 0.5, "", "", "inc/Send_midi.png"}
 #endif
 
 };

@@ -35,7 +35,7 @@
 #include "Urids.hpp"
 #include "BUtilities/Point.hpp"
 #include "Node.hpp"
-#include "SmoothShape.hpp"
+#include "Shape.hpp"
 #include "BShaprNotifications.hpp"
 
 
@@ -72,6 +72,22 @@ public:
 private:
 	uint32_t messageBits;
 	bool scheduled;
+};
+
+class Fader
+{
+public:
+	Fader ();
+	Fader (const float value, const float speed);
+	void setTarget (const float target);
+	void setSpeed (const float speed);
+	float proceed ();
+	float getValue () const;
+
+protected:
+	float value;
+	float target;
+	float speed;
 };
 
 class BShapr
@@ -144,12 +160,14 @@ private:
 	double decimateCounter [MAXSHAPES];
 	uint8_t sendValue [MAXSHAPES];
 
+	Fader factors[MAXSHAPES];
+
 	// Controllers
 	float* new_controllers[NR_CONTROLLERS];
 	float controllers [NR_CONTROLLERS];
 
 	// Nodes and Maps
-	SmoothShape<MAXNODES> shapes[MAXSHAPES];
+	Shape<MAXNODES> shapes[MAXSHAPES];
 	StaticArrayList<Node, MAXNODES> tempNodes[MAXSHAPES];
 
 	// Atom port

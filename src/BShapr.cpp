@@ -26,7 +26,7 @@
 #include "BUtilities/stof.hpp"
 
 #define LIM(g , min, max) ((g) > (max) ? (max) : ((g) < (min) ? (min) : (g)))
-#define SGN(a) ((a) < 0 ? -1 : 1)
+#define SGN(a) (((a) > 0) - ((a) < 0))
 #define SQR(a) ((a) * (a))
 
 inline float db2co (const float value) {return pow (10, 0.05 * value);}
@@ -119,13 +119,36 @@ MessageNr Message::loadMessage ()
 
 bool Message::isScheduled () {return scheduled;}
 
+
+Fader::Fader () : Fader (0, 1) {}
+
+Fader::Fader (const float value, const float speed) :
+	value (value),
+	target (value),
+	speed (speed)
+{}
+	
+inline void Fader::setTarget (const float target) {this->target = target;}
+
+inline void Fader::setSpeed (const float speed) {this->speed = speed;}
+
+inline float Fader::proceed ()
+{
+	if (fabsf (target - value) < speed) value = target;
+	else value += SGN (target - value) * speed;
+	return value;
+}
+
+inline float Fader::getValue () const {return value;}
+
+
 BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 	map(NULL),
 	rate(samplerate), bpm(120.0f), speed(1), bar (0), barBeat (0), beatsPerBar (4), beatUnit (4),
 	position(0), offset(0), refFrame(0),
 	audioInput1(NULL), audioInput2(NULL), audioOutput1(NULL), audioOutput2(NULL),
 	new_controllers {NULL}, controllers {0},
-	shapes {SmoothShape<MAXNODES> ()}, tempNodes {StaticArrayList<Node, MAXNODES> ()},
+	shapes {Shape<MAXNODES> ()}, tempNodes {StaticArrayList<Node, MAXNODES> ()},
 	urids (), controlPort(NULL), notifyPort(NULL),
 
 #ifdef SUPPORTS_CV
@@ -139,6 +162,8 @@ BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 
 {
 	std::fill (sendValue, sendValue + MAXSHAPES, 0xFF);
+	std::fill (factors, factors + MAXSHAPES, Fader (0, 1.0f / (0.02f * rate)));
+
 	for (int i = 0; i < MAXSHAPES; ++i)
 	{
 		shapes[i].setDefaultShape ();
@@ -337,6 +362,12 @@ void BShapr::run (uint32_t n_samples)
 				{
 					// Change transformation
 					shapes[shapeNr].setTransformation (methods[int(newValue)].transformFactor, methods[int(newValue)].transformOffset);
+					const float sm = controllers[SHAPERS + shapeNr * SH_SIZE + SH_SMOOTHING];
+					factors[shapeNr] = Fader
+					(
+						methods[int(newValue)].transformOffset, 
+						methods[int(newValue)].step / (0.001f * sm * rate)
+					);
 
 					// Clear audiobuffers, if needed
 					if
@@ -358,7 +389,8 @@ void BShapr::run (uint32_t n_samples)
 
 				else if (shapeControllerNr == SH_SMOOTHING)
 				{
-					shapes[shapeNr].setSmoothing (getPositionFromSeconds (newValue / 1000));
+					const int me = controllers[SHAPERS + shapeNr * SH_SIZE + SH_TARGET];
+					factors[shapeNr].setSpeed (methods[me].step/ (0.001f * newValue * rate));
 				}
 
 				// Options
@@ -373,16 +405,6 @@ void BShapr::run (uint32_t n_samples)
 			}
 
 			controllers[i] = newValue;
-
-			// Re-smoothing required ?
-			if ((i == BASE) || (i == BASE_VALUE))
-			{
-				for (int j = 0; j < MAXSHAPES; ++j)
-				{
-					double smoothing = getPositionFromSeconds (controllers[SHAPERS + j * SH_SIZE + SH_SMOOTHING] / 1000);
-					shapes[j].setSmoothing (smoothing);
-				}
-			}
 		}
 	}
 
@@ -1247,7 +1269,8 @@ void BShapr::play (uint32_t start, uint32_t end)
 					}
 
 					// Get shaper value for the actual position
-					float iFactor = shapes[sh].getSmoothMapValue (pos);
+					factors[sh].setTarget (shapes[sh].getMapValue (pos));
+					float iFactor = factors[sh].proceed();
 
 					float drywet = controllers[SHAPERS + sh * SH_SIZE + SH_DRY_WET];
 					float wet1 = 0;

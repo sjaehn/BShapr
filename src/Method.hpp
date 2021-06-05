@@ -40,6 +40,7 @@ struct Method
 	double ratio;
 	double transformFactor;
 	double transformOffset;
+	double step;
 	std::string prefix;
 	std::string unit;
 	std::string iconFileName;
