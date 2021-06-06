@@ -64,7 +64,7 @@
 const std::string messageStrings[MAXMESSAGES] =
 {
 	"",
-	"Msg: Jack transport off or halted. Plugin halted.",
+	"Msg: Jack transport off or halted.",
 	"Msg: Orphan active shape. Select an input for this shape!",
 	"Msg: Orphan active shape. Select an output for this or a connected shape!"
 };

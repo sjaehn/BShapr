@@ -167,6 +167,7 @@ a base.
 ## What's new
 
 * Smooth parameters instead of shape
+* Do not mute if transport stopped
 
 ## TODO
 

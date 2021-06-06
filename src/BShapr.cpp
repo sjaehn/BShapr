@@ -1202,14 +1202,6 @@ void BShapr::play (uint32_t start, uint32_t end)
 	}
 #endif
 
-	// Return if halted or bpm == 0
-	if (((speed == 0.0f) && (controllers[BASE] != SECONDS)) || (bpm < 1.0f))
-	{
-		memset(&audioOutput1[start], 0, (end - start) * sizeof(float));
-		memset(&audioOutput2[start], 0, (end - start) * sizeof(float));
-		return;
-	}
-
 	for (uint32_t i = start; i < end; ++i)
 	{
 		// Interpolate position within the loop
@@ -1269,8 +1261,13 @@ void BShapr::play (uint32_t start, uint32_t end)
 					}
 
 					// Get shaper value for the actual position
-					factors[sh].setTarget (shapes[sh].getMapValue (pos));
-					float iFactor = factors[sh].proceed();
+					float iFactor = 0.0f;
+					if (((speed == 0.0f) && (controllers[BASE] != SECONDS)) || (bpm < 1.0f)) iFactor = factors[sh].getValue();
+					else 
+					{
+						factors[sh].setTarget (shapes[sh].getMapValue (pos));
+						iFactor = factors[sh].proceed();
+					}
 
 					float drywet = controllers[SHAPERS + sh * SH_SIZE + SH_DRY_WET];
 					float wet1 = 0;
