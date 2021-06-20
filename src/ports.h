@@ -93,10 +93,12 @@ typedef enum
 	BITCRUSH	= 13,
 
 #ifdef SUPPORTS_CV
-	SEND_CV		= 14
+	SEND_CV		= 14,
 #else
-	SEND_MIDI	= 14
+	SEND_MIDI	= 14,
 #endif
+
+	REVERB		= 15
 
 } BShaprTargetIndex;
 

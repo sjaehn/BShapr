@@ -27,7 +27,7 @@
 #define MAXSHAPES 4
 #define MAXOPTIONS 6
 #define MAXOPTIONWIDGETS 4
-#define MAXEFFECTS 15
+#define MAXEFFECTS 16
 #define MAXMESSAGES 4
 #define MAXUNDO 20
 #define GRIDSIZE 2.0

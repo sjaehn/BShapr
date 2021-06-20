@@ -140,6 +140,7 @@ Select a effect that will be applied on the input signal by the use of the shape
 * Amplification
 * Stereo balance
 * Stereo width
+* Reverb
 * Low pass filter (linear or log)
 * High pass filter (linear or log)
 * Pitch shift
@@ -166,8 +167,7 @@ a base.
 
 ## What's new
 
-* Smooth parameters instead of shape
-* Do not mute if transport stopped
+* Add reverb
 
 ## TODO
 
@@ -179,3 +179,7 @@ a base.
 * Tutorial: https://youtu.be/fjhL_rku2BU
 * Preview: https://www.youtube.com/watch?v=DxYQJ_XJwbU
 * Autotune with B.Shapr: https://youtu.be/c6bUW_dTxGg
+
+## Acknowledgments
+
+* ACE reverb from the Ardour project (https://github.com/Ardour/ardour) by Fredrik Kilander, Robin Gareus, Will Panther, and Damien Zammit (GPL2).

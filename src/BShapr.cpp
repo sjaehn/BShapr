@@ -148,6 +148,7 @@ BShapr::BShapr (double samplerate, const LV2_Feature* const* features) :
 	position(0), offset(0), refFrame(0),
 	audioInput1(NULL), audioInput2(NULL), audioOutput1(NULL), audioOutput2(NULL),
 	new_controllers {NULL}, controllers {0},
+	reverbs {AceReverb (rate, 0.75, powf (10.0f, .05f * -20.0f), -0.015f, 1.0f)},
 	shapes {Shape<MAXNODES> ()}, tempNodes {StaticArrayList<Node, MAXNODES> ()},
 	urids (), controlPort(NULL), notifyPort(NULL),
 
@@ -1190,6 +1191,13 @@ void BShapr::sendMidi (const float input1, const float input2, float* output1, f
 }
 #endif
 
+void BShapr::reverb (const float input1, const float input2, float* output1, float* output2, const float roomsz, const int shape)
+{
+	const double f = LIM (roomsz, methods[REVERB].limit.min, methods[REVERB].limit.max);
+	reverbs[shape].setRoomSize (f);
+	reverbs[shape].reverb (&input1, &input2, output1, output2, 1);
+}
+
 void BShapr::play (uint32_t start, uint32_t end)
 {
 	if (end < start) return;
@@ -1354,6 +1362,10 @@ void BShapr::play (uint32_t start, uint32_t end)
 							);
 							break;
 #endif
+
+						case BShaprTargetIndex::REVERB:
+							reverb (input1, input2, &wet1, &wet2, iFactor, sh);
+							break;
 					}
 
 					shapeOutput1[sh] = (1 - drywet) * input1 + drywet * wet1;

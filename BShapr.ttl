@@ -196,10 +196,11 @@
 		lv2:scalePoint [ rdfs:label "Distortion"; rdf:value 11 ] ;
 		lv2:scalePoint [ rdfs:label "Decimate"; rdf:value 12 ] ;
 		lv2:scalePoint [ rdfs:label "Bitcrush"; rdf:value 13 ] ;
+		lv2:scalePoint [ rdfs:label "Reverb"; rdf:value 15 ] ;
 		lv2:scalePoint [ rdfs:label "Send"; rdf:value 14 ] ;
 		lv2:default 0 ;
 		lv2:minimum 0 ;
-		lv2:maximum 14 ;
+		lv2:maximum 15 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
 		lv2:index 17 ;
@@ -344,10 +345,11 @@
 		lv2:scalePoint [ rdfs:label "Distortion"; rdf:value 11 ] ;
 		lv2:scalePoint [ rdfs:label "Decimate"; rdf:value 12 ] ;
 		lv2:scalePoint [ rdfs:label "Bitcrush"; rdf:value 13 ] ;
+		lv2:scalePoint [ rdfs:label "Reverb"; rdf:value 15 ] ;
 		lv2:scalePoint [ rdfs:label "Send"; rdf:value 14 ] ;
 		lv2:default 0 ;
 		lv2:minimum 0 ;
-		lv2:maximum 14 ;
+		lv2:maximum 15 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
 		lv2:index 32 ;
@@ -493,10 +495,11 @@
 		lv2:scalePoint [ rdfs:label "Distortion"; rdf:value 11 ] ;
 		lv2:scalePoint [ rdfs:label "Decimate"; rdf:value 12 ] ;
 		lv2:scalePoint [ rdfs:label "Bitcrush"; rdf:value 13 ] ;
+		lv2:scalePoint [ rdfs:label "Reverb"; rdf:value 15 ] ;
 		lv2:scalePoint [ rdfs:label "Send"; rdf:value 14 ] ;
 		lv2:default 0 ;
 		lv2:minimum 0 ;
-		lv2:maximum 14 ;
+		lv2:maximum 15 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
 		lv2:index 47 ;
@@ -642,10 +645,11 @@
 		lv2:scalePoint [ rdfs:label "Distortion"; rdf:value 11 ] ;
 		lv2:scalePoint [ rdfs:label "Decimate"; rdf:value 12 ] ;
 		lv2:scalePoint [ rdfs:label "Bitcrush"; rdf:value 13 ] ;
+		lv2:scalePoint [ rdfs:label "Reverb"; rdf:value 15 ] ;
 		lv2:scalePoint [ rdfs:label "Send"; rdf:value 14 ] ;
 		lv2:default 0 ;
 		lv2:minimum 0 ;
-		lv2:maximum 14 ;
+		lv2:maximum 15 ;
 	] , [
 		a lv2:InputPort , lv2:ControlPort ;
 		lv2:index 62 ;

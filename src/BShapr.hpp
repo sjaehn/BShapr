@@ -37,6 +37,7 @@
 #include "Node.hpp"
 #include "Shape.hpp"
 #include "BShaprNotifications.hpp"
+#include "ACE/ACEReverb.hpp"
 
 
 #define MAX_F_ORDER 12
@@ -123,6 +124,8 @@ private:
 	void sendMidi (const float input1, const float input2, float* output1, float* output2, const uint8_t midiCh, const uint8_t midiCC, const float amp, const uint32_t frames, const int shape);
 #endif
 
+	void reverb (const float input1, const float input2, float* output1, float* output2, const float roomsz, const int shape);
+
 	void play(uint32_t start, uint32_t end);
 	void notifyMonitorToGui ();
 	void notifyShapeToGui (int shapeNr);
@@ -158,6 +161,7 @@ private:
 	float decimateBuffer1 [MAXSHAPES];
 	float decimateBuffer2 [MAXSHAPES];
 	double decimateCounter [MAXSHAPES];
+	AceReverb reverbs [MAXSHAPES];
 	uint8_t sendValue [MAXSHAPES];
 
 	Fader factors[MAXSHAPES];

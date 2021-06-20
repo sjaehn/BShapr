@@ -70,7 +70,8 @@ INCFILES = \
 	inc/Decimate.png \
 	inc/Bitcrush.png \
 	inc/Send_midi.png \
-	inc/Send_cv.png
+	inc/Send_cv.png \
+	inc/Reverb.png
 
 B_FILES = $(addprefix $(BUNDLE)/, $(ROOTFILES) $(INCFILES))
 
